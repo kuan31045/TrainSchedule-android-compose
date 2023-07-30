@@ -17,6 +17,8 @@ import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 data class HomeUiState(
@@ -35,16 +37,14 @@ class HomeViewModel @Inject constructor(
     private val trainRepository: TrainRepository
 ) : ViewModel() {
 
-
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    val pathState: MutableStateFlow<Path> = MutableStateFlow(
-        Path(
-            Station(name = Name("Taipei", "臺北"), county = Name("Taipei", "臺北")),
-            Station(name = Name("Hsinchu", "新竹"), county = Name("Hsinchu", "新竹")),
+    val pathState: StateFlow<Path> = trainRepository.currentPath.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = Path(),
         )
-    )
 
     var loadingState: LoadApiStatus by mutableStateOf(LoadApiStatus.Loading)
         private set
@@ -70,13 +70,13 @@ class HomeViewModel @Inject constructor(
             SelectedStationType.DEPARTURE -> {
                 Path(
                     departureStation = station ?: pathState.value.departureStation,
-                    arrivalStation = pathState.value.departureStation
+                    arrivalStation = pathState.value.arrivalStation
                 )
             }
 
             SelectedStationType.ARRIVAL -> {
                 Path(
-                    departureStation = pathState.value.arrivalStation,
+                    departureStation = pathState.value.departureStation,
                     arrivalStation = station ?: pathState.value.arrivalStation
                 )
             }
@@ -84,9 +84,11 @@ class HomeViewModel @Inject constructor(
         savePath(path)
     }
 
-
-    fun savePath(path: Path) {
-        trainRepository.saveLastPath(path)
+    private fun savePath(path: Path) {
+        viewModelScope.launch {
+            trainRepository.savePath(path)
+            selectCounty(getCurrentPathCounty())
+        }
     }
 
     fun changeSelectedStation(selectedStationType: SelectedStationType) {
@@ -106,20 +108,18 @@ class HomeViewModel @Inject constructor(
                 arrivalStation = pathState.value.departureStation
             )
         )
-
-        selectCounty(getCurrentPathCounty())
     }
 
     private fun getCurrentPathCounty(): Name {
         return when (uiState.value.selectedStationType) {
-            SelectedStationType.DEPARTURE ->  pathState.value.departureStation.county
+            SelectedStationType.DEPARTURE -> pathState.value.departureStation.county
             SelectedStationType.ARRIVAL -> pathState.value.arrivalStation.county
         }
     }
 
     private fun getStations() {
         viewModelScope.launch {
-            val result = trainRepository.getStations()
+            val result = trainRepository.fetchStations()
             loadingState = when (result) {
                 is Result.Success -> {
                     _uiState.update { currentState ->

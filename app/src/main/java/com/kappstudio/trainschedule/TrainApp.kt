@@ -133,8 +133,7 @@ fun TrainApp(
 
                 composable(route = Screen.Station.route) { backStackEntry ->
                     StationScreen(
-                        viewModel = backStackEntry.sharedViewModel(navController = navController),
-                        onOkButtonClicked = { navController.navigateUp() }
+                        viewModel = backStackEntry.sharedViewModel(navController = navController)
                     )
                 }
             }

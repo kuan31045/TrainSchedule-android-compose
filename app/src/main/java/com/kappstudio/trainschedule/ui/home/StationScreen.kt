@@ -45,7 +45,6 @@ import com.kappstudio.trainschedule.util.localize
 @Composable
 fun StationScreen(
     viewModel: HomeViewModel,
-    onOkButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uiState = viewModel.uiState.collectAsState()

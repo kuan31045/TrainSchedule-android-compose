@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.Flow
 interface TrainRepository {
     suspend fun getAccessToken(): String
 
-    suspend fun getStations(): Result<List<Station>>
+    suspend fun fetchStations(): Result<List<Station>>
 
     val currentPath: Flow<Path>
 
-    fun saveLastPath(path: Path)
+    suspend fun savePath(path: Path)
  }

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.google.gson.Gson
 import com.kappstudio.trainschedule.data.remote.TrainApi
 import com.kappstudio.trainschedule.data.toStation
 import com.kappstudio.trainschedule.domain.model.Station
@@ -29,7 +30,7 @@ import javax.inject.Singleton
 class TrainRepositoryImpl @Inject constructor(
     private val api: TrainApi,
     private val dataStore: DataStore<Preferences>,
-    private val trainDb:TrainDatabase
+    private val trainDb: TrainDatabase
 ) : TrainRepository {
 
     private val localToken = dataStore.data
@@ -67,7 +68,7 @@ class TrainRepositoryImpl @Inject constructor(
         return localToken.first().accessToken
     }
 
-    override suspend fun getStations(): Result<List<Station>> {
+    override suspend fun fetchStations(): Result<List<Station>> {
         return try {
             val result = api.getStations(getAccessToken())
             Timber.d("getStations success = $result")
@@ -89,16 +90,20 @@ class TrainRepositoryImpl @Inject constructor(
             }
         }
         .map { preferences ->
-            val path = preferences[CURRENT_PATH]
-            if (path != null) {
-                defaultPath
-            } else {
-                defaultPath
-            }
+            val json = preferences[CURRENT_PATH]
+
+            val path = Gson().fromJson(json, Path::class.java)
+            Timber.d("getPath()=$path")
+
+            path ?: defaultPath
         }
 
-    override fun saveLastPath(path: Path) {
-
+    override suspend fun savePath(path: Path) {
+        val json = Gson().toJson(path)
+        Timber.d("savePath()=$json")
+        dataStore.edit { preferences ->
+            preferences[CURRENT_PATH] = json
+        }
     }
 
     private companion object {
@@ -107,8 +112,16 @@ class TrainRepositoryImpl @Inject constructor(
         val TOKEN_EXPIRE_TIME = longPreferencesKey("token_expire_time")
         val CURRENT_PATH = stringPreferencesKey("current_path")
         val defaultPath = Path(
-            departureStation = Station("", Name(), Name()),
-            arrivalStation = Station("", Name(), Name())
+            departureStation = Station(
+                id = "1000",
+                name = Name("Taipei", "臺北"),
+                county = Name("Taipei", "臺北")
+            ),
+            arrivalStation = Station(
+                id = "1210",
+                name = Name("Hsinchu", "新竹"),
+                county = Name("Hsinchu", "新竹")
+            ),
         )
     }
 }
