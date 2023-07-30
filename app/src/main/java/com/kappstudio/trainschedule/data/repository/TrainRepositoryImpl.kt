@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import javax.inject.Inject
 import com.kappstudio.trainschedule.data.Result
+import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
@@ -28,6 +29,7 @@ import javax.inject.Singleton
 class TrainRepositoryImpl @Inject constructor(
     private val api: TrainApi,
     private val dataStore: DataStore<Preferences>,
+    private val trainDb:TrainDatabase
 ) : TrainRepository {
 
     private val localToken = dataStore.data

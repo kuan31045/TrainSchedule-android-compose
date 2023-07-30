@@ -3,7 +3,9 @@ package com.kappstudio.trainschedule.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.room.Room
 import com.kappstudio.trainschedule.data.local.DataStoreManager
+import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.TrainApi
 import com.kappstudio.trainschedule.data.repository.TrainRepositoryImpl
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
@@ -27,6 +29,16 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideRepoDatabase(@ApplicationContext context: Context): TrainDatabase {
+        return Room.databaseBuilder(
+            context,
+            TrainDatabase::class.java,
+            "train.db"
+        ).build()
+    }
+
+    @Provides
+    @Singleton
     fun provideTrainApi(): TrainApi {
         return Retrofit.Builder()
             .baseUrl(TrainApi.BASE_URL)
@@ -37,8 +49,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTrainRepository(api: TrainApi, dataStore: DataStore<Preferences>): TrainRepository {
-        return TrainRepositoryImpl(api = api, dataStore = dataStore)
+    fun provideTrainRepository(
+        api: TrainApi,
+        dataStore: DataStore<Preferences>,
+        trainDb: TrainDatabase
+    ): TrainRepository {
+        return TrainRepositoryImpl(api = api, dataStore = dataStore, trainDb = trainDb)
     }
 }
 
