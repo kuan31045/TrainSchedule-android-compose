@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Train Schedule</string>
-    <string name="back_button">back</string>
+    <string name="back_desc">back</string>
+    <string name="from_text">from</string>
+    <string name="to_text">to</string>
+    <string name="swap_desc">swap station</string>
+    <string name="ok_text">OK</string>
+    <string name="checked_desc">Checked</string>
 </resources>

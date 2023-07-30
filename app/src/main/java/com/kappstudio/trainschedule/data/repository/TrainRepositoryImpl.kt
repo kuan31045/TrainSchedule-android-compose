@@ -1,8 +1,10 @@
 package com.kappstudio.trainschedule.data.repository
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.kappstudio.trainschedule.data.remote.TrainApi
@@ -14,11 +16,54 @@ import timber.log.Timber
 import javax.inject.Inject
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
+import com.kappstudio.trainschedule.domain.model.Name
+import com.kappstudio.trainschedule.domain.model.Path
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import java.io.IOException
+import javax.inject.Singleton
 
 class TrainRepositoryImpl @Inject constructor(
     private val api: TrainApi,
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
 ) : TrainRepository {
+
+    private val localToken = dataStore.data
+        .catch {
+            if (it is IOException) {
+                Timber.e("Error reading preferences.", it)
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
+        }
+        .map { preferences ->
+            TokenDto(
+                accessToken = preferences[ACCESS_TOKEN] ?: "",
+                expiresIn = preferences[TOKEN_EXPIRE_TIME] ?: 0
+            )
+        }
+
+    override suspend fun getAccessToken(): String {
+        if (localToken.first().expiresIn < System.currentTimeMillis()) {
+            try {
+                //Get token from Api
+                val newToken = api.getAccessToken()
+                Timber.d("getToken success!")
+                //Save token into DataStore
+                dataStore.edit { preferences ->
+                    preferences[ACCESS_TOKEN] = BEARER + newToken.accessToken
+                    preferences[TOKEN_EXPIRE_TIME] =
+                        newToken.expiresIn * 1000 / 2 + System.currentTimeMillis()
+                }
+            } catch (e: Exception) {
+                Timber.w("getToken exception = ${e.message}")
+            }
+        }
+        return localToken.first().accessToken
+    }
 
     override suspend fun getStations(): Result<List<Station>> {
         return try {
@@ -32,45 +77,36 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAccessToken(): String {
-
-        suspend fun getLocalToken(): TokenDto {
-            val preferences = dataStore.data.first()
-            return TokenDto(
-                accessToken = preferences[ACCESS_TOKEN] ?: "",
-                expiresIn = preferences[TOKEN_EXPIRE_TIME] ?: 0
-            )
+    override val currentPath: Flow<Path> = dataStore.data
+        .catch {
+            if (it is IOException) {
+                Timber.e("Error reading preferences.", it)
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
         }
-
-        suspend fun getNewToken() {
-            try {
-                //Get token from Api
-                val newToken = api.getAccessToken()
-                Timber.d("getToken success!")
-
-                //Save token into DataStore
-                dataStore.edit { preferences ->
-                    preferences[ACCESS_TOKEN] = BEARER + newToken.accessToken
-                    preferences[TOKEN_EXPIRE_TIME] =
-                        newToken.expiresIn * 1000 / 2 + System.currentTimeMillis()
-                }
-            } catch (e: Exception) {
-                Timber.w("getToken exception = ${e.message}")
+        .map { preferences ->
+            val path = preferences[CURRENT_PATH]
+            if (path != null) {
+                defaultPath
+            } else {
+                defaultPath
             }
         }
 
-        if (getLocalToken().expiresIn < System.currentTimeMillis()) {
-            getNewToken()
-        }
-        return getLocalToken().accessToken
+    override fun saveLastPath(path: Path) {
+
     }
-
-
-
 
     private companion object {
         const val BEARER = "Bearer "
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
         val TOKEN_EXPIRE_TIME = longPreferencesKey("token_expire_time")
+        val CURRENT_PATH = stringPreferencesKey("current_path")
+        val defaultPath = Path(
+            departureStation = Station("", Name(), Name()),
+            arrivalStation = Station("", Name(), Name())
+        )
     }
 }
