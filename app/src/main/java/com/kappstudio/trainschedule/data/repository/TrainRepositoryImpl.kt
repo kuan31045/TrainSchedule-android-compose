@@ -91,16 +91,12 @@ class TrainRepositoryImpl @Inject constructor(
         }
         .map { preferences ->
             val json = preferences[CURRENT_PATH]
-
             val path = Gson().fromJson(json, Path::class.java)
-            Timber.d("getPath()=$path")
-
             path ?: defaultPath
         }
 
     override suspend fun savePath(path: Path) {
         val json = Gson().toJson(path)
-        Timber.d("savePath()=$json")
         dataStore.edit { preferences ->
             preferences[CURRENT_PATH] = json
         }

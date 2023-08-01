@@ -1,10 +1,12 @@
 package com.kappstudio.trainschedule.ui.home
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
 import com.kappstudio.trainschedule.util.LoadApiStatus
@@ -19,17 +21,22 @@ import com.kappstudio.trainschedule.domain.model.Path
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import java.time.LocalDate
+import java.time.LocalTime
 import javax.inject.Inject
 
 data class HomeUiState(
     val stationsOfCounty: Map<Name, List<Station>> = emptyMap(),
-    val selectedStationType: SelectedStationType = SelectedStationType.DEPARTURE,
-    val selectedCounty: Name = Name()
+    val selectedStationType: SelectedType = SelectedType.DEPARTURE,
+    val selectedCounty: Name = Name(),
+    val date: LocalDate = LocalDate.now(),
+    val time: LocalTime = LocalTime.now(),
+    val timeType: SelectedType = SelectedType.DEPARTURE
 )
 
-enum class SelectedStationType {
-    DEPARTURE,
-    ARRIVAL
+enum class SelectedType(@StringRes val text: Int) {
+    DEPARTURE(R.string.departure),
+    ARRIVAL(R.string.arrival)
 }
 
 @HiltViewModel
@@ -41,10 +48,10 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     val pathState: StateFlow<Path> = trainRepository.currentPath.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = Path(),
-        )
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = Path(),
+    )
 
     var loadingState: LoadApiStatus by mutableStateOf(LoadApiStatus.Loading)
         private set
@@ -67,14 +74,14 @@ class HomeViewModel @Inject constructor(
             uiState.value.stationsOfCounty[county]?.first { station -> station.name == stationName }
 
         val path = when (uiState.value.selectedStationType) {
-            SelectedStationType.DEPARTURE -> {
+            SelectedType.DEPARTURE -> {
                 Path(
                     departureStation = station ?: pathState.value.departureStation,
                     arrivalStation = pathState.value.arrivalStation
                 )
             }
 
-            SelectedStationType.ARRIVAL -> {
+            SelectedType.ARRIVAL -> {
                 Path(
                     departureStation = pathState.value.departureStation,
                     arrivalStation = station ?: pathState.value.arrivalStation
@@ -91,10 +98,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun changeSelectedStation(selectedStationType: SelectedStationType) {
+    fun changeSelectedStation(selectedType: SelectedType) {
         _uiState.update { currentState ->
             currentState.copy(
-                selectedStationType = selectedStationType
+                selectedStationType = selectedType
             )
         }
 
@@ -112,8 +119,8 @@ class HomeViewModel @Inject constructor(
 
     private fun getCurrentPathCounty(): Name {
         return when (uiState.value.selectedStationType) {
-            SelectedStationType.DEPARTURE -> pathState.value.departureStation.county
-            SelectedStationType.ARRIVAL -> pathState.value.arrivalStation.county
+            SelectedType.DEPARTURE -> pathState.value.departureStation.county
+            SelectedType.ARRIVAL -> pathState.value.arrivalStation.county
         }
     }
 
@@ -142,6 +149,16 @@ class HomeViewModel @Inject constructor(
                     LoadApiStatus.Loading
                 }
             }
+        }
+    }
+
+    fun setDateTime(date: LocalDate, time: LocalTime, ordinal: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                date = date,
+                time = time,
+                timeType =  enumValues<SelectedType>()[ordinal]
+            )
         }
     }
 }

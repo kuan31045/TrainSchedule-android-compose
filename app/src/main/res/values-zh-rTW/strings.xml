@@ -2,9 +2,14 @@
 <resources>
     <string name="app_name">台鐵時刻表</string>
     <string name="back_desc">返回</string>
-    <string name="from_text">出發站</string>
-    <string name="to_text">抵達站</string>
+    <string name="from">出發站</string>
+    <string name="to">抵達站</string>
     <string name="swap_desc">交換車站</string>
-    <string name="ok_text">完成</string>
+    <string name="ok">確定</string>
     <string name="checked_desc">選取</string>
+    <string name="departure">出發</string>
+    <string name="arrival">抵達</string>
+    <string name="date_desc">日期</string>
+    <string name="cancel">取消</string>
+    <string name="current_time">現在時間</string>
 </resources>

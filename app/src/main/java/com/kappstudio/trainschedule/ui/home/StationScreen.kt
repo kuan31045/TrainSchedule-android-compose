@@ -11,15 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -34,12 +31,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.ui.components.SwapButton
-import com.kappstudio.trainschedule.util.bigStation
+import com.kappstudio.trainschedule.util.bigStations
 import com.kappstudio.trainschedule.util.localize
 
 @Composable
@@ -56,7 +52,7 @@ fun StationScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         StationTopLayout(
-            selectedStationType = uiState.value.selectedStationType,
+            selectedType = uiState.value.selectedStationType,
             departureStation = pathState.value.departureStation.name.localize(),
             arrivalStation = pathState.value.arrivalStation.name.localize(),
             onStationButtonClicked = { viewModel.changeSelectedStation(it) },
@@ -78,26 +74,24 @@ fun StationScreen(
                 items =
                 uiState.value.stationsOfCounty[uiState.value.selectedCounty]?.map { it.name }
                     ?: emptyList(),
-                bigStation = bigStation,
+                bigStation = bigStations,
                 selected = when (uiState.value.selectedStationType) {
-                    SelectedStationType.DEPARTURE -> pathState.value.departureStation.name
-                    SelectedStationType.ARRIVAL -> pathState.value.arrivalStation.name
+                    SelectedType.DEPARTURE -> pathState.value.departureStation.name
+                    SelectedType.ARRIVAL -> pathState.value.arrivalStation.name
                 },
                 onItemClicked = { viewModel.selectStation(it) },
                 modifier = Modifier.weight(1f)
             )
         }
-
-
     }
 }
 
 @Composable
 fun StationTopLayout(
-    selectedStationType: SelectedStationType,
+    selectedType: SelectedType,
     departureStation: String,
     arrivalStation: String,
-    onStationButtonClicked: (SelectedStationType) -> Unit,
+    onStationButtonClicked: (SelectedType) -> Unit,
     onSwapButtonClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -111,17 +105,19 @@ fun StationTopLayout(
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
             StationButton(
-                isSelected = selectedStationType == SelectedStationType.DEPARTURE,
-                desc = stringResource(R.string.from_text),
+                modifier = Modifier.weight(1f),
+                isSelected = selectedType == SelectedType.DEPARTURE,
+                desc = stringResource(R.string.from),
                 station = departureStation,
-                onClicked = { onStationButtonClicked(SelectedStationType.DEPARTURE) }
+                onClicked = { onStationButtonClicked(SelectedType.DEPARTURE) }
             )
             SwapButton(onClicked = onSwapButtonClicked)
             StationButton(
-                isSelected = selectedStationType == SelectedStationType.ARRIVAL,
-                desc = stringResource(R.string.to_text),
+                modifier = Modifier.weight(1f),
+                isSelected = selectedType == SelectedType.ARRIVAL,
+                desc = stringResource(R.string.to),
                 station = arrivalStation,
-                onClicked = { onStationButtonClicked(SelectedStationType.ARRIVAL) }
+                onClicked = { onStationButtonClicked(SelectedType.ARRIVAL) }
             )
         }
     }
@@ -142,7 +138,7 @@ fun StationButton(
     ) {
         Text(text = desc, color = MaterialTheme.colorScheme.secondary)
         ElevatedButton(
-            modifier = Modifier.sizeIn(minWidth = 120.dp),
+            modifier = Modifier.sizeIn(minWidth = dimensionResource(R.dimen.station_button_min_width)),
             shape = RoundedCornerShape(dimensionResource(R.dimen.rounded_corner_size)),
             onClick = onClicked,
             border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
@@ -151,12 +147,12 @@ fun StationButton(
                 modifier = Modifier.padding(vertical = 4.dp),
                 text = station,
                 style = MaterialTheme.typography.titleLarge.localize(),
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
+
     }
 }
-
 
 @Composable
 fun SingleSelectedLazyColumn(
@@ -209,7 +205,7 @@ fun SingleSelectedLazyColumn(
 @Composable
 fun PreviewStationTopLayout() {
     StationTopLayout(
-        selectedStationType = SelectedStationType.ARRIVAL,
+        selectedType = SelectedType.ARRIVAL,
         departureStation = "New Taipei",
         arrivalStation = "Kaohsiung",
         onStationButtonClicked = {},
@@ -220,5 +216,13 @@ fun PreviewStationTopLayout() {
 @Preview
 @Composable
 fun PreviewSingleSelectColumn() {
-
+    SingleSelectedLazyColumn(
+        items = listOf(
+            Name("Taipei", "臺北"),
+            Name("Hsinchu", "新竹"),
+            Name("Kaohsiung", "高雄"),
+        ),
+        selected = Name("Hsinchu", "新竹"),
+        onItemClicked = {}
+    )
 }

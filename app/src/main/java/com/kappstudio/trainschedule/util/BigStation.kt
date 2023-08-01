@@ -1,6 +1,6 @@
 package com.kappstudio.trainschedule.util
 
-val bigStation = listOf(
+val bigStations = listOf(
     "瑞芳",
     "基隆",
     "七堵",
@@ -35,4 +35,4 @@ val bigStation = listOf(
     "花蓮",
     "羅東",
     "宜蘭",
-    )
+)

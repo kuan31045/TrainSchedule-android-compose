@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="rounded_corner_size">8dp</dimen>
-    <dimen name="button_elevation">8dp</dimen>
+    <dimen name="button_elevation">4dp</dimen>
     <dimen name="surface_shadow_elevation">8dp</dimen>
     <dimen name="swap_button_size">40dp</dimen>
     <dimen name="selected_icon_size">20dp</dimen>
     <dimen name="spacer_height">0.5dp</dimen>
+    <dimen name="segmented_control_size">38dp</dimen>
+    <dimen name="station_button_min_width">130dp</dimen>
 </resources>

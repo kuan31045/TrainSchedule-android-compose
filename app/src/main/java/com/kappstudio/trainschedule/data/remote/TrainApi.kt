@@ -15,7 +15,6 @@ interface TrainApi {
     @GET(API_RAIL + "Station")
     suspend fun getStations(@Header("authorization") token: String): StationResponse
 
-
     @Headers("Content-Type: application/x-www-form-urlencoded")
     @FormUrlEncoded
     @POST("auth/realms/TDXConnect/protocol/openid-connect/token")
