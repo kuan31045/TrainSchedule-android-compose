@@ -84,7 +84,7 @@ private val DarkColors = darkColorScheme(
 fun TrainScheduleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+ but turned off for training purposes
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

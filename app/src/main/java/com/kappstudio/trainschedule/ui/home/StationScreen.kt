@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -138,7 +137,7 @@ fun StationButton(
     ) {
         Text(text = desc, color = MaterialTheme.colorScheme.secondary)
         ElevatedButton(
-            modifier = Modifier.sizeIn(minWidth = dimensionResource(R.dimen.station_button_min_width)),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             shape = RoundedCornerShape(dimensionResource(R.dimen.rounded_corner_size)),
             onClick = onClicked,
             border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null

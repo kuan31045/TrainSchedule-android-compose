@@ -1,7 +1,6 @@
 package com.kappstudio.trainschedule
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -27,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -127,11 +127,13 @@ fun TrainApp(
                 composable(route = Screen.Home.route) { backStackEntry ->
                     HomeScreen(
                         viewModel = backStackEntry.sharedViewModel(navController = navController),
-                        navToSelectStationClicked = { navController.navigate(Screen.Station.route) }
+                        navToSelectStationClicked = { navController.navigate(Screen.Station.route) },
+                        onSearchButtonClick = {p1,p2,p3,p4->}
                     )
                 }
 
                 composable(route = Screen.Station.route) { backStackEntry ->
+                    NavType.StringType
                     StationScreen(
                         viewModel = backStackEntry.sharedViewModel(navController = navController)
                     )

@@ -31,7 +31,8 @@ data class HomeUiState(
     val selectedCounty: Name = Name(),
     val date: LocalDate = LocalDate.now(),
     val time: LocalTime = LocalTime.now(),
-    val timeType: SelectedType = SelectedType.DEPARTURE
+    val timeType: SelectedType = SelectedType.DEPARTURE,
+    val canTransfer: Boolean = true,
 )
 
 enum class SelectedType(@StringRes val text: Int) {
@@ -124,6 +125,24 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun setDateTime(date: LocalDate, time: LocalTime, ordinal: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                date = date,
+                time = time,
+                timeType =  enumValues<SelectedType>()[ordinal]
+            )
+        }
+    }
+
+    fun setTransfer(){
+        _uiState.update { currentState ->
+            currentState.copy(
+                canTransfer = uiState.value.canTransfer.not()
+            )
+        }
+    }
+
     private fun getStations() {
         viewModelScope.launch {
             val result = trainRepository.fetchStations()
@@ -149,16 +168,6 @@ class HomeViewModel @Inject constructor(
                     LoadApiStatus.Loading
                 }
             }
-        }
-    }
-
-    fun setDateTime(date: LocalDate, time: LocalTime, ordinal: Int) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                date = date,
-                time = time,
-                timeType =  enumValues<SelectedType>()[ordinal]
-            )
         }
     }
 }

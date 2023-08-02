@@ -11,5 +11,7 @@
     <string name="date_desc">date</string>
     <string name="cancel">Cancel</string>
     <string name="current_time">Current Time</string>
+    <string name="search">Search</string>
+    <string name="accept_transfer">Accept Transfer</string>
 
 </resources>
