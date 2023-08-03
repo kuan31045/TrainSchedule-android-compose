@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,8 +30,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.components.GradientButton
+import com.kappstudio.trainschedule.ui.components.SegmentedControl
 import com.kappstudio.trainschedule.ui.components.SwapButton
 import com.kappstudio.trainschedule.util.dateFormatter
 import com.kappstudio.trainschedule.util.localize
@@ -41,7 +45,7 @@ import java.time.LocalTime
 fun HomeScreen(
     viewModel: HomeViewModel,
     navToSelectStationClicked: () -> Unit,
-    onSearchButtonClick: (
+    onSearchButtonClicked: (
         date: String, time: String, timeType: Int,
         canTransfer: Boolean
     ) -> Unit,
@@ -53,13 +57,14 @@ fun HomeScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(8.dp),
+            .padding(top = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
 
-        //-----Station Button-----------------------------------------------------------------------
         HomeStationLayout(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
             departureStation = pathState.value.departureStation.name.localize(),
             arrivalStation = pathState.value.arrivalStation.name.localize(),
             onStationButtonClicked = {
@@ -69,11 +74,10 @@ fun HomeScreen(
             onSwapButtonClicked = { viewModel.swapPath() }
         )
 
-        //-----Date Time Picker---------------------------------------------------------------------
         DateTimeLayout(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(vertical = 16.dp, horizontal = 24.dp),
             date = uiState.value.date,
             time = uiState.value.time,
             timeType = uiState.value.timeType,
@@ -82,41 +86,29 @@ fun HomeScreen(
             }
         )
 
-        //-----Transfer Switch----------------------------------------------------------------------
-        Row(
+        TrainTypeSelection(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            selectedIndex = uiState.value.trainMainType.ordinal,
+            onTypeSelected = { viewModel.selectTrainType(it) }
+        )
+
+        TransSwitch(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .clickable { viewModel.setTransfer() },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            checked = uiState.value.canTransfer,
+            onCheckedChange = { viewModel.setTransfer() }
+        )
 
-            ) {
-            Text(
-                text = stringResource(id = R.string.accept_transfer),
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Switch(
-                checked = uiState.value.canTransfer,
-                onCheckedChange = { viewModel.setTransfer() }
-            )
-        }
-
-        //-----Search Button------------------------------------------------------------------------
-        GradientButton(
+        Spacer(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            text = stringResource(id = R.string.search),
-            textColor = Color.White,
-            gradient = Brush.horizontalGradient(
-                colors = listOf(
-                    MaterialTheme.colorScheme.surfaceTint,
-                    MaterialTheme.colorScheme.primary
-                )
-            ),
-            onClick = {
-                onSearchButtonClick(
+                .fillMaxSize()
+                .weight(1f)
+        )
+
+        SearchButton(
+            onClicked = {
+                onSearchButtonClicked(
                     uiState.value.date.toString(),
                     uiState.value.time.toString(),
                     uiState.value.timeType.ordinal,
@@ -172,6 +164,7 @@ fun ToStationScreenButton(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+
         Text(text = desc, color = MaterialTheme.colorScheme.secondary)
         ElevatedButton(
             modifier = Modifier
@@ -205,9 +198,9 @@ fun DateTimeLayout(
         ElevatedButton(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(dimensionResource(R.dimen.rounded_corner_size)),
-            onClick = { shouldShowDialog = true }
+            onClick = { shouldShowDialog = true },
+            elevation = ButtonDefaults.buttonElevation(dimensionResource(R.dimen.button_elevation))
         ) {
-
             Text(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
@@ -239,13 +232,102 @@ fun DateTimeLayout(
     }
 }
 
+@Composable
+fun TrainTypeSelection(
+    modifier: Modifier = Modifier,
+    selectedIndex: Int,
+    onTypeSelected: (Int) -> Unit
+) {
+    Column(modifier = modifier) {
+        Text(
+            modifier = Modifier.padding(bottom = 4.dp),
+            text = stringResource(id = R.string.train_type),
+            color = MaterialTheme.colorScheme.secondary,
+            style = MaterialTheme.typography.labelLarge
+        )
+        SegmentedControl(
+            items = TrainMainType.values().map { stringResource(id = it.text) },
+            selectedIndex = selectedIndex,
+            onItemSelected = onTypeSelected
+        )
+    }
+}
+
+@Composable
+fun TransSwitch(
+    modifier: Modifier = Modifier,
+    checked: Boolean,
+    onCheckedChange: () -> Unit,
+) {
+    Row(
+        modifier = modifier.clickable { onCheckedChange() },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = stringResource(id = R.string.accept_transfer),
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = { onCheckedChange() }
+        )
+    }
+}
+
+@Composable
+fun SearchButton(
+    modifier: Modifier = Modifier,
+    onClicked: () -> Unit
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shadowElevation = dimensionResource(R.dimen.surface_shadow_elevation)
+    ) {
+        GradientButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, start = 8.dp, end = 8.dp),
+            text = stringResource(id = R.string.search),
+            textColor = Color.White,
+            gradient = Brush.horizontalGradient(
+                colors = listOf(
+                    MaterialTheme.colorScheme.surfaceTint,
+                    MaterialTheme.colorScheme.primary
+                )
+            ),
+            onClicked = onClicked
+        )
+    }
+}
+
 @Preview
 @Composable
-fun PreviewHomeStationLayout() {
+fun HomeStationLayoutPreview() {
     HomeStationLayout(
-        departureStation = "New Taipei",
-        arrivalStation = "Kaohsiung",
+        departureStation = "Taipei",
+        arrivalStation = "Hsinchu",
         onSwapButtonClicked = {},
         onStationButtonClicked = {}
+    )
+}
+
+@Preview
+@Composable
+fun TrainTypeSelectionPreview() {
+    TrainTypeSelection(
+        selectedIndex = 0,
+        onTypeSelected = {}
+    )
+}
+
+@Preview
+@Composable
+fun DateTimeLayoutPreview() {
+    DateTimeLayout(
+        date = LocalDate.MAX,
+        time = LocalTime.MAX,
+        timeType = SelectedType.DEPARTURE,
+        confirmTime = { _, _, _ -> }
     )
 }

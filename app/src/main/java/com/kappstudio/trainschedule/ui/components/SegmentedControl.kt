@@ -33,7 +33,7 @@ fun SegmentedControl(
     items: List<String>,
     selectedIndex: Int,
     cornerRadius: Int = 24,
-    onItemSelection: (Int) -> Unit
+    onItemSelected: (Int) -> Unit
 ) {
     Card(
         modifier = modifier
@@ -52,7 +52,7 @@ fun SegmentedControl(
                     modifier = Modifier
                         .weight(1f)
                         .padding(2.dp),
-                    onClick = { onItemSelection(index) },
+                    onClick = { onItemSelected(index) },
                     colors = CardDefaults.cardColors(
                         containerColor = if (selectedIndex == index) {
                             MaterialTheme.colorScheme.onPrimary
@@ -65,12 +65,28 @@ fun SegmentedControl(
                             MaterialTheme.colorScheme.onSecondary
                         }
                     ),
-                    shape = RoundedCornerShape(
-                        topStartPercent = cornerRadius,
-                        topEndPercent = cornerRadius,
-                        bottomStartPercent = cornerRadius,
-                        bottomEndPercent = cornerRadius
-                    ),
+                    shape = when (index) {
+                        0 -> RoundedCornerShape(
+                            topStartPercent = cornerRadius,
+                            topEndPercent = cornerRadius,
+                            bottomStartPercent = cornerRadius,
+                            bottomEndPercent = cornerRadius
+                        )
+
+                        items.size - 1 -> RoundedCornerShape(
+                            topStartPercent = cornerRadius,
+                            topEndPercent = cornerRadius,
+                            bottomStartPercent = cornerRadius,
+                            bottomEndPercent = cornerRadius
+                        )
+
+                        else -> RoundedCornerShape(
+                            topStartPercent = 0,
+                            topEndPercent = 0,
+                            bottomStartPercent = 0,
+                            bottomEndPercent = 0
+                        )
+                    },
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -103,5 +119,5 @@ fun SegmentedControl(
 @Preview
 @Composable
 fun previewSegmentedControl() {
-    SegmentedControl(items = listOf("Item1", "Item2"), selectedIndex = 0, onItemSelection = {})
+    SegmentedControl(items = listOf("Item1", "Item2"), selectedIndex = 0, onItemSelected = {})
 }

@@ -14,4 +14,8 @@
     <string name="current_time">現在時間</string>
     <string name="search">搜尋</string>
     <string name="accept_transfer">接受轉乘</string>
+    <string name="train_type">類型</string>
+    <string name="all">全部</string>
+    <string name="express">對號</string>
+    <string name="local">非對號</string>
 </resources>

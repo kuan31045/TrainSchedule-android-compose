@@ -13,5 +13,9 @@
     <string name="current_time">Current Time</string>
     <string name="search">Search</string>
     <string name="accept_transfer">Accept Transfer</string>
+    <string name="train_type">Type</string>
+    <string name="all">All</string>
+    <string name="express">Express</string>
+    <string name="local">Local</string>
 
 </resources>

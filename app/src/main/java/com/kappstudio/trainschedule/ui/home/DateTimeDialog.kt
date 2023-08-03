@@ -18,7 +18,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
@@ -64,11 +63,8 @@ fun DateTimeDialog(
         title = {
             SegmentedControl(
                 modifier = Modifier.padding(horizontal = 8.dp),
-                items = listOf(
-                    stringResource(id = R.string.departure),
-                    stringResource(id = R.string.arrival)
-                ),
-                onItemSelection = { selectedIndex = it },
+                items = SelectedType.values().map { stringResource(id = it.text) },
+                onItemSelected = { selectedIndex = it },
                 selectedIndex = selectedIndex
             )
         },

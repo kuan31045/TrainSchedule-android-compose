@@ -27,12 +27,12 @@ fun GradientButton(
     textColor: Color,
     gradient: Brush,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit,
+    onClicked: () -> Unit,
 ) {
     Button(
         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
         contentPadding = PaddingValues(16.dp),
-        onClick = { onClick() })
+        onClick = { onClicked() })
     {
         Box(
             modifier = modifier

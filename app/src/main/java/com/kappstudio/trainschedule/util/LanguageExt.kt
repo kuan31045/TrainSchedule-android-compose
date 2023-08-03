@@ -5,7 +5,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.intl.Locale
 import com.kappstudio.trainschedule.domain.model.Name
 import java.util.Locale.CHINESE
-import java.util.Locale.ENGLISH
 
 fun Name.localize(): String {
     return when (Locale.current.language) {

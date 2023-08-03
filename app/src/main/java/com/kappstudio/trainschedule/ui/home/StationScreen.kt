@@ -50,6 +50,7 @@ fun StationScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+
         StationTopLayout(
             selectedType = uiState.value.selectedStationType,
             departureStation = pathState.value.departureStation.name.localize(),
@@ -63,13 +64,13 @@ fun StationScreen(
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            SingleSelectedLazyColumn(
+            SelectStationColumn(
                 items = uiState.value.stationsOfCounty.keys.toList(),
                 selected = uiState.value.selectedCounty,
                 onItemClicked = { viewModel.selectCounty(it) },
                 modifier = Modifier.weight(1f)
             )
-            SingleSelectedLazyColumn(
+            SelectStationColumn(
                 items =
                 uiState.value.stationsOfCounty[uiState.value.selectedCounty]?.map { it.name }
                     ?: emptyList(),
@@ -140,7 +141,7 @@ fun StationButton(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             shape = RoundedCornerShape(dimensionResource(R.dimen.rounded_corner_size)),
             onClick = onClicked,
-            border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+            border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
         ) {
             Text(
                 modifier = Modifier.padding(vertical = 4.dp),
@@ -154,7 +155,7 @@ fun StationButton(
 }
 
 @Composable
-fun SingleSelectedLazyColumn(
+fun SelectStationColumn(
     items: List<Name>,
     bigStation: List<String> = emptyList(),
     selected: Name,
@@ -202,7 +203,7 @@ fun SingleSelectedLazyColumn(
 
 @Preview
 @Composable
-fun PreviewStationTopLayout() {
+fun StationTopLayoutPreview() {
     StationTopLayout(
         selectedType = SelectedType.ARRIVAL,
         departureStation = "New Taipei",
@@ -214,8 +215,8 @@ fun PreviewStationTopLayout() {
 
 @Preview
 @Composable
-fun PreviewSingleSelectColumn() {
-    SingleSelectedLazyColumn(
+fun SingleSelectColumnPreview() {
+    SelectStationColumn(
         items = listOf(
             Name("Taipei", "臺北"),
             Name("Hsinchu", "新竹"),

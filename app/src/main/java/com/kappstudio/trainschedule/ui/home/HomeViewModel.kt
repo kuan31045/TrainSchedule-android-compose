@@ -32,8 +32,15 @@ data class HomeUiState(
     val date: LocalDate = LocalDate.now(),
     val time: LocalTime = LocalTime.now(),
     val timeType: SelectedType = SelectedType.DEPARTURE,
-    val canTransfer: Boolean = true,
+    val trainMainType: TrainMainType = TrainMainType.ALL,
+    val canTransfer: Boolean = false,
 )
+
+enum class TrainMainType(@StringRes val text: Int) {
+    ALL(R.string.all),
+    EXPRESS(R.string.express),
+    LOCAL(R.string.local)
+}
 
 enum class SelectedType(@StringRes val text: Int) {
     DEPARTURE(R.string.departure),
@@ -139,6 +146,14 @@ class HomeViewModel @Inject constructor(
         _uiState.update { currentState ->
             currentState.copy(
                 canTransfer = uiState.value.canTransfer.not()
+            )
+        }
+    }
+
+    fun selectTrainType(ordinal:Int) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                trainMainType = enumValues<TrainMainType>()[ordinal]
             )
         }
     }
