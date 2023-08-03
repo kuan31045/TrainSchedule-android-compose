@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Train Schedule</string>
+    <string name="station_title">Select Station</string>
+
     <string name="back_desc">back</string>
     <string name="from">From</string>
     <string name="to">To</string>

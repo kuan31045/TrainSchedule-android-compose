@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -30,8 +32,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.kappstudio.trainschedule.R
+import com.kappstudio.trainschedule.ui.TrainTopAppBar
 import com.kappstudio.trainschedule.ui.components.GradientButton
 import com.kappstudio.trainschedule.ui.components.SegmentedControl
 import com.kappstudio.trainschedule.ui.components.SwapButton
@@ -41,81 +43,92 @@ import com.kappstudio.trainschedule.util.timeFormatter
 import java.time.LocalDate
 import java.time.LocalTime
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
     navToSelectStationClicked: () -> Unit,
     onSearchButtonClicked: (
         date: String, time: String, timeType: Int,
-        canTransfer: Boolean
+        trainType: Int, canTransfer: Boolean
     ) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val pathState = viewModel.pathState.collectAsState()
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
+    Scaffold(
+        topBar = {
+            TrainTopAppBar(
+                title = stringResource(R.string.app_name),
+                canNavigateBack = false,
+                navigateUp = {},
+            )
+        },
+        modifier = modifier.fillMaxSize(),
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier.padding(innerPadding),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
 
-        HomeStationLayout(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
-            departureStation = pathState.value.departureStation.name.localize(),
-            arrivalStation = pathState.value.arrivalStation.name.localize(),
-            onStationButtonClicked = {
-                viewModel.changeSelectedStation(it)
-                navToSelectStationClicked()
-            },
-            onSwapButtonClicked = { viewModel.swapPath() }
-        )
+            HomeStationLayout(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                departureStation = pathState.value.departureStation.name.localize(),
+                arrivalStation = pathState.value.arrivalStation.name.localize(),
+                onStationButtonClicked = {
+                    viewModel.changeSelectedStation(it)
+                    navToSelectStationClicked()
+                },
+                onSwapButtonClicked = { viewModel.swapPath() }
+            )
 
-        DateTimeLayout(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 24.dp),
-            date = uiState.value.date,
-            time = uiState.value.time,
-            timeType = uiState.value.timeType,
-            confirmTime = { date, time, ordinal ->
-                viewModel.setDateTime(date, time, ordinal)
-            }
-        )
+            DateTimeLayout(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp, horizontal = 24.dp),
+                date = uiState.value.date,
+                time = uiState.value.time,
+                timeType = uiState.value.timeType,
+                confirmTime = { date, time, ordinal ->
+                    viewModel.setDateTime(date, time, ordinal)
+                }
+            )
 
-        TrainTypeSelection(
-            modifier = Modifier.padding(horizontal = 24.dp),
-            selectedIndex = uiState.value.trainMainType.ordinal,
-            onTypeSelected = { viewModel.selectTrainType(it) }
-        )
+            TrainTypeSelection(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                selectedIndex = uiState.value.trainMainType.ordinal,
+                onTypeSelected = { viewModel.selectTrainType(it) }
+            )
 
-        TransSwitch(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            checked = uiState.value.canTransfer,
-            onCheckedChange = { viewModel.setTransfer() }
-        )
+            TransSwitch(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                checked = uiState.value.canTransfer,
+                onCheckedChange = { viewModel.setTransfer() }
+            )
 
-        Spacer(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-        )
+            Spacer(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            )
 
-        SearchButton(
-            onClicked = {
-                onSearchButtonClicked(
-                    uiState.value.date.toString(),
-                    uiState.value.time.toString(),
-                    uiState.value.timeType.ordinal,
-                    uiState.value.canTransfer
-                )
-            }
-        )
+            SearchButton(
+                onClicked = {
+                    onSearchButtonClicked(
+                        uiState.value.date.toString(),
+                        uiState.value.time.toString(),
+                        uiState.value.timeType.ordinal,
+                        uiState.value.trainMainType.ordinal,
+                        uiState.value.canTransfer
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -164,8 +177,11 @@ fun ToStationScreenButton(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-
-        Text(text = desc, color = MaterialTheme.colorScheme.secondary)
+        Text(
+            text = desc,
+            color = MaterialTheme.colorScheme.secondary,
+            style = MaterialTheme.typography.labelLarge
+        )
         ElevatedButton(
             modifier = Modifier
                 .fillMaxWidth()
@@ -177,7 +193,7 @@ fun ToStationScreenButton(
             Text(
                 modifier = Modifier.padding(vertical = 4.dp),
                 text = station,
-                style = MaterialTheme.typography.titleLarge.localize(),
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
@@ -282,7 +298,7 @@ fun SearchButton(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shadowElevation = dimensionResource(R.dimen.surface_shadow_elevation)
+        shadowElevation = dimensionResource(R.dimen.surface_shadow_elevation_16)
     ) {
         GradientButton(
             modifier = Modifier

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">台鐵時刻表</string>
+    <string name="station_title">選擇車站</string>
+
     <string name="back_desc">返回</string>
     <string name="from">出發站</string>
     <string name="to">抵達站</string>

@@ -58,7 +58,7 @@ fun DateTimeDialog(
         containerColor = MaterialTheme.colorScheme.onPrimary,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 24.dp),
         onDismissRequest = closeDialog,
         title = {
             SegmentedControl(
