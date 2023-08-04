@@ -1,8 +1,8 @@
 package com.kappstudio.trainschedule.ui
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -10,7 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -24,12 +24,19 @@ import com.kappstudio.trainschedule.ui.navigation.TrainNavGraph
 
 @Composable
 fun TrainApp(navController: NavHostController = rememberNavController()) {
-    TrainTopAppBar(
-        title = "",
-        canNavigateBack = false,
-        navigateUp = {},
-    )
-    TrainNavGraph( navController = navController)
+    Column {
+        TrainTopAppBar(
+            title = "",
+            canNavigateBack = false,
+            navigateUp = {},
+        )
+        Surface(modifier = Modifier
+            .fillMaxSize()
+            .weight(1f)
+        ) { }
+    }
+
+    TrainNavGraph(navController = navController)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
