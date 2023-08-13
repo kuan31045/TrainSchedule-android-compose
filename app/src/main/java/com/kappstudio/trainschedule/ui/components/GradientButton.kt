@@ -36,7 +36,7 @@ fun GradientButton(
     {
         Box(
             modifier = modifier
-                .clip(RoundedCornerShape(dimensionResource(id = R.dimen.rounded_corner_size)))
+                .clip(RoundedCornerShape(99.dp))
                 .background(gradient),
             contentAlignment = Alignment.Center
         ) {

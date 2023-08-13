@@ -18,14 +18,17 @@ import javax.inject.Inject
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
+import com.kappstudio.trainschedule.data.toTrip
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
+import com.kappstudio.trainschedule.domain.model.Trip
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Singleton
+import com.kappstudio.trainschedule.R
 
 class TrainRepositoryImpl @Inject constructor(
     private val api: TrainApi,
@@ -47,6 +50,21 @@ class TrainRepositoryImpl @Inject constructor(
                 accessToken = preferences[ACCESS_TOKEN] ?: "",
                 expiresIn = preferences[TOKEN_EXPIRE_TIME] ?: 0
             )
+        }
+
+    override val currentPath: Flow<Path> = dataStore.data
+        .catch {
+            if (it is IOException) {
+                Timber.e("Error reading preferences.", it)
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
+        }
+        .map { preferences ->
+            val json = preferences[CURRENT_PATH]
+            val path = Gson().fromJson(json, Path::class.java)
+            path ?: defaultPath
         }
 
     override suspend fun getAccessToken(): String {
@@ -72,7 +90,6 @@ class TrainRepositoryImpl @Inject constructor(
         return try {
             val result = api.getStations(getAccessToken())
             Timber.d("getStations success = $result")
-
             Result.Success(result.stations.map { it.toStation() })
         } catch (e: Exception) {
             Timber.w("getStations exception = ${e.message}")
@@ -80,20 +97,27 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override val currentPath: Flow<Path> = dataStore.data
-        .catch {
-            if (it is IOException) {
-                Timber.e("Error reading preferences.", it)
-                emit(emptyPreferences())
-            } else {
-                throw it
-            }
+    override suspend fun searchTrips(
+        date: String
+    ): Result<List<Trip>> {
+        return try {
+            val result = api.getTrainTimetable(
+                token = getAccessToken(),
+                departureStationId = currentPath.first().departureStation.id,
+                arrivalStationId = currentPath.first().arrivalStation.id,
+                date = date
+            )
+            Timber.d("getTrainTimetable success = $result")
+            Result.Success(result.trainTimetables.map { it.toTrip() })
+        } catch (e: Exception) {
+            Timber.w("getTrainTimetable exception = ${e.message}")
+            Result.Error(e)
         }
-        .map { preferences ->
-            val json = preferences[CURRENT_PATH]
-            val path = Gson().fromJson(json, Path::class.java)
-            path ?: defaultPath
-        }
+    }
+
+    override suspend fun searchTransferTrips(date: String): Result<List<Trip>> {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun savePath(path: Path) {
         val json = Gson().toJson(path)

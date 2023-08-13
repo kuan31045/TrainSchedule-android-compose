@@ -55,7 +55,7 @@ fun DateTimeDialog(
     var heightIs by remember { mutableStateOf(0.dp) }
 
     AlertDialog(
-        containerColor = MaterialTheme.colorScheme.onPrimary,
+        containerColor = MaterialTheme.colorScheme.onSecondary,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),

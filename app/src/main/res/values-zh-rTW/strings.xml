@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">台鐵時刻表</string>
     <string name="station_title">選擇車站</string>
+    <string name="favorite_title">我的最愛</string>
 
     <string name="back_desc">返回</string>
     <string name="from">出發站</string>
@@ -20,4 +21,18 @@
     <string name="all">全部</string>
     <string name="express">對號</string>
     <string name="local">非對號</string>
+    <string name="add_favorite_desc">加到最愛</string>
+    <string name="remove_favorite_desc">移除最愛</string>
+    <string name="filter_desc">篩選</string>
+    <string name="loading_fail">無法取得資料</string>
+    <string name="retry">重試</string>
+    <string name="not_find_route">查無結果</string>
+    <string name="direct">直達</string>
+    <string name="time_desc">時間</string>
+    <string name="time_format">%1\$d 小時 %2\$d 分</string>
+    <string name="hour">小時</string>
+    <string name="transferTimes">次轉乘</string>
+    <string name="minute">分</string>
+    <string name="left">已離站</string>
+
 </resources>

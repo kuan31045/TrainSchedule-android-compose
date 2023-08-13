@@ -12,11 +12,15 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.navArgument
 import com.kappstudio.trainschedule.ui.home.HomeScreen
 import com.kappstudio.trainschedule.ui.home.StationScreen
-import com.kappstudio.trainschedule.ui.navigation.Destinations.HOME_ROUTE
-import com.kappstudio.trainschedule.ui.navigation.Destinations.PARENT_ROUTE
-import com.kappstudio.trainschedule.ui.navigation.Destinations.STATION_ROUTE
+import com.kappstudio.trainschedule.ui.list.TripListScreen
+import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.CAN_TRANSFER_BOOLEAN
+import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.DATE_STRING
+import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TIME_STRING
+import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TIME_TYPE_INT
+import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TRAIN_TYPE_INT
 
 @Composable
 fun TrainNavGraph(
@@ -25,23 +29,45 @@ fun TrainNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = PARENT_ROUTE,
+        startDestination = Screen.PARENT.route,
         modifier = modifier
     ) {
-        navigation(startDestination = HOME_ROUTE, route = PARENT_ROUTE) {
+        navigation(startDestination = Screen.HOME.route, route = Screen.PARENT.route) {
 
-            composable(route = HOME_ROUTE) { backStackEntry ->
+            composable(route = Screen.HOME.route) { backStackEntry ->
                 HomeScreen(
                     viewModel = backStackEntry.sharedViewModel(navController = navController),
-                    navToSelectStationClicked = { navController.navigate(STATION_ROUTE) },
-                    onSearchButtonClicked = { date, time, timeType, trainType, canTransfer -> }
+                    navToSelectStationClicked = { navController.navigate(Screen.STATION.route) },
+                    onSearchButtonClicked = { date, time, timeType, trainType, canTransfer ->
+                        navController.navigate(
+                            Screen.TRIPS.route
+                                    + "/${date}" + "/${time}" + "/${timeType}" + "/${trainType}" + "/${canTransfer}"
+                        )
+
+                    }
                 )
             }
-            composable(route = STATION_ROUTE) { backStackEntry ->
-                NavType.StringType
+
+            composable(
+                route = Screen.STATION.route
+            ) { backStackEntry ->
                 StationScreen(
                     viewModel = backStackEntry.sharedViewModel(navController = navController),
                     navigateBack = { navController.navigateUp() }
+                )
+            }
+
+            composable(route = RoutesWithArgs.TRIPS,
+                arguments = listOf(
+                    navArgument(DATE_STRING) { type = NavType.StringType },
+                    navArgument(TIME_STRING) { type = NavType.StringType },
+                    navArgument(TIME_TYPE_INT) { type = NavType.IntType },
+                    navArgument(TRAIN_TYPE_INT) { type = NavType.IntType },
+                    navArgument(CAN_TRANSFER_BOOLEAN) { type = NavType.BoolType }
+                )) {
+                TripListScreen(
+                    navigateBack = { navController.navigateUp() },
+                    onTripItemClicked = { trains, transfers -> }
                 )
             }
         }

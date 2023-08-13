@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
-import com.kappstudio.trainschedule.util.LoadApiStatus
+import com.kappstudio.trainschedule.util.LoadingStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,7 +61,7 @@ class HomeViewModel @Inject constructor(
         initialValue = Path(),
     )
 
-    var loadingState: LoadApiStatus by mutableStateOf(LoadApiStatus.Loading)
+    var loadingState: LoadingStatus by mutableStateOf(LoadingStatus.Loading)
         private set
 
     init {
@@ -168,19 +168,19 @@ class HomeViewModel @Inject constructor(
                             stationsOfCounty = result.data.groupBy { it.county }.minus(Name())
                         )
                     }
-                    LoadApiStatus.Done
+                    LoadingStatus.Done
                 }
 
                 is Result.Fail -> {
-                    LoadApiStatus.Error(result.error)
+                    LoadingStatus.Error(result.error)
                 }
 
                 is Result.Error -> {
-                    LoadApiStatus.Error(result.exception.toString())
+                    LoadingStatus.Error(result.exception.toString())
                 }
 
                 else -> {
-                    LoadApiStatus.Loading
+                    LoadingStatus.Loading
                 }
             }
         }

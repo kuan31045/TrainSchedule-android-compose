@@ -39,12 +39,12 @@ fun SegmentedControl(
         modifier = modifier
             .fillMaxWidth()
             .height(dimensionResource(R.dimen.segmented_control_size)),
-        shape = RoundedCornerShape(24)
+        shape = RoundedCornerShape(cornerRadius)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.secondary),
+                .background(MaterialTheme.colorScheme.outline),
             horizontalArrangement = Arrangement.Center
         ) {
             items.forEachIndexed { index, item ->
@@ -57,7 +57,7 @@ fun SegmentedControl(
                         containerColor = if (selectedIndex == index) {
                             MaterialTheme.colorScheme.onPrimary
                         } else {
-                            MaterialTheme.colorScheme.secondary
+                            MaterialTheme.colorScheme.outline
                         },
                         contentColor = if (selectedIndex == index) {
                             MaterialTheme.colorScheme.scrim
@@ -102,7 +102,7 @@ fun SegmentedControl(
                                     FontWeight.Normal
                                 },
                                 color = if (selectedIndex == index) {
-                                    MaterialTheme.colorScheme.scrim
+                                    MaterialTheme.colorScheme.onSecondaryContainer
                                 } else {
                                     MaterialTheme.colorScheme.onSecondary
                                 }

@@ -1,13 +1,14 @@
 <resources>
     <string name="app_name">Train Schedule</string>
     <string name="station_title">Select Station</string>
+    <string name="favorite_title">Favorite</string>
 
     <string name="back_desc">back</string>
     <string name="from">From</string>
     <string name="to">To</string>
     <string name="swap_desc">swap station</string>
     <string name="ok">OK</string>
-    <string name="checked_desc">Checked</string>
+    <string name="checked_desc">checked</string>
     <string name="departure">Departure</string>
     <string name="arrival">Arrival</string>
     <string name="date_desc">date</string>
@@ -19,5 +20,18 @@
     <string name="all">All</string>
     <string name="express">Express</string>
     <string name="local">Local</string>
+    <string name="add_favorite_desc">add to favorite</string>
+    <string name="remove_favorite_desc">remove favorite</string>
+    <string name="filter_desc">filter</string>
+    <string name="loading_fail">Get data fail</string>
+    <string name="retry">Retry</string>
+    <string name="not_find_route">No result found</string>
+    <string name="direct">Direct</string>
+    <string name="time_desc">Time</string>
+    <string name="time_format">%1\$d hr %2\$d min</string>
+    <string name="transferTimes">Changes</string>
+    <string name="hour">hr</string>
+    <string name="minute">min</string>
+    <string name="left">Left</string>
 
 </resources>

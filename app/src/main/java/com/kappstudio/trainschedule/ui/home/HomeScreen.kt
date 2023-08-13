@@ -106,7 +106,7 @@ fun HomeScreen(
             TransSwitch(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                    .padding( vertical = 16.dp),
                 checked = uiState.value.canTransfer,
                 onCheckedChange = { viewModel.setTransfer() }
             )
@@ -281,11 +281,13 @@ fun TransSwitch(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
+            modifier =Modifier.padding(start = 24.dp)  ,
             text = stringResource(id = R.string.accept_transfer),
             style = MaterialTheme.typography.bodyLarge
         )
         Switch(
-            checked = checked,
+            modifier =Modifier.padding(end = 24.dp),
+                    checked = checked,
             onCheckedChange = { onCheckedChange() }
         )
     }
