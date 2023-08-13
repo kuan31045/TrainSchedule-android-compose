@@ -68,14 +68,28 @@ class TripListViewModel @Inject constructor(
         searchTrips()
     }
 
-    private fun setTimeLinePosition() {
+    private fun setSpecifiedTimeTrip() {
+        val arrivalTimes = uiState.value.trips.map {
+            if (it.arrivalTime < it.departureTime) {
+                val h = it.arrivalTime.split(":").first().toInt() + 24
+                val min = it.arrivalTime.split(":").last()
+                "$h:$min"
+            } else {
+                it.arrivalTime
+            }
+        }
+
+        val arrTime = arrivalTimes.lastOrNull { it < time }?.let {
+            arrivalTimes.indexOf(it)
+        }
+
         _uiState.update { currentState ->
             currentState.copy(
                 specifiedTimeTrip =
                 if (timeType == SelectedType.DEPARTURE) {
                     currentState.trips.lastOrNull { it.departureTime < time }
                 } else {
-                    currentState.trips.lastOrNull { it.arrivalTime < time }
+                    arrTime?.let { currentState.trips[it] }
                 }
             )
         }
@@ -98,7 +112,7 @@ class TripListViewModel @Inject constructor(
                             trips = trips.value
                         )
                     }
-                    setTimeLinePosition()
+                    setSpecifiedTimeTrip()
                     LoadingStatus.Done
                 }
 

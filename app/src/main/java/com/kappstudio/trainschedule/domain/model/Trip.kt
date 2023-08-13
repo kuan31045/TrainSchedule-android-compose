@@ -1,7 +1,8 @@
 package com.kappstudio.trainschedule.domain.model
 
+import com.kappstudio.trainschedule.util.timeFormatter
 import java.time.Duration
-import java.time.LocalDateTime
+import java.time.LocalTime
 
 data class Trip(
     val trains: List<Train> = emptyList(),
@@ -15,16 +16,15 @@ data class Trip(
     val totalPrice: Int = prices.sum()
 
     private fun calDurationMinutes(): Int {
-        val departureH = departureTime.split(":")[0].toInt()
-        val departureM = departureTime.split(":")[1].toInt()
+        val duration = Duration.between(
+            LocalTime.parse(departureTime, timeFormatter),
+            LocalTime.parse(arrivalTime, timeFormatter)
+        ).toMinutes().toInt()
 
-        val arrivalH = arrivalTime.split(":")[0].toInt()
-        val arrivalM = arrivalTime.split(":")[1].toInt()
-
-        return if (departureTime < arrivalTime) {
-            (arrivalH * 60 + arrivalM) - (departureH * 60 + departureM)
+        return if (departureTime > arrivalTime) {
+            duration + 1440
         } else {
-            ((arrivalH + 24) * 60 + arrivalM) - (departureH * 60 + departureM)
+            duration
         }
     }
 }
