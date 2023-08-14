@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
+import com.kappstudio.trainschedule.BuildConfig
 import com.kappstudio.trainschedule.data.local.DataStoreManager
 import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.TrainApi
@@ -15,11 +16,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -40,12 +40,24 @@ object AppModule {
         ).build()
     }
 
+
     @Provides
     @Singleton
     fun provideTrainApi(): TrainApi {
+        val client = OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = when (BuildConfig.DEBUG) {
+                        true -> HttpLoggingInterceptor.Level.BODY
+                        false -> HttpLoggingInterceptor.Level.NONE
+                    }
+                }
+            ).build()
+
         return Retrofit.Builder()
             .baseUrl(TrainApi.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
             .build()
             .create(TrainApi::class.java)
     }
@@ -55,9 +67,8 @@ object AppModule {
     fun provideTrainRepository(
         api: TrainApi,
         dataStore: DataStore<Preferences>,
-        trainDb: TrainDatabase
+        trainDb: TrainDatabase,
     ): TrainRepository {
         return TrainRepositoryImpl(api = api, dataStore = dataStore, trainDb = trainDb)
     }
 }
-

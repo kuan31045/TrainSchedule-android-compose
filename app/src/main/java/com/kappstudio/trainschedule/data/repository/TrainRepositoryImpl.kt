@@ -68,7 +68,6 @@ class TrainRepositoryImpl @Inject constructor(
             try {
                 //Get token from Api
                 val newToken = api.getAccessToken()
-                Timber.d("getToken success!")
                 //Save token into DataStore
                 dataStore.edit { preferences ->
                     preferences[ACCESS_TOKEN] = BEARER + newToken.accessToken
@@ -85,7 +84,6 @@ class TrainRepositoryImpl @Inject constructor(
     override suspend fun fetchStations(): Result<List<Station>> {
         return try {
             val result = api.getStations(getAccessToken())
-            Timber.d("getStations success = $result")
             Result.Success(result.stations.map { it.toStation() })
         } catch (e: Exception) {
             Timber.w("getStations exception = ${e.message}")
@@ -103,7 +101,6 @@ class TrainRepositoryImpl @Inject constructor(
                 arrivalStationId = currentPath.first().arrivalStation.id,
                 date = date
             )
-            Timber.d("getTrainTimetable success = $result")
 
             val fares = api.getODFare(
                 token = getAccessToken(),
