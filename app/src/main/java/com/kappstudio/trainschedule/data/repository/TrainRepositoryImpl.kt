@@ -1,6 +1,5 @@
 package com.kappstudio.trainschedule.data.repository
 
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -22,18 +21,15 @@ import com.kappstudio.trainschedule.data.toTrip
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Trip
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
-import javax.inject.Singleton
-import com.kappstudio.trainschedule.R
 
 class TrainRepositoryImpl @Inject constructor(
     private val api: TrainApi,
     private val dataStore: DataStore<Preferences>,
-    private val trainDb: TrainDatabase
+    private val trainDb: TrainDatabase,
 ) : TrainRepository {
 
     private val localToken = dataStore.data
@@ -98,7 +94,7 @@ class TrainRepositoryImpl @Inject constructor(
     }
 
     override suspend fun searchTrips(
-        date: String
+        date: String,
     ): Result<List<Trip>> {
         return try {
             val result = api.getTrainTimetable(
@@ -108,7 +104,23 @@ class TrainRepositoryImpl @Inject constructor(
                 date = date
             )
             Timber.d("getTrainTimetable success = $result")
-            Result.Success(result.trainTimetables.map { it.toTrip() })
+
+            val fares = api.getODFare(
+                token = getAccessToken(),
+                departureStationId = currentPath.first().departureStation.id,
+                arrivalStationId = currentPath.first().arrivalStation.id,
+            ).odFares.filter { it.direction == 0 }
+
+            Result.Success(result.trainTimetables.map { timeTable ->
+                timeTable.toTrip(
+                    listOf(
+                        fares.first { fare ->
+                            fare.trainType == timeTable.trainInfoDto.trainTypeCode.toInt()
+                        }.fares.first().price
+                    )
+                )
+            })
+
         } catch (e: Exception) {
             Timber.w("getTrainTimetable exception = ${e.message}")
             Result.Error(e)

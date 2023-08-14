@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="rounded_corner_size">16dp</dimen>
-    <dimen name="button_elevation">4dp</dimen>
+    <dimen name="button_elevation">2dp</dimen>
     <dimen name="surface_shadow_elevation_4">4dp</dimen>
 
     <dimen name="surface_shadow_elevation_16">16dp</dimen>

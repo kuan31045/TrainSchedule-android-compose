@@ -1,7 +1,5 @@
 package com.kappstudio.trainschedule.ui.list
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -76,14 +74,14 @@ fun TripListScreen(
                             Icon(
                                 painter = painterResource(R.drawable.ic_star_outline),
                                 contentDescription = stringResource(R.string.add_favorite_desc),
-                             )
+                            )
                         }
                     }
                     IconButton(onClick = {}) {
                         Icon(
                             painter = painterResource(R.drawable.ic_filter),
                             contentDescription = stringResource(id = R.string.filter_desc),
-                             modifier = modifier
+                            modifier = modifier
                         )
                     }
                 }
@@ -171,6 +169,7 @@ fun TripColumn(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripItem(
     modifier: Modifier = Modifier,
@@ -180,11 +179,10 @@ fun TripItem(
     onTripItemClicked: (trains: List<String>, transfers: List<String>) -> Unit
 ) {
     Card(
-        modifier = modifier
-            .background(MaterialTheme.colorScheme.onPrimary)
-            .clickable {
-                onTripItemClicked(trip.trains.map { it.number }, trip.transfers.map { it.id })
-            }
+        modifier = modifier,
+        onClick = {
+            onTripItemClicked(trip.trains.map { it.number }, trip.transfers.map { it.id })
+        }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {

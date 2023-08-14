@@ -193,7 +193,7 @@ fun ToStationScreenButton(
             Text(
                 modifier = Modifier.padding(vertical = 4.dp),
                 text = station,
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = 20.sp),
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
