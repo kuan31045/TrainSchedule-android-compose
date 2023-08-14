@@ -75,7 +75,7 @@ fun HomeScreen(
             HomeStationLayout(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
+                    .padding(top = 16.dp, start = 8.dp, end =8.dp),
                 departureStation = pathState.value.departureStation.name.localize(),
                 arrivalStation = pathState.value.arrivalStation.name.localize(),
                 onStationButtonClicked = {

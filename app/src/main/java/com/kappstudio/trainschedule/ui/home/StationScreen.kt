@@ -59,7 +59,6 @@ fun StationScreen(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = stringResource(id = R.string.checked_desc),
-                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = modifier
                         )
                     }
@@ -119,32 +118,31 @@ fun StationTopLayout(
     onSwapButtonClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shadowElevation = dimensionResource(R.dimen.surface_shadow_elevation_4)
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.SpaceAround,
     ) {
-        Row(
-            modifier = Modifier.padding(bottom = 16.dp),
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.SpaceAround,
-        ) {
-            StationButton(
-                modifier = Modifier.weight(1f),
-                isSelected = selectedType == SelectedType.DEPARTURE,
-                desc = stringResource(R.string.from),
-                station = departureStation,
-                onClicked = { onStationButtonClicked(SelectedType.DEPARTURE) }
-            )
-            SwapButton(onClicked = onSwapButtonClicked)
-            StationButton(
-                modifier = Modifier.weight(1f),
-                isSelected = selectedType == SelectedType.ARRIVAL,
-                desc = stringResource(R.string.to),
-                station = arrivalStation,
-                onClicked = { onStationButtonClicked(SelectedType.ARRIVAL) }
-            )
-        }
+        StationButton(
+            modifier = Modifier.weight(1f),
+            isSelected = selectedType == SelectedType.DEPARTURE,
+            desc = stringResource(R.string.from),
+            station = departureStation,
+            onClicked = { onStationButtonClicked(SelectedType.DEPARTURE) }
+        )
+        SwapButton(onClicked = onSwapButtonClicked)
+        StationButton(
+            modifier = Modifier.weight(1f),
+            isSelected = selectedType == SelectedType.ARRIVAL,
+            desc = stringResource(R.string.to),
+            station = arrivalStation,
+            onClicked = { onStationButtonClicked(SelectedType.ARRIVAL) }
+        )
     }
+
 }
 
 @Composable

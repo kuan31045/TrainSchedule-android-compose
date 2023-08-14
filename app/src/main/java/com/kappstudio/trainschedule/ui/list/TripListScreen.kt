@@ -76,16 +76,14 @@ fun TripListScreen(
                             Icon(
                                 painter = painterResource(R.drawable.ic_star_outline),
                                 contentDescription = stringResource(R.string.add_favorite_desc),
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
+                             )
                         }
                     }
                     IconButton(onClick = {}) {
                         Icon(
                             painter = painterResource(R.drawable.ic_filter),
                             contentDescription = stringResource(id = R.string.filter_desc),
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = modifier
+                             modifier = modifier
                         )
                     }
                 }
@@ -93,7 +91,6 @@ fun TripListScreen(
         },
         modifier = modifier.fillMaxSize(),
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -148,6 +145,7 @@ fun TripColumn(
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = specifiedTimeTrip?.let {
         trips.indexOf(it)
     } ?: 0)
+    val isToday: Boolean = date == LocalDate.now().toString()
 
     LazyColumn(
         modifier = modifier,
@@ -161,26 +159,23 @@ fun TripColumn(
                 trip.trains
             }
         ) { trip ->
+            val currentTime: String = LocalTime.now().toString().take(5)
             TripItem(
                 modifier = Modifier.fillMaxSize(),
-
                 trip = trip,
-                isSpecifiedTimeTrip = trip == specifiedTimeTrip,
-                hasLeft = trip.departureTime < LocalTime.now().toString().take(5)
-                        && date == LocalDate.now().toString(),
+                isLastLeftTrip = trips.lastOrNull { it.departureTime < currentTime } == trip && isToday,
+                hasLeft = trip.departureTime < currentTime && isToday,
                 onTripItemClicked = { trains, transfers -> onTripItemClicked(trains, transfers) }
             )
         }
     }
-
-
 }
 
 @Composable
 fun TripItem(
     modifier: Modifier = Modifier,
     trip: Trip,
-    isSpecifiedTimeTrip: Boolean,
+    isLastLeftTrip: Boolean,
     hasLeft: Boolean,
     onTripItemClicked: (trains: List<String>, transfers: List<String>) -> Unit
 ) {
@@ -290,7 +285,7 @@ fun TripItem(
         }
     }
 
-    if (isSpecifiedTimeTrip) {
+    if (isLastLeftTrip) {
         Divider(
             thickness = 2.dp,
             modifier = Modifier.padding(top = 16.dp)
@@ -311,7 +306,7 @@ fun TripItemPreview() {
             departureTime = "21:10",
         ),
         hasLeft = false,
-        isSpecifiedTimeTrip = false,
+        isLastLeftTrip = true,
         onTripItemClicked = { _, _ -> }
     )
 }
