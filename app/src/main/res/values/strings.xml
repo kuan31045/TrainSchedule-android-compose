@@ -33,5 +33,7 @@
     <string name="hour">hr</string>
     <string name="minute">min</string>
     <string name="left">Left</string>
+    <string name="delete_desc">Delete</string>
+    <string name="no_favorite">No favorite</string>
 
 </resources>

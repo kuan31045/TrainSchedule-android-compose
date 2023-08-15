@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">台鐵時刻表</string>
     <string name="station_title">選擇車站</string>
-    <string name="favorite_title">我的最愛</string>
+    <string name="favorite_title">最愛</string>
 
     <string name="back_desc">返回</string>
     <string name="from">出發站</string>
@@ -34,5 +34,7 @@
     <string name="transferTimes">次轉乘</string>
     <string name="minute">分</string>
     <string name="left">已離站</string>
+    <string name="delete_desc">刪除</string>
+    <string name="no_favorite">最愛為空</string>
 
 </resources>

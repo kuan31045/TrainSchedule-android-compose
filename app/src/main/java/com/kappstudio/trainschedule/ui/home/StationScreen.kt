@@ -58,8 +58,7 @@ fun StationScreen(
                     IconButton(onClick = navigateBack) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = stringResource(id = R.string.checked_desc),
-                            modifier = modifier
+                            contentDescription = stringResource(id = R.string.checked_desc)
                         )
                     }
                 }
@@ -177,7 +176,7 @@ fun StationButton(
             Text(
                 modifier = Modifier.padding(vertical = 4.dp),
                 text = station,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                style = MaterialTheme.typography.bodyLarge,
                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer
             )
         }

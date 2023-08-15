@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.kappstudio.trainschedule.ui.favorite.FavoriteScreen
 import com.kappstudio.trainschedule.ui.home.HomeScreen
 import com.kappstudio.trainschedule.ui.home.StationScreen
 import com.kappstudio.trainschedule.ui.list.TripListScreen
@@ -37,24 +38,28 @@ fun TrainNavGraph(
             composable(route = Screen.HOME.route) { backStackEntry ->
                 HomeScreen(
                     viewModel = backStackEntry.sharedViewModel(navController = navController),
-                    navToSelectStationClicked = { navController.navigate(Screen.STATION.route) },
+                    onToStationButtonClicked = { navController.navigate(Screen.STATION.route) },
                     onSearchButtonClicked = { date, time, timeType, trainType, canTransfer ->
                         navController.navigate(
                             Screen.TRIPS.route
                                     + "/${date}" + "/${time}" + "/${timeType}" + "/${trainType}" + "/${canTransfer}"
                         )
-
+                    },
+                    onToFavoriteButtonClicked = {
+                        navController.navigate(Screen.FAVORITE.route)
                     }
                 )
             }
 
-            composable(
-                route = Screen.STATION.route
-            ) { backStackEntry ->
+            composable(route = Screen.STATION.route) { backStackEntry ->
                 StationScreen(
                     viewModel = backStackEntry.sharedViewModel(navController = navController),
                     navigateBack = { navController.navigateUp() }
                 )
+            }
+
+            composable(route = Screen.FAVORITE.route) {
+                FavoriteScreen(navigateBack = { navController.navigateUp() })
             }
 
             composable(route = RoutesWithArgs.TRIPS,

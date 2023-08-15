@@ -67,7 +67,7 @@ class TrainRepositoryImpl @Inject constructor(
             path ?: defaultPath
         }
 
-    override suspend fun getAccessToken(): String {
+    override suspend fun fetchAccessToken(): String {
         if (localToken.first().expiresIn < System.currentTimeMillis()) {
             try {
                 //Get token from Api
@@ -87,11 +87,18 @@ class TrainRepositoryImpl @Inject constructor(
 
     override suspend fun fetchStations(): Result<List<Station>> {
         return try {
-            val result = api.getStations(getAccessToken())
+            val result = api.getStations(fetchAccessToken())
             Result.Success(result.stations.map { it.toStation() })
         } catch (e: Exception) {
             Timber.w("getStations exception = ${e.message}")
             Result.Error(e)
+        }
+    }
+
+    override suspend fun saveCurrentPath(path: Path) {
+        val json = Gson().toJson(path)
+        dataStore.edit { preferences ->
+            preferences[CURRENT_PATH] = json
         }
     }
 
@@ -100,14 +107,14 @@ class TrainRepositoryImpl @Inject constructor(
     ): Result<List<Trip>> {
         return try {
             val result = api.getTrainTimetable(
-                token = getAccessToken(),
+                token = fetchAccessToken(),
                 departureStationId = currentPath.first().departureStation.id,
                 arrivalStationId = currentPath.first().arrivalStation.id,
                 date = date
             )
 
             val fares = api.getODFare(
-                token = getAccessToken(),
+                token = fetchAccessToken(),
                 departureStationId = currentPath.first().departureStation.id,
                 arrivalStationId = currentPath.first().arrivalStation.id,
             ).odFares
@@ -131,13 +138,6 @@ class TrainRepositoryImpl @Inject constructor(
 
     override suspend fun searchTransferTrips(date: String): Result<List<Trip>> {
         TODO("Not yet implemented")
-    }
-
-    override suspend fun saveCurrentPath(path: Path) {
-        val json = Gson().toJson(path)
-        dataStore.edit { preferences ->
-            preferences[CURRENT_PATH] = json
-        }
     }
 
     override suspend fun insertPath(path: PathEntity) = trainDb.pathDao.insert(path)

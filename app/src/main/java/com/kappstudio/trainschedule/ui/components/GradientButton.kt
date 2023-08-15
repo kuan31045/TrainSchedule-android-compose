@@ -44,7 +44,7 @@ fun GradientButton(
                 modifier = Modifier.padding(12.dp),
                 text = text,
                 color = textColor,
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp)
+                style = MaterialTheme.typography.bodyLarge
             )
         }
     }

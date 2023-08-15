@@ -9,9 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -46,13 +51,14 @@ import java.time.LocalTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
-    navToSelectStationClicked: () -> Unit,
+    onToStationButtonClicked: () -> Unit,
     onSearchButtonClicked: (
         date: String, time: String, timeType: Int,
         trainType: Int, canTransfer: Boolean
     ) -> Unit,
-    modifier: Modifier = Modifier,
+    onToFavoriteButtonClicked:() -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val pathState = viewModel.pathState.collectAsState()
@@ -63,6 +69,14 @@ fun HomeScreen(
                 title = stringResource(R.string.app_name),
                 canNavigateBack = false,
                 navigateUp = {},
+                actions = {
+                    IconButton(onClick = onToFavoriteButtonClicked) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = stringResource(id = R.string.favorite_title)
+                        )
+                    }
+                }
             )
         },
         modifier = modifier.fillMaxSize(),
@@ -80,7 +94,7 @@ fun HomeScreen(
                 arrivalStation = pathState.value.arrivalStation.name.localize(),
                 onStationButtonClicked = {
                     viewModel.changeSelectedStation(it)
-                    navToSelectStationClicked()
+                    onToStationButtonClicked()
                 },
                 onSwapButtonClicked = { viewModel.swapPath() }
             )
@@ -193,7 +207,7 @@ fun ToStationScreenButton(
             Text(
                 modifier = Modifier.padding(vertical = 4.dp),
                 text = station,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
@@ -222,13 +236,13 @@ fun DateTimeLayout(
                     .padding(vertical = 4.dp)
                     .weight(1f),
                 text = "${date.format(dateFormatter)}   ${time.format(timeFormatter)}",
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
             Text(
                 modifier = Modifier.padding(vertical = 4.dp),
                 text = stringResource(id = timeType.text),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
@@ -283,7 +297,7 @@ fun TransSwitch(
         Text(
             modifier =Modifier.padding(start = 24.dp)  ,
             text = stringResource(id = R.string.accept_transfer),
-            style = MaterialTheme.typography.bodyLarge
+            fontSize = 16.sp
         )
         Switch(
             modifier =Modifier.padding(end = 24.dp),

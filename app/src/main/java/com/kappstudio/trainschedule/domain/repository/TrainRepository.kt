@@ -8,17 +8,18 @@ import com.kappstudio.trainschedule.domain.model.Trip
 import kotlinx.coroutines.flow.Flow
 
 interface TrainRepository {
-    suspend fun getAccessToken(): String
+
+    val currentPath: Flow<Path>
+
+    suspend fun fetchAccessToken(): String
 
     suspend fun fetchStations(): Result<List<Station>>
+
+    suspend fun saveCurrentPath(path: Path)
 
     suspend fun searchTrips(date: String): Result<List<Trip>>
 
     suspend fun searchTransferTrips(date: String): Result<List<Trip>>
-
-    val currentPath: Flow<Path>
-
-    suspend fun saveCurrentPath(path: Path)
 
     suspend fun insertPath(path: PathEntity)
 

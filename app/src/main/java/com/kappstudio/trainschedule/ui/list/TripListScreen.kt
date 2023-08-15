@@ -34,13 +34,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.ui.components.ErrorLayout
 import com.kappstudio.trainschedule.util.LoadingStatus
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -269,7 +267,10 @@ fun TripItem(
 
             Row {
                 trip.trains.forEach { train ->
-                    Text(text = train.name.localize().split("(").first() + train.number)
+                    Text(
+                        text = train.name.localize().split("(").first() + train.number,
+                        fontSize = 16.sp
+                    )
                     if (train != trip.trains.last()) Text(text = " > ")
                 }
                 Spacer(modifier = Modifier.weight(1f))

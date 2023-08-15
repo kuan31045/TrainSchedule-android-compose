@@ -11,6 +11,7 @@ enum class Screen(val route: String) {
     HOME(route = "home"),
     STATION(route = "station"),
     TRIPS(route = "trips"),
+    FAVORITE(route = "favorite"),
 }
 
 object NavigationArgs {
