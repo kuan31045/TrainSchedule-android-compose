@@ -101,7 +101,7 @@ class HomeViewModel @Inject constructor(
 
     private fun savePath(path: Path) {
         viewModelScope.launch {
-            trainRepository.savePath(path)
+            trainRepository.saveCurrentPath(path)
             selectCounty(getCurrentPathCounty())
         }
     }

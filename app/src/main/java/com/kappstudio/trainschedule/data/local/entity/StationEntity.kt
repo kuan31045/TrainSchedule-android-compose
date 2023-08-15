@@ -8,7 +8,7 @@ import com.kappstudio.trainschedule.domain.model.Name
 @Entity(tableName = "stations")
 data class StationEntity(
     @PrimaryKey val id: String,
-    @Embedded val name: Name,
+    @Embedded(prefix = "name_") val name: Name,
     @Embedded(prefix = "county_name_")
     val county: Name
 )

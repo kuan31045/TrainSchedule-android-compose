@@ -1,4 +1,4 @@
-package com.kappstudio.trainschedule.data.local
+package com.kappstudio.trainschedule.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Query
@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 interface StationDao {
     @Upsert
     suspend fun upsertAll(stations: List<StationEntity>)
-
 
     @Query("SELECT * from stations WHERE id = :id")
     fun getStation(id: String): Flow<StationEntity>

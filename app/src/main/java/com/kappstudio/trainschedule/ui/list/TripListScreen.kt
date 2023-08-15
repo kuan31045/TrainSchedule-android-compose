@@ -34,11 +34,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.ui.components.ErrorLayout
 import com.kappstudio.trainschedule.util.LoadingStatus
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -52,7 +54,6 @@ fun TripListScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val currentPath = viewModel.currentPath.collectAsState()
-    val isFavoritePath = viewModel.isFavoritePath.collectAsState()
     val loadingState = viewModel.loadingState
 
     Scaffold(
@@ -63,8 +64,8 @@ fun TripListScreen(
                 canNavigateBack = true,
                 navigateUp = navigateBack,
                 actions = {
-                    IconButton(onClick = { viewModel.checkFavorite() }) {
-                        if (isFavoritePath.value) {
+                    IconButton(onClick = { viewModel.toggleFavorite() }) {
+                        if (uiState.value.isFavorite) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_star),
                                 contentDescription = stringResource(R.string.remove_favorite_desc),
@@ -138,7 +139,7 @@ fun TripColumn(
     trips: List<Trip>,
     specifiedTimeTrip: Trip?,
     date: String,
-    onTripItemClicked: (trains: List<String>, transfers: List<String>) -> Unit
+    onTripItemClicked: (trains: List<String>, transfers: List<String>) -> Unit,
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = specifiedTimeTrip?.let {
         trips.indexOf(it)
@@ -176,7 +177,7 @@ fun TripItem(
     trip: Trip,
     isLastLeftTrip: Boolean,
     hasLeft: Boolean,
-    onTripItemClicked: (trains: List<String>, transfers: List<String>) -> Unit
+    onTripItemClicked: (trains: List<String>, transfers: List<String>) -> Unit,
 ) {
     Card(
         modifier = modifier,

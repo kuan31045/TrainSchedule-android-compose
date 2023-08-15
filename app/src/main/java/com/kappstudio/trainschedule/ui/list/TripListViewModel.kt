@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kappstudio.trainschedule.data.Result
+import com.kappstudio.trainschedule.data.toPathEntity
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
@@ -31,13 +32,14 @@ import javax.inject.Inject
 data class TripListUiState(
     val trips: List<Trip> = emptyList(),
     val date: String = "",
-    val specifiedTimeTrip: Trip? = null
+    val isFavorite: Boolean = false,
+    val specifiedTimeTrip: Trip? = null,
 )
 
 @HiltViewModel
 class TripListViewModel @Inject constructor(
     private val trainRepository: TrainRepository,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val time: String = savedStateHandle[TIME_STRING]!!
     private val timeType: SelectedType =
@@ -60,12 +62,19 @@ class TripListViewModel @Inject constructor(
         initialValue = Path(),
     )
 
-
-    //TODO Check path favorite
-    val isFavoritePath = MutableStateFlow(true)
-
     init {
         searchTrips()
+        checkFavorite()
+    }
+
+    private fun checkFavorite() {
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isFavorite = trainRepository.isCurrentPathFavorite()
+                )
+            }
+        }
     }
 
     private fun setSpecifiedTimeTrip() {
@@ -131,7 +140,14 @@ class TripListViewModel @Inject constructor(
         }
     }
 
-    fun checkFavorite() {
-
+    fun toggleFavorite() {
+        viewModelScope.launch {
+            if (uiState.value.isFavorite) {
+                trainRepository.deletePath(currentPath.value.toPathEntity())
+            } else {
+                trainRepository.insertPath(currentPath.value.toPathEntity())
+            }
+            checkFavorite()
+        }
     }
 }

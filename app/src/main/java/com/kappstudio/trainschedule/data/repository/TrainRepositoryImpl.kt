@@ -16,14 +16,18 @@ import timber.log.Timber
 import javax.inject.Inject
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.data.local.TrainDatabase
+import com.kappstudio.trainschedule.data.local.entity.PathEntity
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
+import com.kappstudio.trainschedule.data.toPathEntity
 import com.kappstudio.trainschedule.data.toTrip
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Trip
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import java.io.IOException
 
 class TrainRepositoryImpl @Inject constructor(
@@ -106,13 +110,14 @@ class TrainRepositoryImpl @Inject constructor(
                 token = getAccessToken(),
                 departureStationId = currentPath.first().departureStation.id,
                 arrivalStationId = currentPath.first().arrivalStation.id,
-            ).odFares.filter { it.direction == 0 }
+            ).odFares
 
             Result.Success(result.trainTimetables.map { timeTable ->
                 timeTable.toTrip(
                     listOf(
                         fares.first { fare ->
-                            fare.trainType == timeTable.trainInfoDto.trainTypeCode.toInt()
+                            timeTable.trainInfoDto.direction == fare.direction
+                                    && timeTable.trainInfoDto.trainTypeCode.toInt() == fare.trainType
                         }.fares.first().price
                     )
                 )
@@ -128,10 +133,22 @@ class TrainRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun savePath(path: Path) {
+    override suspend fun saveCurrentPath(path: Path) {
         val json = Gson().toJson(path)
         dataStore.edit { preferences ->
             preferences[CURRENT_PATH] = json
+        }
+    }
+
+    override suspend fun insertPath(path: PathEntity) = trainDb.pathDao.insert(path)
+
+    override suspend fun deletePath(path: PathEntity) = trainDb.pathDao.delete(path)
+
+    override fun getAllPathsStream(): Flow<List<PathEntity>> = trainDb.pathDao.getAllPaths()
+
+    override suspend fun isCurrentPathFavorite(): Boolean {
+        return withContext(Dispatchers.IO) {
+            trainDb.pathDao.getPath(currentPath.first().toPathEntity().id) != null
         }
     }
 
