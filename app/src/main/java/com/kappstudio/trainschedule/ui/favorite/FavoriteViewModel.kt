@@ -2,8 +2,6 @@ package com.kappstudio.trainschedule.ui.favorite
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kappstudio.trainschedule.data.toPath
-import com.kappstudio.trainschedule.data.toPathEntity
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,9 +20,8 @@ class FavoriteViewModel @Inject constructor(
 ) : ViewModel() {
     val uiState: StateFlow<FavoriteUiState> =
         trainRepository.getAllPathsStream()
-            .map {
-                FavoriteUiState(it.map { pathEntity -> pathEntity.toPath() })
-            }.stateIn(
+            .map { FavoriteUiState(it) }
+            .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = FavoriteUiState(),
@@ -32,13 +29,13 @@ class FavoriteViewModel @Inject constructor(
 
     fun deletePath(path: Path) {
         viewModelScope.launch {
-            trainRepository.deletePath(path.toPathEntity())
+            trainRepository.deletePath(path)
         }
     }
 
     fun saveCurrentPath(path: Path) {
         viewModelScope.launch {
             trainRepository.saveCurrentPath(path)
-         }
+        }
     }
 }

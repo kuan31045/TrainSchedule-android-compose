@@ -2,7 +2,6 @@ package com.kappstudio.trainschedule.domain.repository
 
 import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.data.Result
-import com.kappstudio.trainschedule.data.local.entity.PathEntity
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Trip
 import kotlinx.coroutines.flow.Flow
@@ -21,11 +20,11 @@ interface TrainRepository {
 
     suspend fun searchTransferTrips(date: String): Result<List<Trip>>
 
-    suspend fun insertPath(path: PathEntity)
+    suspend fun insertPath(path: Path)
 
-    suspend fun deletePath(path: PathEntity)
+    suspend fun deletePath(path: Path)
 
-    fun getAllPathsStream(): Flow<List<PathEntity>>
+    fun getAllPathsStream(): Flow<List<Path>>
 
     suspend fun isCurrentPathFavorite(): Boolean
 }

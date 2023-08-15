@@ -7,7 +7,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kappstudio.trainschedule.data.Result
-import com.kappstudio.trainschedule.data.toPathEntity
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
@@ -143,9 +142,9 @@ class TripListViewModel @Inject constructor(
     fun toggleFavorite() {
         viewModelScope.launch {
             if (uiState.value.isFavorite) {
-                trainRepository.deletePath(currentPath.value.toPathEntity())
+                trainRepository.deletePath(currentPath.value)
             } else {
-                trainRepository.insertPath(currentPath.value.toPathEntity())
+                trainRepository.insertPath(currentPath.value)
             }
             checkFavorite()
         }

@@ -16,8 +16,8 @@ import timber.log.Timber
 import javax.inject.Inject
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.data.local.TrainDatabase
-import com.kappstudio.trainschedule.data.local.entity.PathEntity
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
+import com.kappstudio.trainschedule.data.toPath
 import com.kappstudio.trainschedule.data.toPathEntity
 import com.kappstudio.trainschedule.data.toTrip
 import com.kappstudio.trainschedule.domain.model.Name
@@ -140,11 +140,17 @@ class TrainRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun insertPath(path: PathEntity) = trainDb.pathDao.insert(path)
+    override suspend fun insertPath(path: Path) = trainDb.pathDao.insert(path.toPathEntity())
 
-    override suspend fun deletePath(path: PathEntity) = trainDb.pathDao.delete(path)
+    override suspend fun deletePath(path: Path) = trainDb.pathDao.delete(path.toPathEntity())
 
-    override fun getAllPathsStream(): Flow<List<PathEntity>> = trainDb.pathDao.getAllPaths()
+    override fun getAllPathsStream(): Flow<List<Path>> {
+        return trainDb.pathDao.getAllPaths().map { pathEntities ->
+            withContext(Dispatchers.IO) {
+                pathEntities.map { it.toPath() }
+            }
+        }
+    }
 
     override suspend fun isCurrentPathFavorite(): Boolean {
         return withContext(Dispatchers.IO) {
