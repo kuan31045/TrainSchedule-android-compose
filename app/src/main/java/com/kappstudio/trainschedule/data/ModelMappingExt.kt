@@ -29,7 +29,7 @@ fun TrainTimetableDto.toTrip(prices: List<Int>): Trip {
             Train(
                 number = trainInfoDto.trainNo,
                 name = trainInfoDto.trainTypeName,
-                trainType = trainInfoDto.trainTypeCode.toIntOrNull() ?: 0
+                typeCode = trainInfoDto.trainTypeCode.toIntOrNull() ?: 0
             )
         ),
         departureTime = stopTimes.first().departureTime,

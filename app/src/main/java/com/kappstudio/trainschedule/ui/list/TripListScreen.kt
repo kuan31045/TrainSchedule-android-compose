@@ -1,6 +1,7 @@
 package com.kappstudio.trainschedule.ui.list
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -18,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -32,17 +36,26 @@ import com.kappstudio.trainschedule.ui.TrainTopAppBar
 import com.kappstudio.trainschedule.util.localize
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.ui.components.ErrorLayout
 import com.kappstudio.trainschedule.util.LoadingStatus
+import com.kappstudio.trainschedule.util.TrainType
+import com.kappstudio.trainschedule.util.toggle
 import java.time.LocalDate
 import java.time.LocalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripListScreen(
     modifier: Modifier = Modifier,
@@ -76,7 +89,7 @@ fun TripListScreen(
                             )
                         }
                     }
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = { viewModel.openFilter() }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_filter),
                             contentDescription = stringResource(id = R.string.filter_desc),
@@ -88,14 +101,18 @@ fun TripListScreen(
         },
         modifier = modifier.fillMaxSize(),
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            contentAlignment = Alignment.Center,
         ) {
             when (loadingState) {
+
+                LoadingStatus.Loading -> {
+                    CircularProgressIndicator()
+                }
+
                 LoadingStatus.Done -> {
                     if (uiState.value.trips.isNotEmpty()) {
                         TripColumn(
@@ -112,10 +129,6 @@ fun TripListScreen(
                     }
                 }
 
-                LoadingStatus.Loading -> {
-                    CircularProgressIndicator()
-                }
-
                 is LoadingStatus.Error -> {
                     ErrorLayout(
                         modifier = Modifier
@@ -126,10 +139,67 @@ fun TripListScreen(
                     )
                 }
             }
+
+            //-----Filter Bottom Sheet--------------------------------------------------------------
+            if (uiState.value.isFiltering) {
+                FilterBottomSheet(
+                    modifier = Modifier.fillMaxSize(),
+                    defaultTypes = uiState.value.filteredTrainTypes,
+                    closeBottomSheet = { viewModel.closeFilter(it) }
+                )
+            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FilterBottomSheet(
+    modifier: Modifier = Modifier,
+    defaultTypes: List<TrainType>,
+    closeBottomSheet: (List<TrainType>) -> Unit,
+) {
+    val modalBottomSheetState = rememberModalBottomSheetState()
+    var filteredTypes by rememberSaveable { mutableStateOf(defaultTypes) }
+
+    ModalBottomSheet(
+        modifier = modifier,
+        sheetState = modalBottomSheetState,
+        onDismissRequest = { closeBottomSheet(filteredTypes) }
+    ) {
+        Column {
+            Text(
+                modifier = Modifier.padding(start = 24.dp, bottom = 16.dp),
+                text = stringResource(id = R.string.filter_desc),
+                style = MaterialTheme.typography.titleLarge
+            )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                items(TrainType.values().toList()) { type ->
+                    Row(
+                        modifier = Modifier
+                            .selectable(
+                                selected = type in filteredTypes,
+                                onClick = { filteredTypes = filteredTypes.toggle(type) },
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Checkbox(
+                            modifier = Modifier.padding(start = 24.dp),
+                            checked = type in filteredTypes,
+                            onCheckedChange = { filteredTypes = filteredTypes.toggle(type) },
+                        )
+                        Text(stringResource(id = type.trainName))
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun TripColumn(
@@ -268,16 +338,23 @@ fun TripItem(
             Row {
                 trip.trains.forEach { train ->
                     Text(
-                        text = train.name.localize().split("(").first() + train.number,
+                        text = when (train.number) {
+                            "1", "2" -> stringResource(id = R.string.tour_train)
+                            else -> {
+                                TrainType.getName(train.typeCode)
+                                    ?.let { stringResource(it) }
+                            }
+                        } ?: train.name.localize(),
                         fontSize = 16.sp
                     )
+                    Text(text = " ${train.number}", fontSize = 16.sp)
                     if (train != trip.trains.last()) Text(text = " > ")
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 if (hasLeft) {
                     Text(
                         text = stringResource(R.string.left),
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -306,7 +383,7 @@ fun TripItemPreview() {
             departureTime = "21:10",
         ),
         hasLeft = false,
-        isLastLeftTrip = true,
+        isLastLeftTrip = false,
         onTripItemClicked = { _, _ -> }
     )
 }

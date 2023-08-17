@@ -22,7 +22,7 @@
     <string name="local">Local</string>
     <string name="add_favorite_desc">add to favorite</string>
     <string name="remove_favorite_desc">remove favorite</string>
-    <string name="filter_desc">filter</string>
+    <string name="filter_desc">Filter</string>
     <string name="loading_fail">Get data fail</string>
     <string name="retry">Retry</string>
     <string name="not_find_route">No result found</string>
@@ -35,5 +35,13 @@
     <string name="left">Left</string>
     <string name="delete_desc">Delete</string>
     <string name="no_favorite">No favorite</string>
+    <string name="tour_train">Tourist Train</string>
+    <string name="tc_express">T.C.</string>
+    <string name="new_tc_express">New T.C.</string>
+    <string name="taroko_express">Taroko</string>
+    <string name="puyuma_express">Puyuma</string>
+    <string name="ck_express">C.K.</string>
+    <string name="local_train">Local</string>
+    <string name="fast_local_train">Fast Local</string>
 
 </resources>

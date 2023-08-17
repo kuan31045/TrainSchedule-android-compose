@@ -36,5 +36,13 @@
     <string name="left">已離站</string>
     <string name="delete_desc">刪除</string>
     <string name="no_favorite">最愛為空</string>
+    <string name="tour_train">觀光列車</string>
+    <string name="tc_express">自強</string>
+    <string name="new_tc_express">新自強</string>
+    <string name="taroko_express">太魯閣</string>
+    <string name="puyuma_express">普悠瑪</string>
+    <string name="ck_express">莒光</string>
+    <string name="local_train">區間</string>
+    <string name="fast_local_train">快區間</string>
 
 </resources>
