@@ -5,15 +5,14 @@ import java.time.Duration
 import java.time.LocalTime
 
 data class Trip(
-    val trains: List<Train> = emptyList(),
     val transfers: List<Station> = emptyList(),
     val departureTime: String = "00:00",
     val arrivalTime: String = "00:00",
-    val prices: List<Int> = emptyList(),
+    val trainSchedules: List<TrainSchedule> = emptyList(),
 ) {
-    val transferCount: Int = trains.size - 1
+    val transferCount: Int = transfers.size
     val durationMinutes: Int = calDurationMinutes()
-    val totalPrice: Int = prices.sum()
+    val totalPrice: Int = trainSchedules.sumOf { it.price }
 
     private fun calDurationMinutes(): Int {
         val duration = Duration.between(

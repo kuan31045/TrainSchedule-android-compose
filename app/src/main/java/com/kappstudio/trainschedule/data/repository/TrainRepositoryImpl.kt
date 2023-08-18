@@ -19,7 +19,7 @@ import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
 import com.kappstudio.trainschedule.data.toPath
 import com.kappstudio.trainschedule.data.toPathEntity
-import com.kappstudio.trainschedule.data.toTrip
+import com.kappstudio.trainschedule.data.toTrainSchedule
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Trip
@@ -120,16 +120,19 @@ class TrainRepositoryImpl @Inject constructor(
             ).odFares
 
             Result.Success(result.trainTimetables.map { timeTable ->
-                timeTable.toTrip(
-                    listOf(
-                        fares.first { fare ->
-                            timeTable.trainInfoDto.direction == fare.direction
-                                    && timeTable.trainInfoDto.trainTypeCode.toInt() == fare.trainType
-                        }.fares.first().price
+                Trip(
+                    departureTime = timeTable.stopTimes.first().departureTime,
+                    arrivalTime = timeTable.stopTimes.last().arrivalTime,
+                    trainSchedules = listOf(
+                        timeTable.toTrainSchedule(
+                            price = fares.first { fare ->
+                                timeTable.trainInfoDto.direction == fare.direction
+                                        && timeTable.trainInfoDto.trainTypeCode.toInt() == fare.trainType
+                            }.fares.first().price
+                        )
                     )
                 )
             })
-
         } catch (e: Exception) {
             Timber.w("getTrainTimetable exception = ${e.message}")
             Result.Error(e)

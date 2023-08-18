@@ -3,12 +3,15 @@ package com.kappstudio.trainschedule.data
 import com.kappstudio.trainschedule.data.local.entity.PathEntity
 import com.kappstudio.trainschedule.data.local.entity.StationEntity
 import com.kappstudio.trainschedule.data.remote.dto.StationDto
+import com.kappstudio.trainschedule.data.remote.dto.StopTimeDto
+import com.kappstudio.trainschedule.data.remote.dto.TrainInfoDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Station
+import com.kappstudio.trainschedule.domain.model.StopSchedule
 import com.kappstudio.trainschedule.domain.model.Train
-import com.kappstudio.trainschedule.domain.model.Trip
+import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.util.countyMap
 
 fun StationDto.toStation(): Station {
@@ -23,18 +26,27 @@ fun StationDto.toStation(): Station {
     )
 }
 
-fun TrainTimetableDto.toTrip(prices: List<Int>): Trip {
-    return Trip(
-        trains = listOf(
-            Train(
-                number = trainInfoDto.trainNo,
-                name = trainInfoDto.trainTypeName,
-                typeCode = trainInfoDto.trainTypeCode.toIntOrNull() ?: 0
-            )
-        ),
-        departureTime = stopTimes.first().departureTime,
-        arrivalTime = stopTimes.last().arrivalTime,
-        prices = prices
+fun StopTimeDto.toStop(): StopSchedule {
+    return StopSchedule(
+        arrivalTime = arrivalTime,
+        departureTime = departureTime,
+        station = Station(id = stationId, name = stationName)
+    )
+}
+
+fun TrainInfoDto.toTrain(): Train {
+    return Train(
+        number = trainNo,
+        name = trainTypeName,
+        typeCode = trainTypeCode.toInt()
+    )
+}
+
+fun TrainTimetableDto.toTrainSchedule(price: Int): TrainSchedule {
+    return TrainSchedule(
+        train = trainInfoDto.toTrain(),
+        price = price,
+        stops = stopTimes.map { it.toStop() }
     )
 }
 

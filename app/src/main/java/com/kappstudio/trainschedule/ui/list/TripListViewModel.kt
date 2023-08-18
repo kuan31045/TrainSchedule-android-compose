@@ -122,7 +122,7 @@ class TripListViewModel @Inject constructor(
     private fun filterTrips() {
         val types = uiState.value.filteredTrainTypes.map { type -> type.typeCode }
         val newTrips: List<Trip> = trips.value.filter { trip ->
-            trip.trains.all { train -> train.typeCode in types }
+            trip.trainSchedules.all { schedule -> schedule.train.typeCode in types }
         }
         _uiState.update { currentState ->
             currentState.copy(trips = newTrips)

@@ -72,7 +72,7 @@ fun TrainNavGraph(
                 )) {
                 TripListScreen(
                     navigateBack = { navController.navigateUp() },
-                    onTripItemClicked = { trains, transfers -> }
+                    onTripItemClicked = { trip -> }
                 )
             }
         }

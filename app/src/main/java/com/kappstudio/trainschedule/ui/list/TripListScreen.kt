@@ -49,6 +49,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
 import com.kappstudio.trainschedule.domain.model.Name
+import com.kappstudio.trainschedule.domain.model.Station
+import com.kappstudio.trainschedule.domain.model.StopSchedule
+import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.ui.components.ErrorLayout
 import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.TrainType
@@ -61,7 +64,7 @@ fun TripListScreen(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
     viewModel: TripListViewModel = hiltViewModel(),
-    onTripItemClicked: (trains: List<String>, transfers: List<String>) -> Unit,
+    onTripItemClicked: (Trip) -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val currentPath = viewModel.currentPath.collectAsState()
@@ -120,9 +123,7 @@ fun TripListScreen(
                             trips = uiState.value.trips,
                             date = uiState.value.date,
                             specifiedTimeTrip = uiState.value.specifiedTimeTrip,
-                            onTripItemClicked = { trains, transfers ->
-                                onTripItemClicked(trains, transfers)
-                            }
+                            onTripItemClicked = { onTripItemClicked(it) }
                         )
                     } else {
                         Text(text = stringResource(id = R.string.not_find_route))
@@ -207,7 +208,7 @@ fun TripColumn(
     trips: List<Trip>,
     specifiedTimeTrip: Trip?,
     date: String,
-    onTripItemClicked: (trains: List<String>, transfers: List<String>) -> Unit,
+    onTripItemClicked: (Trip) -> Unit,
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = specifiedTimeTrip?.let {
         trips.indexOf(it)
@@ -223,7 +224,7 @@ fun TripColumn(
         items(
             items = trips,
             key = { trip ->
-                trip.trains
+                trip.trainSchedules
             }
         ) { trip ->
             val currentTime: String = LocalTime.now().toString().take(5)
@@ -232,7 +233,7 @@ fun TripColumn(
                 trip = trip,
                 isLastLeftTrip = trips.lastOrNull { it.departureTime < currentTime } == trip && isToday,
                 hasLeft = trip.departureTime < currentTime && isToday,
-                onTripItemClicked = { trains, transfers -> onTripItemClicked(trains, transfers) }
+                onTripItemClicked = { onTripItemClicked(it) }
             )
         }
     }
@@ -245,12 +246,12 @@ fun TripItem(
     trip: Trip,
     isLastLeftTrip: Boolean,
     hasLeft: Boolean,
-    onTripItemClicked: (trains: List<String>, transfers: List<String>) -> Unit,
+    onTripItemClicked: (Trip) -> Unit,
 ) {
     Card(
         modifier = modifier,
         onClick = {
-            onTripItemClicked(trip.trains.map { it.number }, trip.transfers.map { it.id })
+            onTripItemClicked(trip)
         }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -336,19 +337,19 @@ fun TripItem(
             )
 
             Row {
-                trip.trains.forEach { train ->
+                trip.trainSchedules.map { it.train }.forEach { train ->
                     Text(
-                        text = when (train.number) {
+                        text = when ( train.number) {
                             "1", "2" -> stringResource(id = R.string.tour_train)
                             else -> {
-                                TrainType.getName(train.typeCode)
+                                TrainType.getName( train.typeCode)
                                     ?.let { stringResource(it) }
                             }
-                        } ?: train.name.localize(),
+                        } ?:  train.name.localize(),
                         fontSize = 16.sp
                     )
-                    Text(text = " ${train.number}", fontSize = 16.sp)
-                    if (train != trip.trains.last()) Text(text = " > ")
+                    Text(text = " ${ train.number}", fontSize = 16.sp)
+                    if (train != trip.trainSchedules.last().train) Text(text = " > ")
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 if (hasLeft) {
@@ -375,15 +376,19 @@ fun TripItem(
 fun TripItemPreview() {
     TripItem(
         trip = Trip(
-            trains = listOf(
-                Train("123", Name("Local", "Local")),
-                Train("123", Name("Ziqiang", "Ziqiang"))
+            trainSchedules = listOf(
+                TrainSchedule(
+                    train = Train("123", Name("Local", "Local")),
+                    price = 100,
+                    stops = listOf(StopSchedule("19:30", "20:00", Station()))
+                )
+
             ),
             arrivalTime = "19:30",
             departureTime = "21:10",
         ),
         hasLeft = false,
         isLastLeftTrip = false,
-        onTripItemClicked = { _, _ -> }
+        onTripItemClicked = { _ -> }
     )
 }
