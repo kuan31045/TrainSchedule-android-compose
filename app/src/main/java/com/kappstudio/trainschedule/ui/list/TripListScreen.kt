@@ -64,7 +64,7 @@ fun TripListScreen(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
     viewModel: TripListViewModel = hiltViewModel(),
-    onTripItemClicked: (Trip) -> Unit,
+    onTripItemClicked: (Trip, String) -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val currentPath = viewModel.currentPath.collectAsState()
@@ -122,7 +122,7 @@ fun TripListScreen(
                             trips = uiState.value.trips,
                             date = uiState.value.date,
                             specifiedTimeTrip = uiState.value.specifiedTimeTrip,
-                            onTripItemClicked = { onTripItemClicked(it) }
+                            onTripItemClicked = { onTripItemClicked(it, uiState.value.date) }
                         )
                     } else {
                         Text(text = stringResource(id = R.string.not_find_route))

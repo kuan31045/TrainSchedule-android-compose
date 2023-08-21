@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import androidx.navigation.navOptions
 import com.kappstudio.trainschedule.ui.detail.TripDetailScreen
 import com.kappstudio.trainschedule.ui.detail.TripDetailViewModel
 import com.kappstudio.trainschedule.ui.favorite.FavoriteScreen
@@ -23,7 +24,9 @@ import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.CAN_TRANSFER_BO
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.DATE_STRING
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TIME_STRING
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TIME_TYPE_INT
+import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TRAIN_STRING
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TRAIN_TYPE_INT
+import com.kappstudio.trainschedule.ui.train.TrainScreen
 
 @Composable
 fun TrainNavGraph(
@@ -78,22 +81,47 @@ fun TrainNavGraph(
 
                 TripListScreen(
                     navigateBack = { navController.navigateUp() },
-                    onTripItemClicked = { trip ->
-                        viewModel.setTrip(trip)
+                    onTripItemClicked = { trip, date ->
+                        viewModel.setTrip(trip, date)
                         navController.navigate(Screen.DETAIL.route)
                     }
                 )
             }
 
-            composable(route = Screen.DETAIL.route) {backStackEntry->
+            composable(route = Screen.DETAIL.route) { backStackEntry ->
                 TripDetailScreen(
                     viewModel = backStackEntry.sharedViewModel(navController = navController),
                     onNavigateUp = { navController.navigateUp() },
-                    onTrainButtonClicked = { trainNo -> }
+                    onTrainButtonClicked = { train, date ->
+                        navController.navigate(Screen.TRAIN.route + "/$train" + "/$date")
+                    },
+                    onHomeButtonClicked = { navController.navigateToHome() }
+                )
+            }
+
+            composable(
+                route = RoutesWithArgs.TRAIN,
+                arguments = listOf(
+                    navArgument(TRAIN_STRING) { type = NavType.StringType },
+                    navArgument(DATE_STRING) { type = NavType.StringType }
+                )
+            ) {
+                TrainScreen(
+                    onNavigateUp = { navController.navigateUp() },
+                    onHomeButtonClicked = { navController.navigateToHome() }
                 )
             }
         }
     }
+}
+
+fun NavController.navigateToHome() {
+    this.navigate(Screen.HOME.route,
+        navOptions {
+            popUpTo(Screen.HOME.route)
+            launchSingleTop = true
+        }
+    )
 }
 
 @Composable

@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,18 +24,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.list.TripItemTopLayout
 import com.kappstudio.trainschedule.util.dateWeekFormatter
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,43 +57,48 @@ import com.kappstudio.trainschedule.ui.components.BigStationPoint
 import com.kappstudio.trainschedule.ui.components.RoundRectRoute
 import com.kappstudio.trainschedule.ui.components.SmallStationPoint
 import com.kappstudio.trainschedule.ui.components.TimeText
+import com.kappstudio.trainschedule.ui.components.TrainLargeTopAppBar
 import com.kappstudio.trainschedule.ui.components.TrainText
+import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.calDurationMinutes
 import com.kappstudio.trainschedule.util.localize
+import com.kappstudio.trainschedule.util.toDateWeekFormatter
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripDetailScreen(
     modifier: Modifier = Modifier,
     onNavigateUp: () -> Unit,
-    viewModel: TripDetailViewModel = hiltViewModel(),
-    onTrainButtonClicked: (String) -> Unit,
+    viewModel: TripDetailViewModel,
+    onTrainButtonClicked: (String, String) -> Unit,
+    onHomeButtonClicked: () -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
+
     Scaffold(
         topBar = {
-            LargeTopAppBar(
-                title = { Text(text = uiState.value.trip.path.getTitle()) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
+            TrainLargeTopAppBar(
+                title = uiState.value.trip.path.getTitle(),
+                navigateUp = onNavigateUp,
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    IconButton(onClick = onHomeButtonClicked) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back_desc),
+                            imageVector = Icons.Default.Home,
+                            contentDescription = stringResource(id = R.string.to_home_desc)
                         )
                     }
-                },
-                actions = {
                     IconButton(onClick = {}) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = stringResource(id = R.string.more_desc)
                         )
                     }
-                },
-                scrollBehavior = scrollBehavior
+                }
             )
         },
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -106,7 +110,13 @@ fun TripDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = uiState.value.date.format(dateWeekFormatter), fontSize = 16.sp)
+            val context = LocalContext.current
+
+            Text(
+                text = uiState.value.date.toDateWeekFormatter(),
+                fontSize = 16.sp
+            )
+
             TripItemTopLayout(trip = uiState.value.trip)
             Divider(thickness = 1.5.dp)
 
@@ -114,7 +124,18 @@ fun TripDetailScreen(
                 items(uiState.value.trip.trainSchedules) { schedule ->
                     ScheduleItem(
                         schedule = schedule,
-                        onTrainButtonClicked = { trainNumber -> }
+                        onTrainButtonClicked = { train ->
+
+                            val trainShortName = (when (schedule.train.number) {
+                                "1", "2" -> context.resources.getString(R.string.tour_train)
+                                else -> {
+                                    TrainType.getName(schedule.train.typeCode)
+                                        ?.let { context.resources.getString(it) }
+                                }
+                            } ?: schedule.train.name.localize()) + "-${schedule.train.number}"
+
+                            onTrainButtonClicked(trainShortName, uiState.value.date.toString())
+                        }
                     )
                     if (schedule != uiState.value.trip.trainSchedules.last()) {
                         TransferLayout()
@@ -127,8 +148,7 @@ fun TripDetailScreen(
 
 @Composable
 fun TransferLayout(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.padding(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Divider(modifier = Modifier.padding(start = 56.dp, end = 8.dp), thickness = 1.dp)
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row {
             Icon(
                 modifier = Modifier.padding(start = 8.dp),
@@ -147,7 +167,7 @@ fun ScheduleItem(
     modifier: Modifier = Modifier,
     schedule: TrainSchedule,
     lateMinutes: Int = 0,
-    onTrainButtonClicked: (String) -> Unit,
+    onTrainButtonClicked: (Train) -> Unit,
 ) {
     var heightIs by remember { mutableStateOf(0.dp) }
     val localDensity = LocalDensity.current
@@ -165,10 +185,10 @@ fun ScheduleItem(
 
             BigStationLayout(text = schedule.stops.first().station.name.localize())
 
-
-            Button(onClick = { onTrainButtonClicked(schedule.train.number) }) {
+            Button(onClick = { onTrainButtonClicked(schedule.train) }) {
                 TrainText(train = schedule.train)
             }
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     modifier = Modifier
@@ -182,6 +202,7 @@ fun ScheduleItem(
             }
 
             StopsLayout(stops = schedule.stops)
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BigStationLayout(
                     modifier = Modifier.weight(1f),
@@ -189,6 +210,8 @@ fun ScheduleItem(
                 )
                 Text(text = schedule.arrivalTime, style = MaterialTheme.typography.titleLarge)
             }
+
+            Divider(thickness = 1.dp)
         }
     }
 }

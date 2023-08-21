@@ -50,5 +50,6 @@
     <string name="stops">行經 %1\$d 站</string>
     <string name="to">往</string>
     <string name="predict_departure">預計發車</string>
+    <string name="to_home_desc">回首頁</string>
 
 </resources>

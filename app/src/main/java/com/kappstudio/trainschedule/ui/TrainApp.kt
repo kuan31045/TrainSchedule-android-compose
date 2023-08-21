@@ -23,19 +23,6 @@ import com.kappstudio.trainschedule.ui.navigation.TrainNavGraph
 
 @Composable
 fun TrainApp(navController: NavHostController = rememberNavController()) {
-    Column {
-        TrainTopAppBar(
-            title = "",
-            canNavigateBack = false,
-            navigateUp = {},
-        )
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-        ) { }
-    }
-
     TrainNavGraph(navController = navController)
 }
 

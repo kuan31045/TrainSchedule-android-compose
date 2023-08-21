@@ -70,11 +70,10 @@ fun RoundRectRoute(
 ) {
     val color = MaterialTheme.colorScheme.primary
 
-    Canvas(modifier = modifier
-        .size(
-            width = dimensionResource(id = R.dimen.round_rect_width),
-            height = height - 7.5.dp
-        ),
+    Canvas(modifier = modifier.padding(top=0.5.dp).size(
+        width = dimensionResource(id = R.dimen.round_rect_width),
+        height = height - 25.5.dp
+    ),
         onDraw = {
             drawRoundRect(
                 color = color, cornerRadius = CornerRadius(x = 99.dp.toPx(), y = 99.dp.toPx())
