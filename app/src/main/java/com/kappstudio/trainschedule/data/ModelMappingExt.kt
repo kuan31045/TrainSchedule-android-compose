@@ -9,7 +9,7 @@ import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Station
-import com.kappstudio.trainschedule.domain.model.StopSchedule
+import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.util.countyMap
@@ -26,8 +26,8 @@ fun StationDto.toStation(): Station {
     )
 }
 
-fun StopTimeDto.toStop(): StopSchedule {
-    return StopSchedule(
+fun StopTimeDto.toStop(): Stop {
+    return Stop(
         arrivalTime = arrivalTime,
         departureTime = departureTime,
         station = Station(id = stationId, name = stationName)
@@ -38,7 +38,9 @@ fun TrainInfoDto.toTrain(): Train {
     return Train(
         number = trainNo,
         name = trainTypeName,
-        typeCode = trainTypeCode.toInt()
+        typeCode = trainTypeCode.toInt(),
+        startStation = Station(id = startingStationId, name = startingStationName),
+        endStation = Station(id = endingStationId, name = endingStationName)
     )
 }
 

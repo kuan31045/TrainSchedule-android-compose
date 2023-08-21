@@ -144,6 +144,7 @@ class TripListViewModel @Inject constructor(
             )
         }
         filterTrips()
+
     }
 
     fun searchTrips() {

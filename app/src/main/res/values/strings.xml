@@ -4,8 +4,8 @@
     <string name="favorite_title">Favorite</string>
 
     <string name="back_desc">back</string>
-    <string name="from">From</string>
-    <string name="to">To</string>
+    <string name="from_station">From</string>
+    <string name="to_station">To</string>
     <string name="swap_desc">swap station</string>
     <string name="ok">OK</string>
     <string name="checked_desc">checked</string>
@@ -43,5 +43,12 @@
     <string name="ck_express">C.K.</string>
     <string name="local_train">Local</string>
     <string name="fast_local_train">Fast Local</string>
+    <string name="more_desc">more</string>
+    <string name="expand_desc">Expand</string>
+    <string name="collapse_desc">Collapse</string>
+    <string name="stops">%1\$d Stops</string>
+    <string name="to">to</string>
+    <string name="predict_departure">Departure Time</string>
+
 
 </resources>

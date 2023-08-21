@@ -26,7 +26,7 @@ interface TrainApi {
     @GET(API_RAIL + "Station")
     suspend fun getStations(@Header("authorization") token: String): StationResponse
 
-    @GET(API_RAIL + "DailyTrainTimetable/OD/{OriginStationID}/to/{DestinationStationID}/{TrainDate}")
+    @GET(API_RAIL + "DailyTrainTimetable/OD/Inclusive/{OriginStationID}/to/{DestinationStationID}/{TrainDate}")
     suspend fun getTrainTimetable(
         @Header("authorization") token: String,
         @Path("OriginStationID") departureStationId: String,

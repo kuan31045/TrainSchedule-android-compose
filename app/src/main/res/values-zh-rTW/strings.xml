@@ -5,8 +5,8 @@
     <string name="favorite_title">最愛</string>
 
     <string name="back_desc">返回</string>
-    <string name="from">出發站</string>
-    <string name="to">抵達站</string>
+    <string name="from_station">出發站</string>
+    <string name="to_station">抵達站</string>
     <string name="swap_desc">交換車站</string>
     <string name="ok">確定</string>
     <string name="checked_desc">選取</string>
@@ -29,10 +29,10 @@
     <string name="not_find_route">查無結果</string>
     <string name="direct">直達</string>
     <string name="time_desc">時間</string>
-    <string name="time_format">%1\$d 小時 %2\$d 分</string>
+    <string name="time_format">%1\$d 小時 %2\$d 分鐘</string>
     <string name="hour">小時</string>
     <string name="transferTimes">次轉乘</string>
-    <string name="minute">分</string>
+    <string name="minute">分鐘</string>
     <string name="left">已離站</string>
     <string name="delete_desc">刪除</string>
     <string name="no_favorite">最愛為空</string>
@@ -44,5 +44,11 @@
     <string name="ck_express">莒光</string>
     <string name="local_train">區間</string>
     <string name="fast_local_train">快區間</string>
+    <string name="more_desc">更多</string>
+    <string name="expand_desc">展開</string>
+    <string name="collapse_desc">收合</string>
+    <string name="stops">行經 %1\$d 站</string>
+    <string name="to">往</string>
+    <string name="predict_departure">預計發車</string>
 
 </resources>

@@ -13,6 +13,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.kappstudio.trainschedule.ui.detail.TripDetailScreen
+import com.kappstudio.trainschedule.ui.detail.TripDetailViewModel
 import com.kappstudio.trainschedule.ui.favorite.FavoriteScreen
 import com.kappstudio.trainschedule.ui.home.HomeScreen
 import com.kappstudio.trainschedule.ui.home.StationScreen
@@ -42,7 +44,7 @@ fun TrainNavGraph(
                     onSearchButtonClicked = { date, time, timeType, trainType, canTransfer ->
                         navController.navigate(
                             Screen.TRIPS.route
-                                    + "/${date}" + "/${time}" + "/${timeType}" + "/${trainType}" + "/${canTransfer}"
+                                    + "/$date" + "/$time" + "/$timeType" + "/$trainType" + "/$canTransfer"
                         )
                     },
                     onToFavoriteButtonClicked = {
@@ -69,10 +71,25 @@ fun TrainNavGraph(
                     navArgument(TIME_TYPE_INT) { type = NavType.IntType },
                     navArgument(TRAIN_TYPE_INT) { type = NavType.IntType },
                     navArgument(CAN_TRANSFER_BOOLEAN) { type = NavType.BoolType }
-                )) {
+                )) { backStackEntry ->
+
+                val viewModel: TripDetailViewModel =
+                    backStackEntry.sharedViewModel(navController = navController)
+
                 TripListScreen(
                     navigateBack = { navController.navigateUp() },
-                    onTripItemClicked = { trip -> }
+                    onTripItemClicked = { trip ->
+                        viewModel.setTrip(trip)
+                        navController.navigate(Screen.DETAIL.route)
+                    }
+                )
+            }
+
+            composable(route = Screen.DETAIL.route) {backStackEntry->
+                TripDetailScreen(
+                    viewModel = backStackEntry.sharedViewModel(navController = navController),
+                    onNavigateUp = { navController.navigateUp() },
+                    onTrainButtonClicked = { trainNo -> }
                 )
             }
         }

@@ -29,9 +29,10 @@ fun TrainApp(navController: NavHostController = rememberNavController()) {
             canNavigateBack = false,
             navigateUp = {},
         )
-        Surface(modifier = Modifier
-            .fillMaxSize()
-            .weight(1f)
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
         ) { }
     }
 
@@ -49,25 +50,24 @@ fun TrainTopAppBar(
 ) {
     Surface(shadowElevation = dimensionResource(R.dimen.surface_shadow_elevation_4)) {
 
-    CenterAlignedTopAppBar(
-        modifier = modifier,
-        title = {
-        Text(
-               text = title,
-           )
-        },
-        navigationIcon = {
-            if (canNavigateBack) {
-                IconButton(onClick = navigateUp) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.back_desc),
-                     )
+        CenterAlignedTopAppBar(
+            modifier = modifier,
+            title = {
+                Text(text = title)
+            },
+            navigationIcon = {
+                if (canNavigateBack) {
+                    IconButton(onClick = navigateUp) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back_desc),
+                        )
+                    }
                 }
-            }
-        },
-        actions = actions
-    )}
+            },
+            actions = actions
+        )
+    }
 }
 
 @Preview

@@ -12,4 +12,3 @@ data class PathEntity(
     @Embedded(prefix = "arrival_station_")
     val arrivalStation: StationEntity,
 )
-

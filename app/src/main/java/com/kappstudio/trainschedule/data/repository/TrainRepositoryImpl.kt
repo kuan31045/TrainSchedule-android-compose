@@ -121,6 +121,7 @@ class TrainRepositoryImpl @Inject constructor(
 
             Result.Success(result.trainTimetables.map { timeTable ->
                 Trip(
+                    path = currentPath.first(),
                     departureTime = timeTable.stopTimes.first().departureTime,
                     arrivalTime = timeTable.stopTimes.last().arrivalTime,
                     trainSchedules = listOf(

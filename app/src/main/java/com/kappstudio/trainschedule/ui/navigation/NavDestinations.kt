@@ -21,13 +21,9 @@ object NavigationArgs {
     const val TIME_TYPE_INT = "timeType"
     const val TRAIN_TYPE_INT = "trainType"
     const val CAN_TRANSFER_BOOLEAN = "canTransfer"
-    const val TRIP = "trip"
 }
 
 object RoutesWithArgs {
     val TRIPS =
         "${Screen.TRIPS.route}/{$DATE_STRING}/{$TIME_STRING}/{$TIME_TYPE_INT}/{$TRAIN_TYPE_INT}/{$CAN_TRANSFER_BOOLEAN}"
-    val DETAIL =
-        "${Screen.DETAIL.route}/{$}"
-
 }

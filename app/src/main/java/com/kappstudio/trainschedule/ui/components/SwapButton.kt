@@ -18,12 +18,10 @@ import com.kappstudio.trainschedule.R
 @Composable
 fun SwapButton(
     onClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     IconButton(
-        modifier = modifier
-            .padding(bottom = 8.dp)
-            .size(dimensionResource(R.dimen.swap_button_size)),
+        modifier = modifier.size(dimensionResource(R.dimen.swap_button_size)),
         onClick = onClicked
     ) {
         Icon(

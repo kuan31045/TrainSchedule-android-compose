@@ -30,7 +30,7 @@ import com.commandiron.wheel_picker_compose.core.WheelPickerDefaults
 import com.commandiron.wheel_picker_compose.core.WheelTextPicker
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.components.SegmentedControl
-import com.kappstudio.trainschedule.util.dateFormatter
+import com.kappstudio.trainschedule.util.dateWeekFormatter
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -85,7 +85,7 @@ fun DateTimeDialog(
                         startIndex = timeList.indexOf(date),
                         modifier = Modifier.weight(1f),
                         rowCount = 3,
-                        texts = timeList.map { it.format(dateFormatter) }
+                        texts = timeList.map { it.format(dateWeekFormatter) }
                     ) { index ->
                         date = timeList[index]
                         null

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -33,7 +32,6 @@ import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.ui.TrainTopAppBar
-import com.kappstudio.trainschedule.util.localize
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
@@ -50,9 +48,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Station
-import com.kappstudio.trainschedule.domain.model.StopSchedule
+import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.ui.components.ErrorLayout
+import com.kappstudio.trainschedule.ui.components.TimeText
+import com.kappstudio.trainschedule.ui.components.TrainText
 import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.toggle
@@ -73,8 +73,7 @@ fun TripListScreen(
     Scaffold(
         topBar = {
             TrainTopAppBar(
-                title = "${currentPath.value.departureStation.name.localize()} " +
-                        "➝ ${currentPath.value.arrivalStation.name.localize()}",
+                title = currentPath.value.getTitle(),
                 canNavigateBack = true,
                 navigateUp = navigateBack,
                 actions = {
@@ -250,116 +249,18 @@ fun TripItem(
 ) {
     Card(
         modifier = modifier,
-        onClick = {
-            onTripItemClicked(trip)
-        }
+        onClick = { onTripItemClicked(trip) }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-                Text(
-                    text = trip.departureTime,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 25.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    Icon(
-                        modifier = Modifier.padding(2.dp),
-                        painter = painterResource(id = R.drawable.ic_arrow),
-                        contentDescription = null
-                    )
-                    Text(
-                        text = if (trip.transferCount == 0) {
-                            stringResource(id = R.string.direct)
-                        } else {
-                            trip.transferCount.toString() + stringResource(id = R.string.transferTimes)
-                        },
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = trip.arrivalTime,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
 
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            modifier = Modifier
-                                .size(16.dp)
-                                .padding(end = 4.dp),
-                            painter = painterResource(R.drawable.ic_time),
-                            contentDescription = stringResource(R.string.time_desc)
-                        )
-                        Text(
-                            text = when {
-                                trip.durationMinutes < 60 -> "${trip.durationMinutes} ${
-                                    stringResource(
-                                        id = R.string.minute
-                                    )
-                                }"
-
-                                trip.durationMinutes % 60 == 0 -> "${trip.durationMinutes / 60} ${
-                                    stringResource(
-                                        id = R.string.hour
-                                    )
-                                }"
-
-                                else -> stringResource(
-                                    id = R.string.time_format,
-                                    (trip.durationMinutes / 60),
-                                    (trip.durationMinutes % 60)
-                                )
-                            },
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                    }
-                    Text(
-                        text = "$ " + trip.totalPrice,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-            }
+            TripItemTopLayout(trip = trip)
 
             Divider(
                 thickness = 0.6.dp,
                 modifier = Modifier.padding(vertical = 10.dp)
             )
 
-            Row {
-                trip.trainSchedules.map { it.train }.forEach { train ->
-                    Text(
-                        text = when ( train.number) {
-                            "1", "2" -> stringResource(id = R.string.tour_train)
-                            else -> {
-                                TrainType.getName( train.typeCode)
-                                    ?.let { stringResource(it) }
-                            }
-                        } ?:  train.name.localize(),
-                        fontSize = 16.sp
-                    )
-                    Text(text = " ${ train.number}", fontSize = 16.sp)
-                    if (train != trip.trainSchedules.last().train) Text(text = " > ")
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                if (hasLeft) {
-                    Text(
-                        text = stringResource(R.string.left),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
+            TrainsLayout(trains = trip.trainSchedules.map { it.train }, hasLeft = hasLeft)
         }
     }
 
@@ -368,6 +269,79 @@ fun TripItem(
             thickness = 2.dp,
             modifier = Modifier.padding(top = 16.dp)
         )
+    }
+}
+
+@Composable
+fun TripItemTopLayout(
+    modifier: Modifier = Modifier,
+    trip: Trip,
+) {
+    Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        Text(
+            text = trip.departureTime,
+            style = MaterialTheme.typography.titleLarge,
+            fontSize = 25.sp,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
+            Icon(
+                modifier = Modifier.padding(vertical = 2.dp, horizontal = 4.dp),
+                painter = painterResource(id = R.drawable.ic_arrow),
+                contentDescription = null
+            )
+            Text(
+                text = if (trip.transferCount == 0) {
+                    stringResource(id = R.string.direct)
+                } else {
+                    trip.transferCount.toString() + stringResource(id = R.string.transferTimes)
+                },
+                style = MaterialTheme.typography.labelSmall
+            )
+        }
+        Text(
+            modifier = Modifier.weight(1f),
+            text = trip.arrivalTime,
+            style = MaterialTheme.typography.titleLarge,
+            fontSize = 24.sp,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            TimeText(minutes = trip.durationMinutes)
+            Text(
+                text = "$ " + trip.totalPrice,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+@Composable
+fun TrainsLayout(
+    modifier: Modifier = Modifier,
+    trains: List<Train>,
+    hasLeft: Boolean,
+) {
+    Row(modifier = modifier) {
+        trains.forEach { train ->
+            TrainText(train = train)
+            if (train != trains.last()) Text(text = " > ")
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        if (hasLeft) {
+            Text(
+                text = stringResource(R.string.left),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
     }
 }
 
@@ -380,7 +354,7 @@ fun TripItemPreview() {
                 TrainSchedule(
                     train = Train("123", Name("Local", "Local")),
                     price = 100,
-                    stops = listOf(StopSchedule("19:30", "20:00", Station()))
+                    stops = listOf(Stop("19:30", "20:00", Station()))
                 )
 
             ),

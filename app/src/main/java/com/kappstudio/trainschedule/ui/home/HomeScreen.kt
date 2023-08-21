@@ -10,11 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,13 +40,12 @@ import com.kappstudio.trainschedule.ui.TrainTopAppBar
 import com.kappstudio.trainschedule.ui.components.GradientButton
 import com.kappstudio.trainschedule.ui.components.SegmentedControl
 import com.kappstudio.trainschedule.ui.components.SwapButton
-import com.kappstudio.trainschedule.util.dateFormatter
+import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.localize
 import com.kappstudio.trainschedule.util.timeFormatter
 import java.time.LocalDate
 import java.time.LocalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -156,23 +153,22 @@ fun HomeStationLayout(
 ) {
     Row(
         modifier = modifier,
-        verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.SpaceAround,
     ) {
         ToStationScreenButton(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            desc = stringResource(R.string.from),
+            desc = stringResource(R.string.from_station),
             station = departureStation,
             onClicked = { onStationButtonClicked(SelectedType.DEPARTURE) }
         )
-        SwapButton(onClicked = onSwapButtonClicked)
+        SwapButton(modifier = Modifier.padding(top=48.dp),onClicked = onSwapButtonClicked)
         ToStationScreenButton(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            desc = stringResource(R.string.to),
+            desc = stringResource(R.string.to_station),
             station = arrivalStation,
             onClicked = { onStationButtonClicked(SelectedType.ARRIVAL) }
         )
@@ -235,7 +231,7 @@ fun DateTimeLayout(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .weight(1f),
-                text = "${date.format(dateFormatter)}   ${time.format(timeFormatter)}",
+                text = "${date.format(dateWeekFormatter)}   ${time.format(timeFormatter)}",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
