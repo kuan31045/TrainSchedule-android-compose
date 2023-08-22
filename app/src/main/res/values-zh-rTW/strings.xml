@@ -51,5 +51,6 @@
     <string name="to">往</string>
     <string name="predict_departure">預計發車</string>
     <string name="to_home_desc">回首頁</string>
-
+    <string name="on_time">準點</string>
+    <string name="delay">晚 %1\$d 分</string>
 </resources>

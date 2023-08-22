@@ -24,6 +24,7 @@ import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Trip
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -112,7 +113,7 @@ class TrainRepositoryImpl @Inject constructor(
                 arrivalStationId = currentPath.first().arrivalStation.id,
                 date = date
             )
-
+            delay(500)
             val fares = api.getODFare(
                 token = fetchAccessToken(),
                 departureStationId = currentPath.first().departureStation.id,
@@ -159,6 +160,16 @@ class TrainRepositoryImpl @Inject constructor(
     override suspend fun isCurrentPathFavorite(): Boolean {
         return withContext(Dispatchers.IO) {
             trainDb.pathDao.getPath(currentPath.first().toPathEntity().id) != null
+        }
+    }
+
+    override suspend fun getTrainDelayTime(trainNumber: String): Int? {
+        return try {
+            val result = api.getTrainLiveBoard(fetchAccessToken(), trainNumber)
+            result.trainLiveBoards?.first()?.delayTime
+        } catch (e: Exception) {
+            Timber.w("getTrainLiveBoard exception = ${e.message}")
+            null
         }
     }
 

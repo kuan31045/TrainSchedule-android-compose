@@ -26,7 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.list.TripItemTopLayout
-import com.kappstudio.trainschedule.util.dateWeekFormatter
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -59,11 +58,11 @@ import com.kappstudio.trainschedule.ui.components.SmallStationPoint
 import com.kappstudio.trainschedule.ui.components.TimeText
 import com.kappstudio.trainschedule.ui.components.TrainLargeTopAppBar
 import com.kappstudio.trainschedule.ui.components.TrainText
+import com.kappstudio.trainschedule.util.TrainStatus
 import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.calDurationMinutes
 import com.kappstudio.trainschedule.util.localize
 import com.kappstudio.trainschedule.util.toDateWeekFormatter
-import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +76,7 @@ fun TripDetailScreen(
     val uiState = viewModel.uiState.collectAsState()
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-
+    viewModel.fetchTrainsDelayTime()
 
     Scaffold(
         topBar = {
@@ -124,7 +123,7 @@ fun TripDetailScreen(
                 items(uiState.value.trip.trainSchedules) { schedule ->
                     ScheduleItem(
                         schedule = schedule,
-                        onTrainButtonClicked = { train ->
+                        onTrainButtonClicked = {
 
                             val trainShortName = (when (schedule.train.number) {
                                 "1", "2" -> context.resources.getString(R.string.tour_train)
@@ -167,13 +166,15 @@ fun ScheduleItem(
     modifier: Modifier = Modifier,
     schedule: TrainSchedule,
     lateMinutes: Int = 0,
-    onTrainButtonClicked: (Train) -> Unit,
+    onTrainButtonClicked: () -> Unit,
 ) {
     var heightIs by remember { mutableStateOf(0.dp) }
     val localDensity = LocalDensity.current
 
     Box(modifier = modifier.padding(horizontal = 8.dp, vertical = 16.dp)) {
+
         RoundRectRoute(modifier = Modifier.padding(vertical = 4.dp), height = heightIs)
+
         Column(
             modifier = Modifier
                 .padding(start = 48.dp)
@@ -185,21 +186,11 @@ fun ScheduleItem(
 
             BigStationLayout(text = schedule.stops.first().station.name.localize())
 
-            Button(onClick = { onTrainButtonClicked(schedule.train) }) {
+            Button(onClick = onTrainButtonClicked) {
                 TrainText(train = schedule.train)
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    modifier = Modifier
-                        .padding(start = 4.dp)
-                        .weight(1f),
-                    text = stringResource(id = R.string.predict_departure),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline
-                )
-                Text(text = schedule.departureTime, style = MaterialTheme.typography.titleLarge)
-            }
+            TrainTimeLayout(train = schedule.train, departureTime = schedule.departureTime)
 
             StopsLayout(stops = schedule.stops)
 
@@ -213,6 +204,30 @@ fun ScheduleItem(
 
             Divider(thickness = 1.dp)
         }
+    }
+}
+
+@Composable
+fun TrainTimeLayout(modifier: Modifier = Modifier, train: Train, departureTime: String) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            modifier = Modifier
+                .padding(start = 4.dp)
+                .weight(1f),
+            text = when (train.status) {
+                TrainStatus.DELAY -> stringResource(
+                    id = R.string.delay, train.delayTime ?: 1
+                )
+
+                else -> stringResource(id = train.status.status)
+            },
+            color = when (train.status) {
+                TrainStatus.EXPECTED -> MaterialTheme.colorScheme.outline
+                TrainStatus.ON_TIME -> com.kappstudio.trainschedule.ui.theme.on_time
+                TrainStatus.DELAY -> MaterialTheme.colorScheme.error
+            }
+        )
+        Text(text = departureTime, style = MaterialTheme.typography.titleLarge)
     }
 }
 

@@ -1,9 +1,6 @@
 package com.kappstudio.trainschedule.domain.model
 
 import com.kappstudio.trainschedule.util.calDurationMinutes
-import com.kappstudio.trainschedule.util.timeFormatter
-import java.time.Duration
-import java.time.LocalTime
 
 data class Trip(
     val path: Path = Path(),

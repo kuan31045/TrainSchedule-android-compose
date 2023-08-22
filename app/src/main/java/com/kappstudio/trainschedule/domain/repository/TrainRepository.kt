@@ -27,4 +27,6 @@ interface TrainRepository {
     fun getAllPathsStream(): Flow<List<Path>>
 
     suspend fun isCurrentPathFavorite(): Boolean
+
+    suspend fun getTrainDelayTime(trainNumber: String): Int?
 }

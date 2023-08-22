@@ -48,8 +48,8 @@
     <string name="collapse_desc">Collapse</string>
     <string name="stops">%1\$d Stops</string>
     <string name="to">to</string>
-    <string name="predict_departure">Departure Time</string>
+    <string name="predict_departure">Scheduled</string>
     <string name="to_home_desc">Back to Home page</string>
-
-
-</resources>
+    <string name="on_time">On Time</string>
+    <string name="delay">Delay %1\$d min</string>
+ </resources>

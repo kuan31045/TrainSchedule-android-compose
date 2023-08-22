@@ -1,6 +1,10 @@
 package com.kappstudio.trainschedule.domain.model
 
+import androidx.annotation.StringRes
 import com.kappstudio.trainschedule.util.calDurationMinutes
+import com.kappstudio.trainschedule.R
+import com.kappstudio.trainschedule.util.timeFormatter
+import java.time.LocalTime
 
 data class TrainSchedule(
     val train: Train,

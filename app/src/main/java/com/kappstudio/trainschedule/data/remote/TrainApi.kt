@@ -5,6 +5,7 @@ import com.kappstudio.trainschedule.data.remote.dto.FareResponse
 import com.kappstudio.trainschedule.data.remote.dto.StationResponse
 import com.kappstudio.trainschedule.data.remote.dto.TimeTableResponse
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
+import com.kappstudio.trainschedule.data.remote.dto.TrainLiveBoardResponse
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -14,13 +15,14 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface TrainApi {
+
     @Headers("Content-Type: application/x-www-form-urlencoded")
     @FormUrlEncoded
     @POST("auth/realms/TDXConnect/protocol/openid-connect/token")
     suspend fun getAccessToken(
         @Field("grant_type") grantType: String = GRANT_TYPE,
         @Field("client_id") clientId: String = CLIENT_ID,
-        @Field("client_secret") clientSecret: String = CLIENT_SECRET
+        @Field("client_secret") clientSecret: String = CLIENT_SECRET,
     ): TokenDto
 
     @GET(API_RAIL + "Station")
@@ -31,7 +33,7 @@ interface TrainApi {
         @Header("authorization") token: String,
         @Path("OriginStationID") departureStationId: String,
         @Path("DestinationStationID") arrivalStationId: String,
-        @Path("TrainDate") date: String
+        @Path("TrainDate") date: String,
     ): TimeTableResponse
 
     @GET(API_RAIL + "ODFare/{OriginStationID}/to/{DestinationStationID}")
@@ -40,6 +42,12 @@ interface TrainApi {
         @Path("OriginStationID") departureStationId: String,
         @Path("DestinationStationID") arrivalStationId: String,
     ): FareResponse
+
+    @GET(API_RAIL + "TrainLiveBoard/TrainNo/{TrainNo}")
+    suspend fun getTrainLiveBoard(
+        @Header("authorization") token: String,
+        @Path("TrainNo") trainNumber: String,
+    ):TrainLiveBoardResponse
 
     companion object {
         const val API_RAIL = "api/basic/v3/Rail/TRA/"
