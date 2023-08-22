@@ -53,4 +53,5 @@
     <string name="to_home_desc">回首頁</string>
     <string name="on_time">準點</string>
     <string name="delay">晚 %1\$d 分</string>
+    <string name="price">車資: $%1\$d</string>
 </resources>

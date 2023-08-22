@@ -25,7 +25,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kappstudio.trainschedule.R
-import com.kappstudio.trainschedule.ui.list.TripItemTopLayout
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -37,6 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,17 +52,23 @@ import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
+import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.ui.components.BigStationPoint
 import com.kappstudio.trainschedule.ui.components.RoundRectRoute
 import com.kappstudio.trainschedule.ui.components.SmallStationPoint
 import com.kappstudio.trainschedule.ui.components.TimeText
 import com.kappstudio.trainschedule.ui.components.TrainLargeTopAppBar
 import com.kappstudio.trainschedule.ui.components.TrainText
+import com.kappstudio.trainschedule.ui.components.pullrefreshm3.PullRefreshIndicator
+import com.kappstudio.trainschedule.ui.components.pullrefreshm3.pullRefresh
+import com.kappstudio.trainschedule.ui.components.pullrefreshm3.rememberPullRefreshState
 import com.kappstudio.trainschedule.util.TrainStatus
 import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.calDurationMinutes
 import com.kappstudio.trainschedule.util.localize
 import com.kappstudio.trainschedule.util.toDateWeekFormatter
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,69 +82,110 @@ fun TripDetailScreen(
     val uiState = viewModel.uiState.collectAsState()
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    viewModel.fetchTrainsDelayTime()
 
-    Scaffold(
-        topBar = {
-            TrainLargeTopAppBar(
-                title = uiState.value.trip.path.getTitle(),
-                navigateUp = onNavigateUp,
-                scrollBehavior = scrollBehavior,
-                actions = {
-                    IconButton(onClick = onHomeButtonClicked) {
-                        Icon(
-                            imageVector = Icons.Default.Home,
-                            contentDescription = stringResource(id = R.string.to_home_desc)
-                        )
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = stringResource(id = R.string.more_desc)
-                        )
-                    }
-                }
-            )
-        },
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            val context = LocalContext.current
+    val refreshScope = rememberCoroutineScope()
+    var refreshing by remember { mutableStateOf(false) }
+    fun refresh() = refreshScope.launch {
+        refreshing = true
+        delay(300)
+        viewModel.fetchTrainsDelayTime()
+        refreshing = false
+    }
 
-            Text(
-                text = uiState.value.date.toDateWeekFormatter(),
-                fontSize = 16.sp
-            )
+    val refreshState = rememberPullRefreshState(refreshing, ::refresh)
 
-            TripItemTopLayout(trip = uiState.value.trip)
-            Divider(thickness = 1.5.dp)
-
-            LazyColumn {
-                items(uiState.value.trip.trainSchedules) { schedule ->
-                    ScheduleItem(
-                        schedule = schedule,
-                        onTrainButtonClicked = {
-
-                            val trainShortName = (when (schedule.train.number) {
-                                "1", "2" -> context.resources.getString(R.string.tour_train)
-                                else -> {
-                                    TrainType.getName(schedule.train.typeCode)
-                                        ?.let { context.resources.getString(it) }
-                                }
-                            } ?: schedule.train.name.localize()) + "-${schedule.train.number}"
-
-                            onTrainButtonClicked(trainShortName, uiState.value.date.toString())
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .pullRefresh(state = refreshState)
+    ) {
+        Scaffold(
+            topBar = {
+                TrainLargeTopAppBar(
+                    title = uiState.value.trip.path.getTitle(),
+                    navigateUp = onNavigateUp,
+                    scrollBehavior = scrollBehavior,
+                    actions = {
+                        IconButton(onClick = onHomeButtonClicked) {
+                            Icon(
+                                imageVector = Icons.Default.Home,
+                                contentDescription = stringResource(id = R.string.to_home_desc)
+                            )
                         }
-                    )
-                    if (schedule != uiState.value.trip.trainSchedules.last()) {
-                        TransferLayout()
+                        IconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(id = R.string.more_desc)
+                            )
+                        }
                     }
+                )
+            },
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+        ) { innerPadding ->
+            TripBody(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                date = uiState.value.date.toDateWeekFormatter(),
+                trip = uiState.value.trip,
+                onTrainButtonClicked = { onTrainButtonClicked(it, uiState.value.date) }
+            )
+        }
+
+        PullRefreshIndicator(
+            modifier = Modifier
+                .align(alignment = Alignment.TopCenter)
+                .padding(top = 100.dp),
+            refreshing = refreshing,
+            state = refreshState,
+        )
+    }
+}
+
+@Composable
+fun TripBody(
+    modifier: Modifier = Modifier,
+    date: String,
+    trip: Trip,
+    onTrainButtonClicked: (String) -> Unit,
+) {
+    val context = LocalContext.current
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        LazyColumn {
+            item {
+                Row(modifier=Modifier.padding(bottom = 4.dp)) {
+                    Text(text = date, fontSize = 16.sp)
+                    Text(
+                        modifier = Modifier.padding(start = 16.dp),
+                        text = stringResource(id = R.string.price, trip.totalPrice)
+                    )
+                }
+            }
+
+            items(trip.trainSchedules) { schedule ->
+                ScheduleItem(
+                    schedule = schedule,
+                    onTrainButtonClicked = {
+
+                        val trainShortName = (when (schedule.train.number) {
+                            "1", "2" -> context.resources.getString(R.string.tour_train)
+                            else -> {
+                                TrainType.getName(schedule.train.typeCode)
+                                    ?.let { context.resources.getString(it) }
+                            }
+                        } ?: schedule.train.name.localize()) + "-${schedule.train.number}"
+
+                        onTrainButtonClicked(trainShortName)
+                    }
+                )
+                if (schedule != trip.trainSchedules.last()) {
+                    TransferLayout()
                 }
             }
         }
@@ -158,7 +205,6 @@ fun TransferLayout(modifier: Modifier = Modifier) {
         }
         Divider(modifier = Modifier.padding(start = 56.dp, end = 8.dp), thickness = 1.dp)
     }
-
 }
 
 @Composable

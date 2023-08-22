@@ -52,4 +52,5 @@
     <string name="to_home_desc">Back to Home page</string>
     <string name="on_time">On Time</string>
     <string name="delay">Delay %1\$d min</string>
- </resources>
+    <string name="price">Cost: NT$%1\$d</string>
+</resources>

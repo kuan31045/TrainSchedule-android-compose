@@ -29,23 +29,22 @@ class TripDetailViewModel @Inject constructor(
         _uiState.update { currentState ->
             currentState.copy(trip = trip, date = date)
         }
+        viewModelScope.launch {
+            fetchTrainsDelayTime()
+        }
     }
 
-    fun fetchTrainsDelayTime() {
+    suspend fun fetchTrainsDelayTime() {
         if (uiState.value.date > LocalDate.now().toString()) {
             return
         }
-
-        viewModelScope.launch {
-            val newSchedules = uiState.value.trip.trainSchedules.map {
-                it.copy(train = it.train.copy(delayTime = trainRepository.getTrainDelayTime(it.train.number)))
-            }
-
-            _uiState.update { currentState ->
-                currentState.copy(
-                    trip = uiState.value.trip.copy(trainSchedules = newSchedules)
-                )
-            }
+        val newSchedules = uiState.value.trip.trainSchedules.map {
+            it.copy(train = it.train.copy(delayTime = trainRepository.getTrainDelayTime(it.train.number)))
+        }
+        _uiState.update { currentState ->
+            currentState.copy(
+                trip = uiState.value.trip.copy(trainSchedules = newSchedules)
+            )
         }
     }
 }
