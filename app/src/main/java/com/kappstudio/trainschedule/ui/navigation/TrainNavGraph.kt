@@ -92,7 +92,7 @@ fun TrainNavGraph(
                 TripDetailScreen(
                     viewModel = backStackEntry.sharedViewModel(navController = navController),
                     onNavigateUp = { navController.navigateUp() },
-                    onTrainButtonClicked = { train, date ->
+                    onTrainButtonClicked = {train, date ->
                         navController.navigate(Screen.TRAIN.route + "/$train" + "/$date")
                     },
                     onHomeButtonClicked = { navController.navigateToHome() }

@@ -2,6 +2,7 @@ package com.kappstudio.trainschedule.data.remote
 
 import com.kappstudio.trainschedule.BuildConfig
 import com.kappstudio.trainschedule.data.remote.dto.FareResponse
+import com.kappstudio.trainschedule.data.remote.dto.LineResponse
 import com.kappstudio.trainschedule.data.remote.dto.StationResponse
 import com.kappstudio.trainschedule.data.remote.dto.TimeTableResponse
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
@@ -47,7 +48,23 @@ interface TrainApi {
     suspend fun getTrainLiveBoard(
         @Header("authorization") token: String,
         @Path("TrainNo") trainNumber: String,
-    ):TrainLiveBoardResponse
+    ): TrainLiveBoardResponse
+
+
+    @GET(API_RAIL + "GeneralTrainTimetable/TrainNo/{TrainNo}")
+    suspend fun getGeneralTrainTimetable(
+        @Header("authorization") token: String,
+        @Path("TrainNo") trainNumber: String,
+    ): TimeTableResponse
+
+    @GET(API_RAIL + "DailyTrainTimetable/Today")
+    suspend fun getTodayTrainTimetable(
+        @Header("authorization") token: String,
+    ): TimeTableResponse
+
+
+    @GET(API_RAIL + "StationOfLine")
+    suspend fun getLines(@Header("authorization") token: String): LineResponse
 
     companion object {
         const val API_RAIL = "api/basic/v3/Rail/TRA/"

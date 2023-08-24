@@ -39,7 +39,7 @@ class TripDetailViewModel @Inject constructor(
             return
         }
         val newSchedules = uiState.value.trip.trainSchedules.map {
-            it.copy(train = it.train.copy(delayTime = trainRepository.getTrainDelayTime(it.train.number)))
+            it.copy(train = it.train.copy(delayTime = trainRepository.fetchTrainDelayTime(it.train.number)))
         }
         _uiState.update { currentState ->
             currentState.copy(

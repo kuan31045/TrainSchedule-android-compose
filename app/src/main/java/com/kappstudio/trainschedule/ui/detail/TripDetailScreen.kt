@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,8 +29,6 @@ import com.kappstudio.trainschedule.R
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
@@ -54,6 +53,7 @@ import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.ui.components.BigStationPoint
+import com.kappstudio.trainschedule.ui.components.ExpandIcon
 import com.kappstudio.trainschedule.ui.components.RoundRectRoute
 import com.kappstudio.trainschedule.ui.components.SmallStationPoint
 import com.kappstudio.trainschedule.ui.components.TimeText
@@ -159,7 +159,7 @@ fun TripBody(
     ) {
         LazyColumn {
             item {
-                Row(modifier=Modifier.padding(bottom = 4.dp)) {
+                Row(modifier = Modifier.padding(bottom = 4.dp)) {
                     Text(text = date, fontSize = 16.sp)
                     Text(
                         modifier = Modifier.padding(start = 16.dp),
@@ -179,7 +179,7 @@ fun TripBody(
                                 TrainType.getName(schedule.train.typeCode)
                                     ?.let { context.resources.getString(it) }
                             }
-                        } ?: schedule.train.name.localize()) + "-${schedule.train.number}"
+                        } ?: schedule.train.fullName.localize()) + "-${schedule.train.number}"
 
                         onTrainButtonClicked(trainShortName)
                     }
@@ -236,7 +236,10 @@ fun ScheduleItem(
                 TrainText(train = schedule.train)
             }
 
-            TrainTimeLayout(train = schedule.train, departureTime = schedule.departureTime)
+            TrainTimeLayout(
+                train = schedule.train,
+                departureTime = schedule.getStartTime()
+            )
 
             StopsLayout(stops = schedule.stops)
 
@@ -245,7 +248,10 @@ fun ScheduleItem(
                     modifier = Modifier.weight(1f),
                     text = schedule.stops.last().station.name.localize()
                 )
-                Text(text = schedule.arrivalTime, style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = schedule.getEndTime(),
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
 
             Divider(thickness = 1.dp)
@@ -304,57 +310,49 @@ fun StopsLayout(
     modifier: Modifier = Modifier,
     stops: List<Stop>,
 ) {
-    var isExpand by rememberSaveable { mutableStateOf(false) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
 
-    Divider(thickness = 1.dp)
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(enabled = stops.size > 2) { isExpand = !isExpand },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (stops.size > 2) {
-            Icon(
-                imageVector = if (isExpand) {
-                    Icons.Default.KeyboardArrowUp
-                } else {
-                    Icons.Default.KeyboardArrowDown
-                },
-                contentDescription = if (isExpand) {
-                    stringResource(id = R.string.collapse_desc)
-                } else {
-                    stringResource(id = R.string.expand_desc)
-                }
+    Column(modifier = modifier) {
+        Divider(thickness = 1.dp)
+        Row(
+            modifier = Modifier
+                .padding(vertical = 12.dp)
+                .defaultMinSize(minHeight = 36.dp)
+                .fillMaxWidth()
+                .clickable(enabled = stops.size > 2) { isExpanded = !isExpanded },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (stops.size > 2) {
+                ExpandIcon(isExpanded = isExpanded)
+            }
+            Text(
+                modifier = Modifier
+                    .padding(vertical = 4.dp)
+                    .weight(1f),
+                text = stringResource(
+                    id = R.string.stops, stops.size - 1
+                ) + " ",
+                fontSize = 16.sp
+            )
+            TimeText(
+                minutes = calDurationMinutes(
+                    stops.first().departureTime,
+                    stops.last().arrivalTime
+                )
             )
         }
-        Text(
-            modifier = Modifier
-                .padding(vertical = 4.dp)
-                .weight(1f),
-            text = stringResource(
-                id = R.string.stops, stops.size - 1
-            ) + " ",
-            fontSize = 16.sp
-        )
-        TimeText(
-            minutes = calDurationMinutes(
-                stops.first().departureTime,
-                stops.last().arrivalTime
-            )
-        )
-    }
-    AnimatedVisibility(
-        visible = isExpand
-    ) {
-        Column {
-            stops.drop(1).dropLast(1).forEach {
-                PassStationItem(text = it.station.name.localize())
+        AnimatedVisibility(
+            visible = isExpanded
+        ) {
+            Column {
+                stops.drop(1).dropLast(1).forEach {
+                    PassStationItem(text = it.station.name.localize())
+                }
             }
         }
-    }
-    if (!isExpand) {
-        Divider(thickness = 1.dp)
+        if (!isExpanded) {
+            Divider(thickness = 1.dp)
+        }
     }
 }
 

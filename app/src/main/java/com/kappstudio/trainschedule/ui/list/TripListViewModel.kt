@@ -151,9 +151,9 @@ class TripListViewModel @Inject constructor(
         viewModelScope.launch {
             val result =
                 if (canTransfer) {
-                    trainRepository.searchTransferTrips(date = uiState.value.date)
+                    trainRepository.fetchTransferTrips(date = uiState.value.date)
                 } else {
-                    trainRepository.searchTrips(date = uiState.value.date)
+                    trainRepository.fetchTrips(date = uiState.value.date)
                 }
 
             loadingState = when (result) {

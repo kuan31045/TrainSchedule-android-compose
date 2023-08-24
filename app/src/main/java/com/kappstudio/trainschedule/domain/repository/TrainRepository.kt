@@ -3,6 +3,7 @@ package com.kappstudio.trainschedule.domain.repository
 import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.domain.model.Path
+import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.model.Trip
 import kotlinx.coroutines.flow.Flow
 
@@ -12,13 +13,13 @@ interface TrainRepository {
 
     suspend fun fetchAccessToken(): String
 
-    suspend fun fetchStations(): Result<List<Station>>
+    suspend fun fetchStationsAndLines(): Result<List<Station>>
 
     suspend fun saveCurrentPath(path: Path)
 
-    suspend fun searchTrips(date: String): Result<List<Trip>>
+    suspend fun fetchTrips(date: String): Result<List<Trip>>
 
-    suspend fun searchTransferTrips(date: String): Result<List<Trip>>
+    suspend fun fetchTransferTrips(date: String): Result<List<Trip>>
 
     suspend fun insertPath(path: Path)
 
@@ -28,5 +29,7 @@ interface TrainRepository {
 
     suspend fun isCurrentPathFavorite(): Boolean
 
-    suspend fun getTrainDelayTime(trainNumber: String): Int?
+    suspend fun fetchTrainDelayTime(trainNumber: String): Int?
+
+    suspend fun fetchTrainSchedule(trainNumber: String): Result<TrainSchedule>
 }

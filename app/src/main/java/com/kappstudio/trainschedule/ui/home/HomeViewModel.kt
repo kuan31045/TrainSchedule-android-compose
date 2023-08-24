@@ -160,7 +160,7 @@ class HomeViewModel @Inject constructor(
 
     private fun getStations() {
         viewModelScope.launch {
-            val result = trainRepository.fetchStations()
+            val result = trainRepository.fetchStationsAndLines()
             loadingState = when (result) {
                 is Result.Success -> {
                     _uiState.update { currentState ->

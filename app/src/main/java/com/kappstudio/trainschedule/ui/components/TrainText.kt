@@ -27,7 +27,7 @@ fun TrainText(
                 TrainType.getName(train.typeCode)
                     ?.let { stringResource(it) }
             }
-        } ?: train.name.localize()) + " ${train.number}",
+        } ?: train.fullName.localize()) + " ${train.number}",
         style = style,
         fontSize = fontSize
     )

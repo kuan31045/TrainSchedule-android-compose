@@ -337,7 +337,7 @@ fun TrainsLayout(
         Spacer(modifier = Modifier.weight(1f))
         if (hasLeft) {
             Text(
-                text = stringResource(R.string.left),
+                text = stringResource(R.string.departed),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.error
             )

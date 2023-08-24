@@ -17,11 +17,14 @@ import javax.inject.Inject
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
+import com.kappstudio.trainschedule.data.toLineEntity
 import com.kappstudio.trainschedule.data.toPath
 import com.kappstudio.trainschedule.data.toPathEntity
+import com.kappstudio.trainschedule.data.toStationEntity
 import com.kappstudio.trainschedule.data.toTrainSchedule
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
+import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.model.Trip
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -86,10 +89,15 @@ class TrainRepositoryImpl @Inject constructor(
         return localToken.first().accessToken
     }
 
-    override suspend fun fetchStations(): Result<List<Station>> {
+    override suspend fun fetchStationsAndLines(): Result<List<Station>> {
         return try {
-            val result = api.getStations(fetchAccessToken())
-            Result.Success(result.stations.map { it.toStation() })
+            val stationResult = api.getStations(fetchAccessToken())
+            trainDb.stationDao.upsertAll(stationResult.stations.map { it.toStationEntity() })
+
+            val lineResult = api.getLines(fetchAccessToken())
+            trainDb.lineDao.upsertAll(lineResult.lines.map { it.toLineEntity() })
+
+            Result.Success(stationResult.stations.map { it.toStation() })
         } catch (e: Exception) {
             Timber.w("getStations exception = ${e.message}")
             Result.Error(e)
@@ -103,7 +111,7 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun searchTrips(
+    override suspend fun fetchTrips(
         date: String,
     ): Result<List<Trip>> {
         return try {
@@ -114,6 +122,7 @@ class TrainRepositoryImpl @Inject constructor(
                 date = date
             )
             delay(500)
+
             val fares = api.getODFare(
                 token = fetchAccessToken(),
                 departureStationId = currentPath.first().departureStation.id,
@@ -127,10 +136,10 @@ class TrainRepositoryImpl @Inject constructor(
                     arrivalTime = timeTable.stopTimes.last().arrivalTime,
                     trainSchedules = listOf(
                         timeTable.toTrainSchedule(
-                            price = fares.first { fare ->
+                            price = fares.firstOrNull { fare ->
                                 timeTable.trainInfoDto.direction == fare.direction
                                         && timeTable.trainInfoDto.trainTypeCode.toInt() == fare.trainType
-                            }.fares.first().price
+                            }?.fares?.first()?.price ?: -1
                         )
                     )
                 )
@@ -141,7 +150,7 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun searchTransferTrips(date: String): Result<List<Trip>> {
+    override suspend fun fetchTransferTrips(date: String): Result<List<Trip>> {
         TODO("Not yet implemented")
     }
 
@@ -163,13 +172,33 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getTrainDelayTime(trainNumber: String): Int? {
+    override suspend fun fetchTrainDelayTime(trainNumber: String): Int? {
         return try {
             val result = api.getTrainLiveBoard(fetchAccessToken(), trainNumber)
             result.trainLiveBoards?.first()?.delayTime
         } catch (e: Exception) {
             Timber.w("getTrainLiveBoard exception = ${e.message}")
             null
+        }
+    }
+
+    override suspend fun fetchTrainSchedule(trainNumber: String): Result<TrainSchedule> {
+        return try {
+            val result = api.getGeneralTrainTimetable(
+                token = fetchAccessToken(), trainNumber
+            )
+            if (result.trainTimetables.isNotEmpty()) {
+                Result.Success(result.trainTimetables.first().toTrainSchedule())
+            } else {
+                val todayResult = api.getTodayTrainTimetable(
+                    token = fetchAccessToken()
+                )
+                Result.Success(todayResult.trainTimetables.first { it.trainInfoDto.trainNo == trainNumber }
+                    .toTrainSchedule())
+            }
+        } catch (e: Exception) {
+            Timber.w("fetchTrain exception = ${e.message}")
+            Result.Error(e)
         }
     }
 

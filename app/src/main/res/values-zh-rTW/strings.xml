@@ -33,7 +33,7 @@
     <string name="hour">小時</string>
     <string name="transferTimes">次轉乘</string>
     <string name="minute">分鐘</string>
-    <string name="left">已離站</string>
+    <string name="departed">已離站</string>
     <string name="delete_desc">刪除</string>
     <string name="no_favorite">最愛為空</string>
     <string name="tour_train">觀光列車</string>
@@ -54,4 +54,8 @@
     <string name="on_time">準點</string>
     <string name="delay">晚 %1\$d 分</string>
     <string name="price">車資: $%1\$d</string>
+    <string name="daily">每日行駛</string>
+    <string name="bike">自行車</string>
+    <string name="breast_feed">哺乳室</string>
+    <string name="wheel_chair">輪椅座</string>
 </resources>

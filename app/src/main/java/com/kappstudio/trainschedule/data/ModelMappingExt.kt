@@ -1,7 +1,9 @@
 package com.kappstudio.trainschedule.data
 
+import com.kappstudio.trainschedule.data.local.entity.LineEntity
 import com.kappstudio.trainschedule.data.local.entity.PathEntity
 import com.kappstudio.trainschedule.data.local.entity.StationEntity
+import com.kappstudio.trainschedule.data.remote.dto.LineDto
 import com.kappstudio.trainschedule.data.remote.dto.StationDto
 import com.kappstudio.trainschedule.data.remote.dto.StopTimeDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainInfoDto
@@ -12,10 +14,11 @@ import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
+import com.kappstudio.trainschedule.util.TrainFlag
 import com.kappstudio.trainschedule.util.countyMap
 
 fun StationDto.toStation(): Station {
-    val countyZh = stationAddress.filter { !it.isDigit() }.take(2).ifEmpty { "" }
+    val countyZh = stationAddress?.filter { !it.isDigit() }?.take(2)?.ifEmpty { "" } ?: ""
     return Station(
         id = stationId,
         name = stationName,
@@ -37,14 +40,25 @@ fun StopTimeDto.toStop(): Stop {
 fun TrainInfoDto.toTrain(): Train {
     return Train(
         number = trainNo,
-        name = trainTypeName,
+        fullName = trainTypeName,
         typeCode = trainTypeCode.toInt(),
         startStation = Station(id = startingStationId, name = startingStationName),
-        endStation = Station(id = endingStationId, name = endingStationName)
+        endStation = Station(id = endingStationId, name = endingStationName),
+        headSign = headSign,
+        note = note,
+        overNightStationId = overNightStationId ?: "",
+        flags = TrainFlag.getFlagList(
+            daily = dailyFlag,
+            bike = bikeFlag,
+            wheel = wheelChairFlag,
+            breastfeeding = breastFeedFlag
+        ),
+        routeId = routeId ?: "",
+        tripLine = tripLine ?: 0
     )
 }
 
-fun TrainTimetableDto.toTrainSchedule(price: Int): TrainSchedule {
+fun TrainTimetableDto.toTrainSchedule(price: Int = 0): TrainSchedule {
     return TrainSchedule(
         train = trainInfoDto.toTrain(),
         price = price,
@@ -75,10 +89,21 @@ fun Station.toStationEntity(): StationEntity {
     )
 }
 
+fun StationDto.toStationEntity(): StationEntity {
+    return this.toStation().toStationEntity()
+}
+
 fun StationEntity.toStation(): Station {
     return Station(
         id = id,
         name = name,
         county = county
+    )
+}
+
+fun LineDto.toLineEntity(): LineEntity {
+    return LineEntity(
+        id = lineId,
+        stations = stations.map { it.toStationEntity() }
     )
 }
