@@ -17,6 +17,7 @@ import javax.inject.Inject
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
+import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
 import com.kappstudio.trainschedule.data.toLineEntity
 import com.kappstudio.trainschedule.data.toPath
 import com.kappstudio.trainschedule.data.toPathEntity
@@ -27,7 +28,6 @@ import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.util.addDate
-import com.kappstudio.trainschedule.util.detailFormatter
 import com.kappstudio.trainschedule.util.getNowDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -222,16 +222,21 @@ class TrainRepositoryImpl @Inject constructor(
                 token = fetchAccessToken(), trainNumber
             )
             if (result.trainTimetables.isNotEmpty()) {
+                val previousDay: Long = checkPreviousDay(result.trainTimetables.first())
                 Result.Success(
-                    result.trainTimetables.first()
-                        .toTrainSchedule(date = selectedDateTime.first().toLocalDate())
+                    result.trainTimetables.first().toTrainSchedule(
+                        date = selectedDateTime.first().toLocalDate().minusDays(previousDay)
+                    )
                 )
             } else {
                 val todayResult = api.getTodayTrainTimetable(
                     token = fetchAccessToken()
                 )
+                val previousDay: Long = checkPreviousDay(todayResult.trainTimetables.first())
                 Result.Success(todayResult.trainTimetables.first { it.trainInfoDto.trainNo == trainNumber }
-                    .toTrainSchedule(date = selectedDateTime.first().toLocalDate()))
+                    .toTrainSchedule(
+                        date = selectedDateTime.first().toLocalDate().minusDays(previousDay)
+                    ))
             }
         } catch (e: Exception) {
             Timber.w("fetchTrain exception = ${e.message}")
@@ -239,10 +244,23 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
+
     override suspend fun getStationsOfLine(id: String): List<Station> {
         return withContext(Dispatchers.IO) {
             trainDb.lineDao.get(id).stations.map { it.toStation() }
         }
+    }
+
+    /**
+     * 如果是跨日列車且查詢站在換日站之後，表示換日在查詢站之前就發生，所以列車出發時間扣除一天
+     */
+    private suspend fun checkPreviousDay(timeTable: TrainTimetableDto): Long {
+        val stops = timeTable.stopTimes
+        val overNightStationId = timeTable.trainInfoDto.overNightStationId
+        val overNightIndex = stops.indexOfFirst { it.stationId == overNightStationId }
+        val queryIndex =
+            stops.indexOfFirst { it.stationId == currentPath.first().departureStation.id }
+        return if (overNightIndex != -1 && overNightIndex <= queryIndex) 1 else 0
     }
 
     private companion object {

@@ -12,6 +12,6 @@ data class Trip(
     val trainSchedules: List<TrainSchedule> = emptyList(),
 ) {
     val transferCount: Int = transfers.size
-    val durationMinutes: Long = Duration.between(startTime, endTime ).toMinutes()
+    val durationMinutes: Long = Duration.between(startTime, endTime).toMinutes()
     val totalPrice: Int = trainSchedules.sumOf { it.price }
 }

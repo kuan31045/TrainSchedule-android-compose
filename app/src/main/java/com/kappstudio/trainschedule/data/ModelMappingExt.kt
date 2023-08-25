@@ -17,6 +17,7 @@ import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.util.TrainFlag
 import com.kappstudio.trainschedule.util.addDate
 import com.kappstudio.trainschedule.util.countyMap
+import timber.log.Timber
 import java.time.LocalDate
 
 fun StationDto.toStation(): Station {
@@ -61,16 +62,12 @@ fun TrainInfoDto.toTrain(): Train {
 }
 
 fun TrainTimetableDto.toTrainSchedule(price: Int = 0, date: LocalDate): TrainSchedule {
-
-    val overNightIndex = trainInfoDto.overNightStationId?.let { id ->
-        stopTimes.indexOfFirst { it.stationId == id }
-    } ?: Int.MAX_VALUE
-
+    val overNightIndex = stopTimes.indexOfFirst { it.stationId == trainInfoDto.overNightStationId }
     return TrainSchedule(
         train = trainInfoDto.toTrain(),
         price = price,
         stops = stopTimes.mapIndexed { index, stop ->
-            val nextDay: Long = if (index >= overNightIndex && trainInfoDto.isOverNight) 1 else 0
+            val nextDay: Long = if (overNightIndex != -1 && index >= overNightIndex) 1 else 0
             stop.toStop(date.plusDays(nextDay))
         }
     )

@@ -105,6 +105,10 @@ fun TrainScreen(
                             train = uiState.value.trainSchedule.train,
                             date = dateTimeState.value.format(dateWeekFormatter)
                         )
+                        StopsColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            stops = uiState.value.trainSchedule.stops
+                        )
                     }
 
                 }
@@ -127,15 +131,17 @@ fun TrainScreen(
 fun StopsColumn(
     modifier: Modifier = Modifier,
     stops: List<Stop>,
-    isRunning: Boolean,
 ) {
     LazyColumn(modifier = modifier) {
         items(items = stops,
             key = { stop ->
                 stop.station.id
             }) { stop ->
-            Text(text = stop.station.name.localize())
-
+            Row {
+                Text(text = stop.station.name.localize(), fontSize = 10.sp)
+                Text(text = "arrival: " + stop.arrivalTime.toString(), fontSize = 10.sp)
+                Text(text = "departure: " + stop.departureTime.toString(), fontSize = 10.sp)
+            }
         }
     }
 }
@@ -153,7 +159,7 @@ fun TrainInfoLayout(modifier: Modifier = Modifier, train: Train, date: String) {
                     .padding(start = 8.dp)
                     .weight(1f), text = train.headSign
             )
-            Text(text =  train.headSign )
+            Text(text = train.headSign)
             ExpandButton(modifier = Modifier.layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
                 layout(placeable.width, placeable.height) {

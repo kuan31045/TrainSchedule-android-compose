@@ -84,7 +84,7 @@ fun DateTimeDialog(
                         selectorProperties = WheelPickerDefaults.selectorProperties(
                             shape = RoundedCornerShape(dimensionResource(R.dimen.rounded_corner_size))
                         ),
-                        startIndex = timeList.indexOf(date),
+                        startIndex = timeList.indexOf(date).let { if (it != -1) it else 0 },
                         modifier = Modifier.weight(1f),
                         rowCount = 3,
                         texts = timeList.map { it.format(dateWeekFormatter) }
@@ -139,7 +139,7 @@ fun DateTimeDialog(
 fun DateDialogPreview() {
     DateTimeDialog(
         closeDialog = {},
-        defaultDateTime =  getNowDateTime(),
+        defaultDateTime = getNowDateTime(),
         defaultSelectedIndex = 0,
         confirmTime = { _, _ -> })
 }

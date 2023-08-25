@@ -25,6 +25,4 @@ data class TrainInfoDto(
     @SerializedName("SuspendedFlag") val suspendedFlag: Int,
     @SerializedName("WheelChairFlag") val wheelChairFlag: Int,
     @SerializedName("Note") val note: String,
-) {
-    val isOverNight = overNightStationId != "" && overNightStationId != null
-}
+)
