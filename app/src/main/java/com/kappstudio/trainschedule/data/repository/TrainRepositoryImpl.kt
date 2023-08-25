@@ -26,6 +26,9 @@ import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.model.Trip
+import com.kappstudio.trainschedule.util.addDate
+import com.kappstudio.trainschedule.util.detailFormatter
+import com.kappstudio.trainschedule.util.getNowDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +36,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.IOException
+import java.time.LocalDateTime
 
 class TrainRepositoryImpl @Inject constructor(
     private val api: TrainApi,
@@ -69,6 +73,24 @@ class TrainRepositoryImpl @Inject constructor(
             val json = preferences[CURRENT_PATH]
             val path = Gson().fromJson(json, Path::class.java)
             path ?: defaultPath
+        }
+
+    override val selectedDateTime: Flow<LocalDateTime> = dataStore.data
+        .catch {
+            if (it is IOException) {
+                Timber.e("Error reading preferences.", it)
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
+        }
+        .map { preferences ->
+            val date = preferences[SELECTED_DATE_TIME]
+            if (date != null) {
+                LocalDateTime.parse(date)
+            } else {
+                getNowDateTime()
+            }
         }
 
     override suspend fun fetchAccessToken(): String {
@@ -111,15 +133,22 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchTrips(
-        date: String,
-    ): Result<List<Trip>> {
+    override suspend fun saveSelectedDateTime(dateTime: LocalDateTime) {
+        dataStore.edit { preferences ->
+            preferences[SELECTED_DATE_TIME] = dateTime.toString()
+        }
+    }
+
+    override suspend fun fetchTrips(): Result<List<Trip>> {
+
+        val date = selectedDateTime.first().toLocalDate()
+
         return try {
             val result = api.getTrainTimetable(
                 token = fetchAccessToken(),
                 departureStationId = currentPath.first().departureStation.id,
                 arrivalStationId = currentPath.first().arrivalStation.id,
-                date = date
+                date = date.toString()
             )
             delay(500)
 
@@ -130,16 +159,21 @@ class TrainRepositoryImpl @Inject constructor(
             ).odFares
 
             Result.Success(result.trainTimetables.map { timeTable ->
+
+                val startTime = timeTable.stopTimes.first().departureTime.addDate(date)
+                val endTime = timeTable.stopTimes.last().arrivalTime.addDate(date)
+
                 Trip(
                     path = currentPath.first(),
-                    departureTime = timeTable.stopTimes.first().departureTime,
-                    arrivalTime = timeTable.stopTimes.last().arrivalTime,
+                    startTime = startTime,
+                    endTime = if (endTime >= startTime) endTime else endTime.plusDays(1),
                     trainSchedules = listOf(
                         timeTable.toTrainSchedule(
                             price = fares.firstOrNull { fare ->
                                 timeTable.trainInfoDto.direction == fare.direction
                                         && timeTable.trainInfoDto.trainTypeCode.toInt() == fare.trainType
-                            }?.fares?.first()?.price ?: -1
+                            }?.fares?.first()?.price ?: -1,
+                            date = selectedDateTime.first().toLocalDate()
                         )
                     )
                 )
@@ -150,7 +184,7 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchTransferTrips(date: String): Result<List<Trip>> {
+    override suspend fun fetchTransferTrips(): Result<List<Trip>> {
         TODO("Not yet implemented")
     }
 
@@ -172,7 +206,7 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchTrainDelayTime(trainNumber: String): Int? {
+    override suspend fun fetchTrainDelay(trainNumber: String): Int? {
         return try {
             val result = api.getTrainLiveBoard(fetchAccessToken(), trainNumber)
             result.trainLiveBoards?.first()?.delayTime
@@ -188,17 +222,26 @@ class TrainRepositoryImpl @Inject constructor(
                 token = fetchAccessToken(), trainNumber
             )
             if (result.trainTimetables.isNotEmpty()) {
-                Result.Success(result.trainTimetables.first().toTrainSchedule())
+                Result.Success(
+                    result.trainTimetables.first()
+                        .toTrainSchedule(date = selectedDateTime.first().toLocalDate())
+                )
             } else {
                 val todayResult = api.getTodayTrainTimetable(
                     token = fetchAccessToken()
                 )
                 Result.Success(todayResult.trainTimetables.first { it.trainInfoDto.trainNo == trainNumber }
-                    .toTrainSchedule())
+                    .toTrainSchedule(date = selectedDateTime.first().toLocalDate()))
             }
         } catch (e: Exception) {
             Timber.w("fetchTrain exception = ${e.message}")
             Result.Error(e)
+        }
+    }
+
+    override suspend fun getStationsOfLine(id: String): List<Station> {
+        return withContext(Dispatchers.IO) {
+            trainDb.lineDao.get(id).stations.map { it.toStation() }
         }
     }
 
@@ -207,6 +250,7 @@ class TrainRepositoryImpl @Inject constructor(
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
         val TOKEN_EXPIRE_TIME = longPreferencesKey("token_expire_time")
         val CURRENT_PATH = stringPreferencesKey("current_path")
+        val SELECTED_DATE_TIME = stringPreferencesKey("selected_date_time")
         val defaultPath = Path(
             departureStation = Station(
                 id = "1000",

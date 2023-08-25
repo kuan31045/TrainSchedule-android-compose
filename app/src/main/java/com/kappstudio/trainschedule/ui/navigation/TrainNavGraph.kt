@@ -21,8 +21,6 @@ import com.kappstudio.trainschedule.ui.home.HomeScreen
 import com.kappstudio.trainschedule.ui.home.StationScreen
 import com.kappstudio.trainschedule.ui.list.TripListScreen
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.CAN_TRANSFER_BOOLEAN
-import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.DATE_STRING
-import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TIME_STRING
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TIME_TYPE_INT
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TRAIN_STRING
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TRAIN_TYPE_INT
@@ -44,10 +42,10 @@ fun TrainNavGraph(
                 HomeScreen(
                     viewModel = backStackEntry.sharedViewModel(navController = navController),
                     onToStationButtonClicked = { navController.navigate(Screen.STATION.route) },
-                    onSearchButtonClicked = { date, time, timeType, trainType, canTransfer ->
+                    onSearchButtonClicked = { timeType, trainType, canTransfer ->
                         navController.navigate(
                             Screen.TRIPS.route
-                                    + "/$date" + "/$time" + "/$timeType" + "/$trainType" + "/$canTransfer"
+                                    + "/$timeType" + "/$trainType" + "/$canTransfer"
                         )
                     },
                     onToFavoriteButtonClicked = {
@@ -69,8 +67,6 @@ fun TrainNavGraph(
 
             composable(route = RoutesWithArgs.TRIPS,
                 arguments = listOf(
-                    navArgument(DATE_STRING) { type = NavType.StringType },
-                    navArgument(TIME_STRING) { type = NavType.StringType },
                     navArgument(TIME_TYPE_INT) { type = NavType.IntType },
                     navArgument(TRAIN_TYPE_INT) { type = NavType.IntType },
                     navArgument(CAN_TRANSFER_BOOLEAN) { type = NavType.BoolType }
@@ -81,8 +77,8 @@ fun TrainNavGraph(
 
                 TripListScreen(
                     navigateBack = { navController.navigateUp() },
-                    onTripItemClicked = { trip, date ->
-                        viewModel.setTrip(trip, date)
+                    onTripItemClicked = { trip->
+                        viewModel.setTrip(trip)
                         navController.navigate(Screen.DETAIL.route)
                     }
                 )
@@ -92,8 +88,8 @@ fun TrainNavGraph(
                 TripDetailScreen(
                     viewModel = backStackEntry.sharedViewModel(navController = navController),
                     onNavigateUp = { navController.navigateUp() },
-                    onTrainButtonClicked = {train, date ->
-                        navController.navigate(Screen.TRAIN.route + "/$train" + "/$date")
+                    onTrainButtonClicked = {train->
+                        navController.navigate(Screen.TRAIN.route + "/$train")
                     },
                     onHomeButtonClicked = { navController.navigateToHome() }
                 )
@@ -103,7 +99,6 @@ fun TrainNavGraph(
                 route = RoutesWithArgs.TRAIN,
                 arguments = listOf(
                     navArgument(TRAIN_STRING) { type = NavType.StringType },
-                    navArgument(DATE_STRING) { type = NavType.StringType }
                 )
             ) {
                 TrainScreen(

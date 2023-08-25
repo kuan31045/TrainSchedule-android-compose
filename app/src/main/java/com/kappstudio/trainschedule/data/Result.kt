@@ -17,8 +17,5 @@ sealed class Result<out R> {
     }
 }
 
-/**
- * `true` if [Result] is of catalogType [Success] & holds non-null [Success.data].
- */
 val Result<*>.succeeded
     get() = this is Result.Success && data != null

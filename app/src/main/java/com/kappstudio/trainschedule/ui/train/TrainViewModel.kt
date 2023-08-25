@@ -11,23 +11,24 @@ import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs
-import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.DATE_STRING
 import com.kappstudio.trainschedule.util.LoadingStatus
-import com.kappstudio.trainschedule.util.checkIsRunning
+import com.kappstudio.trainschedule.util.getNowDateTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 data class TrainUiState(
     val trainSchedule: TrainSchedule = TrainSchedule(train = Train(""), stops = emptyList()),
     val trainShortName: String = "",
-    val date: String = "",
-    val isRunning: Boolean = false,
+    val delay: Int = 0,
+    val isFinished: Boolean = false,
 )
 
 @HiltViewModel
@@ -36,14 +37,18 @@ class TrainViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-
     private val _uiState = MutableStateFlow(
         TrainUiState(
             trainShortName = savedStateHandle[NavigationArgs.TRAIN_STRING]!!,
-            date = savedStateHandle[DATE_STRING]!!
         )
     )
     val uiState: StateFlow<TrainUiState> = _uiState.asStateFlow()
+
+    val dateTimeState: StateFlow<LocalDateTime> = trainRepository.selectedDateTime.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = getNowDateTime(),
+    )
 
     var loadingState: LoadingStatus by mutableStateOf(LoadingStatus.Loading)
         private set
@@ -52,18 +57,27 @@ class TrainViewModel @Inject constructor(
         getTrain()
     }
 
-    private fun updateIsRunning() {
-        val isRunning = checkIsRunning(
-            date = uiState.value.date,
-            startTime = uiState.value.trainSchedule.getStartTime(),
-            endTime = uiState.value.trainSchedule.getEndTime(),
-            isOverNight = uiState.value.trainSchedule.train.isOverNight
-        )
+    private fun updateTime() {
+        viewModelScope.launch {
+            val delay = trainRepository.fetchTrainDelay(uiState.value.trainSchedule.train.number)
+            if (delay != null) {
+                _uiState.update { currentState ->
+                    currentState.copy(delay = delay)
+                }
+            }
+            val isFinished =
+                getNowDateTime() > uiState.value.trainSchedule.stops.last().arrivalTime.plusMinutes(
+                    uiState.value.delay.toLong()
+                )
 
-        _uiState.update { currentState ->
-            currentState.copy(isRunning = isRunning)
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isFinished = isFinished
+                )
+            }
         }
     }
+
 
     fun getTrain() {
         val trainNumber = uiState.value.trainShortName.split("-").last()
@@ -80,7 +94,7 @@ class TrainViewModel @Inject constructor(
                             trainSchedule = result.data
                         )
                     }
-                    updateIsRunning()
+                    updateTime()
                     LoadingStatus.Done
                 }
 

@@ -12,12 +12,11 @@ import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
 import com.kappstudio.trainschedule.ui.home.SelectedType
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.CAN_TRANSFER_BOOLEAN
-import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.DATE_STRING
-import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TIME_STRING
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TIME_TYPE_INT
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TRAIN_TYPE_INT
 import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.TrainType
+import com.kappstudio.trainschedule.util.getNowDateTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,13 +25,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 data class TripListUiState(
     val trips: List<Trip> = emptyList(),
-    val date: String = "",
     val isFavorite: Boolean = false,
-    val specifiedTimeTrip: Trip? = null,
+    val initialTripIndex: Int = 0,
     val filteredTrainTypes: List<TrainType> = emptyList(),
     val isFiltering: Boolean = false,
 )
@@ -42,7 +41,6 @@ class TripListViewModel @Inject constructor(
     private val trainRepository: TrainRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val time: String = savedStateHandle[TIME_STRING]!!
     private val timeType: SelectedType =
         enumValues<SelectedType>()[savedStateHandle[TIME_TYPE_INT]!!]
     private val canTransfer: Boolean = savedStateHandle[CAN_TRANSFER_BOOLEAN]!!
@@ -51,7 +49,6 @@ class TripListViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         TripListUiState(
-            date = savedStateHandle[DATE_STRING]!!,
             filteredTrainTypes = TrainType.getTypes(savedStateHandle[TRAIN_TYPE_INT]!!)
         )
     )
@@ -64,6 +61,12 @@ class TripListViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = Path(),
+    )
+
+    val dateTimeState: StateFlow<LocalDateTime> = trainRepository.selectedDateTime.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = getNowDateTime(),
     )
 
     init {
@@ -93,27 +96,17 @@ class TripListViewModel @Inject constructor(
     }
 
     private fun setSpecifiedTimeTrip() {
-        val arrivalTimes = uiState.value.trips.map {
-            if (it.arrivalTime < it.departureTime) {
-                val h = it.arrivalTime.split(":").first().toInt() + 24
-                val min = it.arrivalTime.split(":").last()
-                "$h:$min"
-            } else {
-                it.arrivalTime
-            }
-        }
 
-        val arrTime = arrivalTimes.lastOrNull { it < time }?.let {
-            arrivalTimes.indexOf(it)
-        }
 
         _uiState.update { currentState ->
             currentState.copy(
-                specifiedTimeTrip =
+                initialTripIndex =
                 if (timeType == SelectedType.DEPARTURE) {
-                    currentState.trips.lastOrNull { it.departureTime < time }
+                    currentState.trips.indexOfLast { it.startTime < dateTimeState.value } + 1
                 } else {
-                    arrTime?.let { currentState.trips[it] }
+                    currentState.trips.indexOfLast { it.endTime < dateTimeState.value }.let {
+                        if (it > 0) it else 0
+                    }
                 }
             )
         }
@@ -123,7 +116,7 @@ class TripListViewModel @Inject constructor(
         val types = uiState.value.filteredTrainTypes.map { type -> type.typeCode }
         val newTrips: List<Trip> = trips.value.filter { trip ->
             trip.trainSchedules.all { schedule -> schedule.train.typeCode in types }
-        }
+        }.sortedBy { it.startTime }
         _uiState.update { currentState ->
             currentState.copy(trips = newTrips)
         }
@@ -144,21 +137,21 @@ class TripListViewModel @Inject constructor(
             )
         }
         filterTrips()
-
     }
 
     fun searchTrips() {
         viewModelScope.launch {
             val result =
                 if (canTransfer) {
-                    trainRepository.fetchTransferTrips(date = uiState.value.date)
+                    trainRepository.fetchTransferTrips()
                 } else {
-                    trainRepository.fetchTrips(date = uiState.value.date)
+                    trainRepository.fetchTrips()
                 }
+
 
             loadingState = when (result) {
                 is Result.Success -> {
-                    trips.update { result.data.sortedBy { it.departureTime } }
+                    trips.update { result.data.sortedBy { it.endTime } }
                     _uiState.update { currentState ->
                         currentState.copy(
                             trips = trips.value

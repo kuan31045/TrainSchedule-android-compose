@@ -15,7 +15,9 @@ import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.util.TrainFlag
+import com.kappstudio.trainschedule.util.addDate
 import com.kappstudio.trainschedule.util.countyMap
+import java.time.LocalDate
 
 fun StationDto.toStation(): Station {
     val countyZh = stationAddress?.filter { !it.isDigit() }?.take(2)?.ifEmpty { "" } ?: ""
@@ -29,10 +31,12 @@ fun StationDto.toStation(): Station {
     )
 }
 
-fun StopTimeDto.toStop(): Stop {
+fun StopTimeDto.toStop(date: LocalDate): Stop {
+    val isDifferentDay = arrivalTime > departureTime
+    val deductedDay: Long = if (isDifferentDay) 1 else 0
     return Stop(
-        arrivalTime = arrivalTime,
-        departureTime = departureTime,
+        arrivalTime = arrivalTime.addDate(date).minusDays(deductedDay),
+        departureTime = departureTime.addDate(date),
         station = Station(id = stationId, name = stationName)
     )
 }
@@ -52,17 +56,23 @@ fun TrainInfoDto.toTrain(): Train {
             bike = bikeFlag,
             wheel = wheelChairFlag,
             breastfeeding = breastFeedFlag
-        ),
-        routeId = routeId ?: "",
-        tripLine = tripLine ?: 0
+        )
     )
 }
 
-fun TrainTimetableDto.toTrainSchedule(price: Int = 0): TrainSchedule {
+fun TrainTimetableDto.toTrainSchedule(price: Int = 0, date: LocalDate): TrainSchedule {
+
+    val overNightIndex = trainInfoDto.overNightStationId?.let { id ->
+        stopTimes.indexOfFirst { it.stationId == id }
+    } ?: Int.MAX_VALUE
+
     return TrainSchedule(
         train = trainInfoDto.toTrain(),
         price = price,
-        stops = stopTimes.map { it.toStop() }
+        stops = stopTimes.mapIndexed { index, stop ->
+            val nextDay: Long = if (index >= overNightIndex && trainInfoDto.isOverNight) 1 else 0
+            stop.toStop(date.plusDays(nextDay))
+        }
     )
 }
 

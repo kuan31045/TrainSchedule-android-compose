@@ -1,7 +1,6 @@
 package com.kappstudio.trainschedule.ui.list
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -39,12 +38,15 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Station
@@ -55,25 +57,26 @@ import com.kappstudio.trainschedule.ui.components.TimeText
 import com.kappstudio.trainschedule.ui.components.TrainText
 import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.TrainType
+import com.kappstudio.trainschedule.util.dateWeekFormatter
+import com.kappstudio.trainschedule.util.getNowDateTime
+import com.kappstudio.trainschedule.util.timeFormatter
 import com.kappstudio.trainschedule.util.toggle
-import java.time.LocalDate
-import java.time.LocalTime
 
 @Composable
 fun TripListScreen(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
     viewModel: TripListViewModel = hiltViewModel(),
-    onTripItemClicked: (Trip, String) -> Unit,
+    onTripItemClicked: (Trip) -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
-    val currentPath = viewModel.currentPath.collectAsState()
+    val pathState = viewModel.currentPath.collectAsState()
     val loadingState = viewModel.loadingState
-
+    val dateState = viewModel.dateTimeState.collectAsState()
     Scaffold(
         topBar = {
             TrainTopAppBar(
-                title = currentPath.value.getTitle(),
+                title = pathState.value.getTitle(),
                 canNavigateBack = true,
                 navigateUp = navigateBack,
                 actions = {
@@ -103,11 +106,12 @@ fun TripListScreen(
         },
         modifier = modifier.fillMaxSize(),
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            contentAlignment = Alignment.Center,
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             when (loadingState) {
 
@@ -120,10 +124,10 @@ fun TripListScreen(
                         TripColumn(
                             modifier = Modifier.fillMaxSize(),
                             trips = uiState.value.trips,
-                            date = uiState.value.date,
-                            specifiedTimeTrip = uiState.value.specifiedTimeTrip,
-                            onTripItemClicked = { onTripItemClicked(it, uiState.value.date) }
+                            initialIndex = uiState.value.initialTripIndex,
+                            onTripItemClicked = { onTripItemClicked(it) }
                         )
+
                     } else {
                         Text(text = stringResource(id = R.string.not_find_route))
                     }
@@ -205,14 +209,11 @@ fun FilterBottomSheet(
 fun TripColumn(
     modifier: Modifier = Modifier,
     trips: List<Trip>,
-    specifiedTimeTrip: Trip?,
-    date: String,
+    initialIndex: Int,
     onTripItemClicked: (Trip) -> Unit,
 ) {
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = specifiedTimeTrip?.let {
-        trips.indexOf(it)
-    } ?: 0)
-    val isToday: Boolean = date == LocalDate.now().toString()
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
+    val currentDateTime = getNowDateTime()
 
     LazyColumn(
         modifier = modifier,
@@ -226,12 +227,11 @@ fun TripColumn(
                 trip.trainSchedules
             }
         ) { trip ->
-            val currentTime: String = LocalTime.now().toString().take(5)
             TripItem(
                 modifier = Modifier.fillMaxSize(),
                 trip = trip,
-                isLastLeftTrip = trips.lastOrNull { it.departureTime < currentTime } == trip && isToday,
-                hasLeft = trip.departureTime < currentTime && isToday,
+                isLastLeftTrip = trips.lastOrNull { it.startTime < currentDateTime } == trip,
+                hasDeparted = trip.startTime < currentDateTime,
                 onTripItemClicked = { onTripItemClicked(it) }
             )
         }
@@ -244,7 +244,7 @@ fun TripItem(
     modifier: Modifier = Modifier,
     trip: Trip,
     isLastLeftTrip: Boolean,
-    hasLeft: Boolean,
+    hasDeparted: Boolean,
     onTripItemClicked: (Trip) -> Unit,
 ) {
     Card(
@@ -260,7 +260,7 @@ fun TripItem(
                 modifier = Modifier.padding(vertical = 10.dp)
             )
 
-            TrainsLayout(trains = trip.trainSchedules.map { it.train }, hasLeft = hasLeft)
+            TrainsLayout(trains = trip.trainSchedules.map { it.train }, hasDeparted = hasDeparted)
         }
     }
 
@@ -279,7 +279,7 @@ fun TripItemTopLayout(
 ) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
         Text(
-            text = trip.departureTime,
+            text = trip.startTime.format(timeFormatter),
             style = MaterialTheme.typography.titleLarge,
             fontSize = 25.sp,
             color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -305,7 +305,7 @@ fun TripItemTopLayout(
         }
         Text(
             modifier = Modifier.weight(1f),
-            text = trip.arrivalTime,
+            text = trip.endTime.format(timeFormatter),
             style = MaterialTheme.typography.titleLarge,
             fontSize = 24.sp,
             color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -327,7 +327,7 @@ fun TripItemTopLayout(
 fun TrainsLayout(
     modifier: Modifier = Modifier,
     trains: List<Train>,
-    hasLeft: Boolean,
+    hasDeparted: Boolean,
 ) {
     Row(modifier = modifier) {
         trains.forEach { train ->
@@ -335,7 +335,7 @@ fun TrainsLayout(
             if (train != trains.last()) Text(text = " > ")
         }
         Spacer(modifier = Modifier.weight(1f))
-        if (hasLeft) {
+        if (hasDeparted) {
             Text(
                 text = stringResource(R.string.departed),
                 style = MaterialTheme.typography.bodyMedium,
@@ -354,14 +354,12 @@ fun TripItemPreview() {
                 TrainSchedule(
                     train = Train("123", Name("Local", "Local")),
                     price = 100,
-                    stops = listOf(Stop("19:30", "20:00", Station()))
+                    stops = listOf(Stop(station = Station()))
                 )
 
-            ),
-            arrivalTime = "19:30",
-            departureTime = "21:10",
+            )
         ),
-        hasLeft = false,
+        hasDeparted = false,
         isLastLeftTrip = false,
         onTripItemClicked = { _ -> }
     )

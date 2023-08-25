@@ -18,19 +18,17 @@ import kotlinx.coroutines.launch
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
+import com.kappstudio.trainschedule.util.getNowDateTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 data class HomeUiState(
     val stationsOfCounty: Map<Name, List<Station>> = emptyMap(),
     val selectedStationType: SelectedType = SelectedType.DEPARTURE,
     val selectedCounty: Name = Name(),
-    val date: LocalDate = LocalDate.now(),
-    val time: LocalTime = LocalTime.now(),
     val timeType: SelectedType = SelectedType.DEPARTURE,
     val trainMainType: TrainMainType = TrainMainType.ALL,
     val canTransfer: Boolean = false,
@@ -61,10 +59,17 @@ class HomeViewModel @Inject constructor(
         initialValue = Path(),
     )
 
+    val dateTimeState: StateFlow<LocalDateTime> = trainRepository.selectedDateTime.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = getNowDateTime(),
+    )
+
     var loadingState: LoadingStatus by mutableStateOf(LoadingStatus.Loading)
         private set
 
     init {
+        saveDateTime(getNowDateTime(),0)
         getStations()
     }
 
@@ -106,6 +111,17 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun saveDateTime(dateTime: LocalDateTime, ordinal: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                timeType =  enumValues<SelectedType>()[ordinal]
+            )
+        }
+        viewModelScope.launch {
+            trainRepository.saveSelectedDateTime(dateTime)
+        }
+    }
+
     fun changeSelectedStation(selectedType: SelectedType) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -129,16 +145,6 @@ class HomeViewModel @Inject constructor(
         return when (uiState.value.selectedStationType) {
             SelectedType.DEPARTURE -> pathState.value.departureStation.county
             SelectedType.ARRIVAL -> pathState.value.arrivalStation.county
-        }
-    }
-
-    fun setDateTime(date: LocalDate, time: LocalTime, ordinal: Int) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                date = date,
-                time = time,
-                timeType =  enumValues<SelectedType>()[ordinal]
-            )
         }
     }
 

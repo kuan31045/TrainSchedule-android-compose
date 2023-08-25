@@ -5,12 +5,12 @@ import com.kappstudio.trainschedule.domain.model.Name
 
 data class TimeTableResponse(
     @SerializedName("TrainTimetables") val trainTimetables: List<TrainTimetableDto>,
-    @SerializedName("UpdateTime") val  updateTime: String,
+    @SerializedName("UpdateTime") val updateTime: String,
 )
 
 data class TrainTimetableDto(
     @SerializedName("StopTimes") val stopTimes: List<StopTimeDto>,
-    @SerializedName("TrainInfo") val trainInfoDto: TrainInfoDto
+    @SerializedName("TrainInfo") val trainInfoDto: TrainInfoDto,
 )
 
 data class StopTimeDto(
@@ -18,5 +18,5 @@ data class StopTimeDto(
     @SerializedName("DepartureTime") val departureTime: String,
     @SerializedName("StationID") val stationId: String,
     @SerializedName("StationName") val stationName: Name,
-    @SerializedName("StopSequence") val stopSequence: Int
+    @SerializedName("StopSequence") val stopSequence: Int,
 )

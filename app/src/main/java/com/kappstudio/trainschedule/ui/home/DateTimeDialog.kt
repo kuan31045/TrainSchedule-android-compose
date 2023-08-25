@@ -16,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -31,22 +30,25 @@ import com.commandiron.wheel_picker_compose.core.WheelTextPicker
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.components.SegmentedControl
 import com.kappstudio.trainschedule.util.dateWeekFormatter
+import com.kappstudio.trainschedule.util.getNowDateTime
+import com.kappstudio.trainschedule.util.toFormatterTime
+import com.kappstudio.trainschedule.util.timeFormatter
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DateTimeDialog(
     modifier: Modifier = Modifier,
-    defaultDate: LocalDate,
-    defaultTime: LocalTime,
+    defaultDateTime: LocalDateTime,
     defaultSelectedIndex: Int,
     closeDialog: () -> Unit,
-    confirmTime: (LocalDate, LocalTime, Int) -> Unit
+    confirmTime: (LocalDateTime, Int) -> Unit,
 ) {
     var selectedIndex by rememberSaveable { mutableStateOf(defaultSelectedIndex) }
-    var date by rememberSaveable { mutableStateOf(defaultDate) }
-    var time by rememberSaveable { mutableStateOf(defaultTime) }
+
+    var date by rememberSaveable { mutableStateOf(defaultDateTime.toLocalDate()) }
+    var time by rememberSaveable { mutableStateOf(defaultDateTime.toFormatterTime()) }
 
     val timeList = (0L..50L).map { LocalDate.now().plusDays(it) }
 
@@ -119,7 +121,7 @@ fun DateTimeDialog(
                     Text(stringResource(id = R.string.cancel))
                 }
                 TextButton(onClick = {
-                    confirmTime(date, time, selectedIndex)
+                    confirmTime(date.atTime(time), selectedIndex)
                     closeDialog()
                 }) {
                     Text(stringResource(id = R.string.ok))
@@ -128,7 +130,7 @@ fun DateTimeDialog(
         },
         properties = DialogProperties(
             usePlatformDefaultWidth = false
-        ),
+        )
     )
 }
 
@@ -137,8 +139,7 @@ fun DateTimeDialog(
 fun DateDialogPreview() {
     DateTimeDialog(
         closeDialog = {},
-        defaultDate = LocalDate.now(),
-        defaultTime = LocalTime.now(),
+        defaultDateTime =  getNowDateTime(),
         defaultSelectedIndex = 0,
-        confirmTime = { p1, p2, p3 -> })
+        confirmTime = { _, _ -> })
 }

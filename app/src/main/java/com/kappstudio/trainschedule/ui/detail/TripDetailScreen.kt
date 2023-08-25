@@ -64,11 +64,12 @@ import com.kappstudio.trainschedule.ui.components.pullrefreshm3.pullRefresh
 import com.kappstudio.trainschedule.ui.components.pullrefreshm3.rememberPullRefreshState
 import com.kappstudio.trainschedule.util.TrainStatus
 import com.kappstudio.trainschedule.util.TrainType
-import com.kappstudio.trainschedule.util.calDurationMinutes
+import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.localize
-import com.kappstudio.trainschedule.util.toDateWeekFormatter
+import com.kappstudio.trainschedule.util.timeFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.Duration
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,10 +77,12 @@ fun TripDetailScreen(
     modifier: Modifier = Modifier,
     onNavigateUp: () -> Unit,
     viewModel: TripDetailViewModel,
-    onTrainButtonClicked: (String, String) -> Unit,
+    onTrainButtonClicked: (String) -> Unit,
     onHomeButtonClicked: () -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
+    val dateTimeState = viewModel.dateTimeState.collectAsState()
+
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
@@ -128,9 +131,9 @@ fun TripDetailScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(16.dp),
-                date = uiState.value.date.toDateWeekFormatter(),
+                date = dateTimeState.value.format(dateWeekFormatter),
                 trip = uiState.value.trip,
-                onTrainButtonClicked = { onTrainButtonClicked(it, uiState.value.date) }
+                onTrainButtonClicked = { onTrainButtonClicked(it) }
             )
         }
 
@@ -238,7 +241,7 @@ fun ScheduleItem(
 
             TrainTimeLayout(
                 train = schedule.train,
-                departureTime = schedule.getStartTime()
+                departureTime = schedule.getStartTime().format(timeFormatter)
             )
 
             StopsLayout(stops = schedule.stops)
@@ -249,7 +252,7 @@ fun ScheduleItem(
                     text = schedule.stops.last().station.name.localize()
                 )
                 Text(
-                    text = schedule.getEndTime(),
+                    text = schedule.getEndTime().format(timeFormatter),
                     style = MaterialTheme.typography.titleLarge
                 )
             }
@@ -268,7 +271,7 @@ fun TrainTimeLayout(modifier: Modifier = Modifier, train: Train, departureTime: 
                 .weight(1f),
             text = when (train.status) {
                 TrainStatus.DELAY -> stringResource(
-                    id = R.string.delay, train.delayTime ?: 1
+                    id = R.string.delay, train.delay ?: 1
                 )
 
                 else -> stringResource(id = train.status.status)
@@ -335,10 +338,10 @@ fun StopsLayout(
                 fontSize = 16.sp
             )
             TimeText(
-                minutes = calDurationMinutes(
-                    stops.first().departureTime,
-                    stops.last().arrivalTime
-                )
+                minutes =
+
+                Duration.between(stops.first().departureTime, stops.last().arrivalTime).toMinutes()
+
             )
         }
         AnimatedVisibility(
@@ -375,9 +378,7 @@ fun PassStationItem(modifier: Modifier = Modifier, text: String) {
 @Composable
 fun ScheduleItemPreview() {
     val stop = Stop(
-        arrivalTime = "08:00",
-        departureTime = "08:05",
-        Station(name = Name(en = "Taipei", zh = "Taipei"))
+        station = Station(name = Name(en = "Taipei", zh = "Taipei"))
     )
 
     ScheduleItem(

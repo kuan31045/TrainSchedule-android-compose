@@ -32,7 +32,7 @@ fun TrainTopAppBar(
     modifier: Modifier = Modifier,
     title: String,
     canNavigateBack: Boolean,
-    navigateUp: () -> Unit,
+    navigateUp: () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     Surface(shadowElevation = dimensionResource(R.dimen.surface_shadow_elevation_4)) {

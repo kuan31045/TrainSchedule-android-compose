@@ -13,7 +13,7 @@ enum class TrainStatus(
 
     companion object {
         fun getTrainStatus(train: Train): TrainStatus {
-            return when (train.delayTime) {
+            return when (train.delay) {
                 null -> EXPECTED
                 0 -> ON_TIME
                 else -> DELAY

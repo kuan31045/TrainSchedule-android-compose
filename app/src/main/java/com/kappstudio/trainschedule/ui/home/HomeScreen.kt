@@ -41,10 +41,10 @@ import com.kappstudio.trainschedule.ui.components.GradientButton
 import com.kappstudio.trainschedule.ui.components.SegmentedControl
 import com.kappstudio.trainschedule.ui.components.SwapButton
 import com.kappstudio.trainschedule.util.dateWeekFormatter
+import com.kappstudio.trainschedule.util.getNowDateTime
 import com.kappstudio.trainschedule.util.localize
 import com.kappstudio.trainschedule.util.timeFormatter
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
 
 @Composable
 fun HomeScreen(
@@ -52,20 +52,21 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     onToStationButtonClicked: () -> Unit,
     onSearchButtonClicked: (
-        date: String, time: String, timeType: Int,
-        trainType: Int, canTransfer: Boolean
+        timeType: Int,
+        trainType: Int,
+        canTransfer: Boolean,
     ) -> Unit,
-    onToFavoriteButtonClicked:() -> Unit,
+    onToFavoriteButtonClicked: () -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val pathState = viewModel.pathState.collectAsState()
+    val dateState = viewModel.dateTimeState.collectAsState()
 
     Scaffold(
         topBar = {
             TrainTopAppBar(
                 title = stringResource(R.string.app_name),
                 canNavigateBack = false,
-                navigateUp = {},
                 actions = {
                     IconButton(onClick = onToFavoriteButtonClicked) {
                         Icon(
@@ -86,7 +87,7 @@ fun HomeScreen(
             HomeStationLayout(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp, start = 8.dp, end =8.dp),
+                    .padding(top = 16.dp, start = 8.dp, end = 8.dp),
                 departureStation = pathState.value.departureStation.name.localize(),
                 arrivalStation = pathState.value.arrivalStation.name.localize(),
                 onStationButtonClicked = {
@@ -100,11 +101,10 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp, horizontal = 24.dp),
-                date = uiState.value.date,
-                time = uiState.value.time,
+                dateTime = dateState.value,
                 timeType = uiState.value.timeType,
-                confirmTime = { date, time, ordinal ->
-                    viewModel.setDateTime(date, time, ordinal)
+                confirmTime = { dateTime, ordinal ->
+                    viewModel.saveDateTime(dateTime, ordinal)
                 }
             )
 
@@ -117,7 +117,7 @@ fun HomeScreen(
             TransSwitch(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding( vertical = 16.dp),
+                    .padding(vertical = 16.dp),
                 checked = uiState.value.canTransfer,
                 onCheckedChange = { viewModel.setTransfer() }
             )
@@ -131,8 +131,6 @@ fun HomeScreen(
             SearchButton(
                 onClicked = {
                     onSearchButtonClicked(
-                        uiState.value.date.toString(),
-                        uiState.value.time.toString(),
                         uiState.value.timeType.ordinal,
                         uiState.value.trainMainType.ordinal,
                         uiState.value.canTransfer
@@ -163,7 +161,7 @@ fun HomeStationLayout(
             station = departureStation,
             onClicked = { onStationButtonClicked(SelectedType.DEPARTURE) }
         )
-        SwapButton(modifier = Modifier.padding(top=48.dp),onClicked = onSwapButtonClicked)
+        SwapButton(modifier = Modifier.padding(top = 48.dp), onClicked = onSwapButtonClicked)
         ToStationScreenButton(
             modifier = Modifier
                 .fillMaxWidth()
@@ -180,7 +178,7 @@ fun ToStationScreenButton(
     desc: String,
     station: String,
     onClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.padding(top = 16.dp),
@@ -213,10 +211,9 @@ fun ToStationScreenButton(
 @Composable
 fun DateTimeLayout(
     modifier: Modifier = Modifier,
-    date: LocalDate,
-    time: LocalTime,
+    dateTime: LocalDateTime,
     timeType: SelectedType,
-    confirmTime: (LocalDate, LocalTime, Int) -> Unit
+    confirmTime: (LocalDateTime, Int) -> Unit,
 ) {
     var shouldShowDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -231,7 +228,7 @@ fun DateTimeLayout(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .weight(1f),
-                text = "${date.format(dateWeekFormatter)}   ${time.format(timeFormatter)}",
+                text = "${dateTime.format(dateWeekFormatter)}   ${dateTime.format(timeFormatter)}",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -248,11 +245,10 @@ fun DateTimeLayout(
     if (shouldShowDialog) {
         DateTimeDialog(
             closeDialog = { shouldShowDialog = false },
-            defaultDate = date,
-            defaultTime = time,
+            defaultDateTime = dateTime,
             defaultSelectedIndex = timeType.ordinal,
-            confirmTime = { p1, p2, p3 ->
-                confirmTime(p1, p2, p3)
+            confirmTime = { dateTime, selectedType ->
+                confirmTime(dateTime, selectedType)
             }
         )
     }
@@ -262,7 +258,7 @@ fun DateTimeLayout(
 fun TrainTypeSelection(
     modifier: Modifier = Modifier,
     selectedIndex: Int,
-    onTypeSelected: (Int) -> Unit
+    onTypeSelected: (Int) -> Unit,
 ) {
     Column(modifier = modifier) {
         Text(
@@ -291,13 +287,13 @@ fun TransSwitch(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
-            modifier =Modifier.padding(start = 24.dp)  ,
+            modifier = Modifier.padding(start = 24.dp),
             text = stringResource(id = R.string.accept_transfer),
             fontSize = 16.sp
         )
         Switch(
-            modifier =Modifier.padding(end = 24.dp),
-                    checked = checked,
+            modifier = Modifier.padding(end = 24.dp),
+            checked = checked,
             onCheckedChange = { onCheckedChange() }
         )
     }
@@ -306,7 +302,7 @@ fun TransSwitch(
 @Composable
 fun SearchButton(
     modifier: Modifier = Modifier,
-    onClicked: () -> Unit
+    onClicked: () -> Unit,
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -353,9 +349,8 @@ fun TrainTypeSelectionPreview() {
 @Composable
 fun DateTimeLayoutPreview() {
     DateTimeLayout(
-        date = LocalDate.MAX,
-        time = LocalTime.MAX,
+        dateTime =  getNowDateTime(),
         timeType = SelectedType.DEPARTURE,
-        confirmTime = { _, _, _ -> }
+        confirmTime = { _, _ -> }
     )
 }

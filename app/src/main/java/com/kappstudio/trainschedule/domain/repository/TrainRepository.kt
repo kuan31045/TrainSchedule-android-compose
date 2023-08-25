@@ -6,10 +6,13 @@ import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.model.Trip
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDateTime
 
 interface TrainRepository {
 
     val currentPath: Flow<Path>
+
+    val selectedDateTime: Flow<LocalDateTime>
 
     suspend fun fetchAccessToken(): String
 
@@ -17,9 +20,11 @@ interface TrainRepository {
 
     suspend fun saveCurrentPath(path: Path)
 
-    suspend fun fetchTrips(date: String): Result<List<Trip>>
+    suspend fun saveSelectedDateTime(dateTime: LocalDateTime)
 
-    suspend fun fetchTransferTrips(date: String): Result<List<Trip>>
+    suspend fun fetchTrips(): Result<List<Trip>>
+
+    suspend fun fetchTransferTrips(): Result<List<Trip>>
 
     suspend fun insertPath(path: Path)
 
@@ -29,7 +34,10 @@ interface TrainRepository {
 
     suspend fun isCurrentPathFavorite(): Boolean
 
-    suspend fun fetchTrainDelayTime(trainNumber: String): Int?
+    suspend fun fetchTrainDelay(trainNumber: String): Int?
 
     suspend fun fetchTrainSchedule(trainNumber: String): Result<TrainSchedule>
-}
+
+   suspend fun getStationsOfLine(id: String): List<Station>
+
+ }

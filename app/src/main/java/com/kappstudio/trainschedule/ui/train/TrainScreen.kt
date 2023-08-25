@@ -43,6 +43,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
@@ -50,6 +51,7 @@ import com.kappstudio.trainschedule.ui.components.ExpandButton
 import com.kappstudio.trainschedule.ui.components.FullWidthDivider
 import com.kappstudio.trainschedule.ui.detail.PassStationItem
 import com.kappstudio.trainschedule.util.TrainFlag
+import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.localize
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,6 +63,8 @@ fun TrainScreen(
     viewModel: TrainViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState.collectAsState()
+    val dateTimeState = viewModel.dateTimeState.collectAsState()
+
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val loadingState = viewModel.loadingState
@@ -97,16 +101,9 @@ fun TrainScreen(
 
                 LoadingStatus.Done -> {
                     Column(Modifier.fillMaxSize()) {
-
                         TrainInfoLayout(
                             train = uiState.value.trainSchedule.train,
-                            date = uiState.value.date
-                        )
-
-                        StopsColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            stops = uiState.value.trainSchedule.stops,
-                            isRunning = uiState.value.isRunning
+                            date = dateTimeState.value.format(dateWeekFormatter)
                         )
                     }
 
@@ -156,9 +153,7 @@ fun TrainInfoLayout(modifier: Modifier = Modifier, train: Train, date: String) {
                     .padding(start = 8.dp)
                     .weight(1f), text = train.headSign
             )
-            Text(text = "  routeId:"+train.routeId.toString())
-            Text(text = "  tripline:"+train.tripLine.toString())
-
+            Text(text =  train.headSign )
             ExpandButton(modifier = Modifier.layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
                 layout(placeable.width, placeable.height) {

@@ -12,5 +12,5 @@ interface LineDao {
     suspend fun upsertAll(lines: List<LineEntity>)
 
     @Query("SELECT * from lines WHERE id = :id")
-    fun getLine(id: String): Flow<LineEntity>
+    fun get(id: String): LineEntity
 }

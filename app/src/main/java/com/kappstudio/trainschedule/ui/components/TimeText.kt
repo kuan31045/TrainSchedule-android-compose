@@ -17,7 +17,7 @@ import com.kappstudio.trainschedule.R
 @Composable
 fun TimeText(
     modifier: Modifier = Modifier,
-    minutes: Int,
+    minutes: Long,
 ) {
     Row(
         modifier = modifier,
@@ -39,7 +39,7 @@ fun TimeText(
                     )
                 }"
 
-                minutes % 60 == 0 -> "${minutes / 60} ${
+                (minutes % 60).toInt() == 0 -> "${minutes / 60} ${
                     stringResource(
                         id = R.string.hour
                     )
