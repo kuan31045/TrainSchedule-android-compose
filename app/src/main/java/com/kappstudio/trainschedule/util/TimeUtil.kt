@@ -8,7 +8,8 @@ import java.time.format.DateTimeFormatter
 val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
 val dateWeekFormatter = DateTimeFormatter.ofPattern("MM/dd EEE")
 val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-val detailFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+val detailFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
 
 fun LocalDateTime.toFormatterTime(): LocalTime =
     LocalTime.parse(this.format(timeFormatter))
@@ -19,4 +20,5 @@ fun LocalDateTime.toFormatterTime(): LocalTime =
 fun String.addDate(date: LocalDate): LocalDateTime =
     LocalTime.parse(this).atDate(date)
 
-fun getNowDateTime(): LocalDateTime = LocalDateTime.parse(LocalDateTime.now().format(detailFormatter))
+fun getNowDateTime(): LocalDateTime =
+    LocalDateTime.parse(LocalDateTime.now().format(dateTimeFormatter))

@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
@@ -130,7 +131,7 @@ fun TripDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp),
                 date = dateTimeState.value.format(dateWeekFormatter),
                 trip = uiState.value.trip,
                 onTrainButtonClicked = { onTrainButtonClicked(it) }
@@ -160,7 +161,10 @@ fun TripBody(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        LazyColumn {
+        LazyColumn(
+            contentPadding = PaddingValues(vertical =  16.dp),
+
+            ) {
             item {
                 Row(modifier = Modifier.padding(bottom = 4.dp)) {
                     Text(text = date, fontSize = 16.sp)
@@ -377,16 +381,21 @@ fun PassStationItem(modifier: Modifier = Modifier, text: String) {
 @Preview
 @Composable
 fun ScheduleItemPreview() {
-    val stop = Stop(
-        station = Station(name = Name(en = "Taipei", zh = "Taipei"))
-    )
+    val stops = (1..5).map {
+        Stop(
+            station = Station(
+                id = it.toString(),
+                name = Name(en = "station $it", zh = "車站 $it")
+            )
+        )
+    }
 
     ScheduleItem(
         modifier = Modifier,
         schedule = TrainSchedule(
             train = Train(number = "9527", typeCode = 3),
             price = 500,
-            stops = listOf(stop, stop, stop)
+            stops = stops
         ),
         onTrainButtonClicked = { }
     )

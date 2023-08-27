@@ -3,6 +3,7 @@ package com.kappstudio.trainschedule.domain.repository
 import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.domain.model.Path
+import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.model.Trip
 import kotlinx.coroutines.flow.Flow
@@ -38,6 +39,7 @@ interface TrainRepository {
 
     suspend fun fetchTrainSchedule(trainNumber: String): Result<TrainSchedule>
 
-   suspend fun getStationsOfLine(id: String): List<Station>
+    suspend fun getStationsOfLine(id: String): List<Station>
 
- }
+    suspend fun fetchStationLiveBoardOfTrain(trainNumber: String):List< StationLiveBoard>
+}

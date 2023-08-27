@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kappstudio.trainschedule.data.Result
+import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
@@ -14,6 +15,7 @@ import com.kappstudio.trainschedule.ui.navigation.NavigationArgs
 import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.getNowDateTime
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,11 +26,20 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import javax.inject.Inject
 
+enum class RunningStatus {
+    NOT_YET,
+    RUNNING,
+    FINISH
+}
+
 data class TrainUiState(
     val trainSchedule: TrainSchedule = TrainSchedule(train = Train(""), stops = emptyList()),
     val trainShortName: String = "",
-    val delay: Int = 0,
-    val isFinished: Boolean = false,
+    val delay: Long = 0,
+    val runningStatus: RunningStatus = RunningStatus.NOT_YET,
+    val liveBoards: List<StationLiveBoard> = emptyList(),
+    val trainIndex: Int = 0,
+    val currentTime: LocalDateTime = getNowDateTime(),
 )
 
 @HiltViewModel
@@ -57,35 +68,41 @@ class TrainViewModel @Inject constructor(
         getTrain()
     }
 
-    private fun updateTime() {
-        viewModelScope.launch {
-            val delay = trainRepository.fetchTrainDelay(uiState.value.trainSchedule.train.number)
-            if (delay != null) {
-                _uiState.update { currentState ->
-                    currentState.copy(delay = delay)
-                }
-            }
-            val isFinished =
-                getNowDateTime() > uiState.value.trainSchedule.stops.last().arrivalTime.plusMinutes(
-                    uiState.value.delay.toLong()
-                )
+    private fun checkRunningStatus() {
 
-            _uiState.update { currentState ->
-                currentState.copy(
-                    isFinished = isFinished
-                )
-            }
+        val nowTime = getNowDateTime()
+        val notYet =
+            nowTime < uiState.value.trainSchedule.stops.first().departureTime.minusHours(
+                1
+            )
+
+        val isFinished =
+            nowTime > uiState.value.trainSchedule.stops.last().arrivalTime.plusMinutes(
+                uiState.value.delay
+            )
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                runningStatus = when {
+                    notYet -> RunningStatus.NOT_YET
+                    isFinished -> RunningStatus.FINISH
+                    else -> RunningStatus.RUNNING
+                },
+                trainIndex = if (isFinished) {
+                    currentState.trainSchedule.stops.size - 1
+                } else {
+                    currentState.trainIndex
+                }
+            )
         }
     }
-
 
     fun getTrain() {
         val trainNumber = uiState.value.trainShortName.split("-").last()
         viewModelScope.launch {
-            val result =
-                trainRepository.fetchTrainSchedule(
-                    trainNumber = trainNumber,
-                )
+            val result = trainRepository.fetchTrainSchedule(
+                trainNumber = trainNumber,
+            )
 
             loadingState = when (result) {
                 is Result.Success -> {
@@ -94,7 +111,7 @@ class TrainViewModel @Inject constructor(
                             trainSchedule = result.data
                         )
                     }
-                    updateTime()
+                    getStationLiveBoard()
                     LoadingStatus.Done
                 }
 
@@ -109,6 +126,35 @@ class TrainViewModel @Inject constructor(
                 else -> {
                     LoadingStatus.Loading
                 }
+            }
+        }
+    }
+
+    fun getStationLiveBoard() {
+        viewModelScope.launch {
+            checkRunningStatus()
+            while (uiState.value.runningStatus == RunningStatus.RUNNING) {
+
+                val liveBoardResult = trainRepository.fetchStationLiveBoardOfTrain(
+                    trainNumber = uiState.value.trainSchedule.train.number,
+                )
+                if (liveBoardResult.isNotEmpty()) {
+                    val index = uiState.value.trainSchedule.stops.indexOfFirst {
+                        it.station.id == liveBoardResult.first().stationId
+                    }
+
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            delay = liveBoardResult.first().delay,
+                            liveBoards = liveBoardResult,
+                            trainIndex = index,
+                            currentTime = getNowDateTime()
+                        )
+                    }
+                }
+
+                checkRunningStatus()
+                delay((20000L..30000L).random())
             }
         }
     }

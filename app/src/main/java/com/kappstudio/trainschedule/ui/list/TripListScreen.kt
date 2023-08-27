@@ -307,7 +307,7 @@ fun TripItemTopLayout(
             modifier = Modifier.weight(1f),
             text = trip.endTime.format(timeFormatter),
             style = MaterialTheme.typography.titleLarge,
-            fontSize = 24.sp,
+            fontSize = 25.sp,
             color = MaterialTheme.colorScheme.onPrimaryContainer
         )
         Column(

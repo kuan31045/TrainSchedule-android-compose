@@ -148,7 +148,6 @@ class TripListViewModel @Inject constructor(
                     trainRepository.fetchTrips()
                 }
 
-
             loadingState = when (result) {
                 is Result.Success -> {
                     trips.update { result.data.sortedBy { it.endTime } }

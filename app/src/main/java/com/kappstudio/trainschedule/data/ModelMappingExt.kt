@@ -5,19 +5,20 @@ import com.kappstudio.trainschedule.data.local.entity.PathEntity
 import com.kappstudio.trainschedule.data.local.entity.StationEntity
 import com.kappstudio.trainschedule.data.remote.dto.LineDto
 import com.kappstudio.trainschedule.data.remote.dto.StationDto
+import com.kappstudio.trainschedule.data.remote.dto.StationLiveBoardDto
 import com.kappstudio.trainschedule.data.remote.dto.StopTimeDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainInfoDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Station
+import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.util.TrainFlag
 import com.kappstudio.trainschedule.util.addDate
 import com.kappstudio.trainschedule.util.countyMap
-import timber.log.Timber
 import java.time.LocalDate
 
 fun StationDto.toStation(): Station {
@@ -112,5 +113,15 @@ fun LineDto.toLineEntity(): LineEntity {
     return LineEntity(
         id = lineId,
         stations = stations.map { it.toStationEntity() }
+    )
+}
+
+fun StationLiveBoardDto.toStationLiveBoard(): StationLiveBoard {
+    return StationLiveBoard(
+        trainNumber = trainNo,
+        stationId = stationId,
+        delay = delayTime.toLong(),
+        runningStatus = runningStatus,
+        updateTime = updateTime
     )
 }
