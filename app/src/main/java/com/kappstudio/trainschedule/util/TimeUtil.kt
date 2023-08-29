@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
+val dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
 val dateWeekFormatter = DateTimeFormatter.ofPattern("MM/dd EEE")
 val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")

@@ -18,6 +18,7 @@ import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
+import com.kappstudio.trainschedule.data.HtmlParser
 import com.kappstudio.trainschedule.data.toLineEntity
 import com.kappstudio.trainschedule.data.toPath
 import com.kappstudio.trainschedule.data.toPathEntity
@@ -30,6 +31,7 @@ import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.util.addDate
+import com.kappstudio.trainschedule.util.dateFormatter
 import com.kappstudio.trainschedule.util.getNowDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -37,10 +39,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import org.jsoup.Jsoup
 import java.io.IOException
 import java.lang.Math.abs
 import java.time.Duration
 import java.time.LocalDateTime
+import java.net.URLEncoder
+import java.time.LocalDate
 
 class TrainRepositoryImpl @Inject constructor(
     private val api: TrainApi,
@@ -176,20 +181,100 @@ class TrainRepositoryImpl @Inject constructor(
                             price = fares.firstOrNull { fare ->
                                 timeTable.trainInfoDto.direction == fare.direction
                                         && timeTable.trainInfoDto.trainTypeCode.toInt() == fare.trainType
-                            }?.fares?.first()?.price ?: -1,
-                            date = selectedDateTime.first().toLocalDate()
+                            }?.fares?.first()?.price ?: 0,
+                            date = date
                         )
                     )
                 )
             })
         } catch (e: Exception) {
-            Timber.w("getTrainTimetable exception = ${e.message}")
+            Timber.w("fetchTrips exception = ${e.message}")
             Result.Error(e)
         }
     }
 
     override suspend fun fetchTransferTrips(): Result<List<Trip>> {
-        TODO("Not yet implemented")
+        return try {
+            val allStation = getAllStations()
+            val date = selectedDateTime.first().toLocalDate()
+            val url = getSearchTripUrl(
+                date = date,
+                departureStation = currentPath.first().departureStation,
+                arrivalStation = currentPath.first().arrivalStation
+            )
+            val doc = withContext(Dispatchers.IO) { Jsoup.connect(url).get() }
+
+            var trips = HtmlParser.parseTripV1(
+                allStations = allStation,
+                date = date,
+                currentPath = currentPath.first(),
+                doc = doc
+            )
+            if (trips.isEmpty()) {
+                trips = HtmlParser.parseTripV2(
+                    allStations = allStation,
+                    date = date,
+                    currentPath = currentPath.first(),
+                    doc = doc
+                )
+            }
+
+            Result.Success(trips)
+        } catch (e: Exception) {
+            Timber.w("fetchTransferTrips exception = ${e.message}")
+            Result.Error(e)
+        }
+    }
+
+    override suspend fun fetchStopsOfSchedules(schedules: List<TrainSchedule>): Result<List<TrainSchedule>> {
+
+        val date = selectedDateTime.first().toLocalDate()
+
+        return try {
+            val trainSchedules: MutableList<TrainSchedule> = mutableListOf()
+
+            schedules.forEach { schedule ->
+                val timeTables = api.getTrainTimetable(
+                    token = fetchAccessToken(),
+                    departureStationId = schedule.path.departureStation.id,
+                    arrivalStationId = schedule.path.arrivalStation.id,
+                    date = date.toString()
+                )
+
+                delay(300)
+
+                val fares = api.getODFare(
+                    token = fetchAccessToken(),
+                    departureStationId = schedule.path.departureStation.id,
+                    arrivalStationId = schedule.path.arrivalStation.id,
+                ).odFares
+
+                val timeTable = timeTables.trainTimetables.first {
+                    it.trainInfoDto.trainNo == schedule.train.number
+                }
+
+                trainSchedules.add(
+                    timeTable.toTrainSchedule(
+                        price = fares.firstOrNull { fare ->
+                            timeTable.trainInfoDto.direction == fare.direction
+                                    && timeTable.trainInfoDto.trainTypeCode.toInt() == fare.trainType
+                        }?.fares?.first()?.price ?: 0,
+                        date = date
+                    )
+                )
+            }
+
+            Result.Success(trainSchedules)
+        } catch (e: Exception) {
+            Timber.w("fetchTripStops exception = ${e.message}")
+            Result.Error(e)
+        }
+    }
+
+    override suspend fun getAllStations(): List<Station> {
+        return trainDb.stationDao.getAllStations().map { stationEntity ->
+            stationEntity.toStation()
+        }
     }
 
     override suspend fun insertPath(path: Path) = trainDb.pathDao.insert(path.toPathEntity())
@@ -248,7 +333,6 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-
     override suspend fun getStationsOfLine(id: String): List<Station> {
         return withContext(Dispatchers.IO) {
             trainDb.lineDao.get(id).stations.map { it.toStation() }
@@ -260,7 +344,7 @@ class TrainRepositoryImpl @Inject constructor(
             val result = api.getStationLiveBoard(fetchAccessToken())
             val nowTime = getNowDateTime()
 
-            result.stationLiveBoards.filter{
+            result.stationLiveBoards.filter {
                 val updateTime = LocalDateTime.parse(it.updateTime.split("+").first())
                 val durationHours = abs(Duration.between(updateTime, nowTime).toHours())
                 it.trainNo == trainNumber && durationHours < 5
@@ -281,6 +365,19 @@ class TrainRepositoryImpl @Inject constructor(
         val queryIndex =
             stops.indexOfFirst { it.stationId == currentPath.first().departureStation.id }
         return if (overNightIndex != -1 && overNightIndex <= queryIndex) 1 else 0
+    }
+
+    private fun getSearchTripUrl(
+        date: LocalDate,
+        departureStation: Station,
+        arrivalStation: Station,
+    ): String {
+        val rideDate: String = date.format(dateFormatter)
+        val startStation: String =
+            departureStation.id + "-" + URLEncoder.encode(departureStation.name.zh, "UTF-8")
+        val endStation: String =
+            arrivalStation.id + "-" + URLEncoder.encode(arrivalStation.name.zh, "UTF-8")
+        return "https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/querybytime?startTime=00:00&endTime=23:59&transfer=NORMAL&trainTypeList=ALL&rideDate=$rideDate&endStation=$endStation&startStation=$startStation&sort=travelTime,asc"
     }
 
     private companion object {

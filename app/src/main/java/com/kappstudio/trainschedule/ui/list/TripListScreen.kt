@@ -53,6 +53,7 @@ import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.ui.components.ErrorLayout
+import com.kappstudio.trainschedule.ui.components.LoadingDot
 import com.kappstudio.trainschedule.ui.components.TimeText
 import com.kappstudio.trainschedule.ui.components.TrainText
 import com.kappstudio.trainschedule.util.LoadingStatus
@@ -67,7 +68,7 @@ fun TripListScreen(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
     viewModel: TripListViewModel = hiltViewModel(),
-    onTripItemClicked: (Trip) -> Unit,
+    onTripItemClicked: (Trip, Boolean) -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val pathState = viewModel.currentPath.collectAsState()
@@ -116,7 +117,7 @@ fun TripListScreen(
             when (loadingState) {
 
                 LoadingStatus.Loading -> {
-                    CircularProgressIndicator()
+                    LoadingDot()
                 }
 
                 LoadingStatus.Done -> {
@@ -125,7 +126,7 @@ fun TripListScreen(
                             modifier = Modifier.fillMaxSize(),
                             trips = uiState.value.trips,
                             initialIndex = uiState.value.initialTripIndex,
-                            onTripItemClicked = { onTripItemClicked(it) }
+                            onTripItemClicked = { onTripItemClicked(it, uiState.value.canTransfer) }
                         )
 
                     } else {
@@ -183,7 +184,7 @@ fun FilterBottomSheet(
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                items(TrainType.values().toList()) { type ->
+                items(TrainType.values().toList().dropLast(1)) { type ->
                     Row(
                         modifier = Modifier
                             .selectable(
@@ -219,13 +220,11 @@ fun TripColumn(
         modifier = modifier,
         state = listState,
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(16.dp)
+        contentPadding = PaddingValues(  16.dp)
     ) {
         items(
-            items = trips,
-            key = { trip ->
-                trip.trainSchedules
-            }
+            items = trips ,
+
         ) { trip ->
             TripItem(
                 modifier = Modifier.fillMaxSize(),
@@ -315,10 +314,12 @@ fun TripItemTopLayout(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             TimeText(minutes = trip.durationMinutes)
-            Text(
-                text = "$ " + trip.totalPrice,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            if(trip.totalPrice!=0){
+                Text(
+                    text = "$ " + trip.totalPrice,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
@@ -332,7 +333,7 @@ fun TrainsLayout(
     Row(modifier = modifier) {
         trains.forEach { train ->
             TrainText(train = train)
-            if (train != trains.last()) Text(text = " > ")
+            if (train != trains.last()) Text(text = ", ")
         }
         Spacer(modifier = Modifier.weight(1f))
         if (hasDeparted) {
@@ -352,7 +353,7 @@ fun TripItemPreview() {
         trip = Trip(
             trainSchedules = listOf(
                 TrainSchedule(
-                    train = Train("123", Name("Local", "Local")),
+                    train = Train("123", Name("Local", "Local"), TrainType.NEW_TC),
                     price = 100,
                     stops = listOf(Stop(station = Station()))
                 )

@@ -12,5 +12,8 @@ interface StationDao {
     suspend fun upsertAll(stations: List<StationEntity>)
 
     @Query("SELECT * from stations WHERE id = :id")
-    fun getStation(id: String): Flow<StationEntity>
+    fun get(id: String): Flow<StationEntity>
+
+    @Query("SELECT * from stations ORDER BY id ASC")
+    suspend fun getAllStations(): List<StationEntity>
 }

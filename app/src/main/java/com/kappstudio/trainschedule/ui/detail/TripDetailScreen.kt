@@ -54,7 +54,9 @@ import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.ui.components.BigStationPoint
+import com.kappstudio.trainschedule.ui.components.ErrorLayout
 import com.kappstudio.trainschedule.ui.components.ExpandIcon
+import com.kappstudio.trainschedule.ui.components.LoadingDot
 import com.kappstudio.trainschedule.ui.components.RoundRectRoute
 import com.kappstudio.trainschedule.ui.components.SmallStationPoint
 import com.kappstudio.trainschedule.ui.components.TimeText
@@ -63,6 +65,7 @@ import com.kappstudio.trainschedule.ui.components.TrainText
 import com.kappstudio.trainschedule.ui.components.pullrefreshm3.PullRefreshIndicator
 import com.kappstudio.trainschedule.ui.components.pullrefreshm3.pullRefresh
 import com.kappstudio.trainschedule.ui.components.pullrefreshm3.rememberPullRefreshState
+import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.TrainStatus
 import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.dateWeekFormatter
@@ -83,6 +86,7 @@ fun TripDetailScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val dateTimeState = viewModel.dateTimeState.collectAsState()
+    val loadingState = viewModel.loadingState
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -127,24 +131,43 @@ fun TripDetailScreen(
             },
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) { innerPadding ->
-            TripBody(
+
+            when (loadingState) {
+                LoadingStatus.Loading -> {
+                    LoadingDot()
+                }
+
+                LoadingStatus.Done -> {
+                    TripBody(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                            .padding(horizontal = 16.dp),
+                        date = dateTimeState.value.format(dateWeekFormatter),
+                        trip = uiState.value.trip,
+                        onTrainButtonClicked = { onTrainButtonClicked(it) }
+                    )
+                }
+
+                is LoadingStatus.Error -> {
+                    ErrorLayout(
+                        modifier = Modifier.padding(top =160.dp, start = 16.dp, end = 16.dp),
+                        text = loadingState.error,
+                        retry = { viewModel.fetchStop() }
+                    )
+                }
+            }
+        }
+        if(loadingState == LoadingStatus.Done){
+            PullRefreshIndicator(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp),
-                date = dateTimeState.value.format(dateWeekFormatter),
-                trip = uiState.value.trip,
-                onTrainButtonClicked = { onTrainButtonClicked(it) }
+                    .align(alignment = Alignment.TopCenter)
+                    .padding(top = 100.dp),
+                refreshing = refreshing,
+                state = refreshState,
             )
         }
 
-        PullRefreshIndicator(
-            modifier = Modifier
-                .align(alignment = Alignment.TopCenter)
-                .padding(top = 100.dp),
-            refreshing = refreshing,
-            state = refreshState,
-        )
     }
 }
 
@@ -162,16 +185,18 @@ fun TripBody(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(vertical =  16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp),
 
             ) {
             item {
                 Row(modifier = Modifier.padding(bottom = 4.dp)) {
                     Text(text = date, fontSize = 16.sp)
-                    Text(
-                        modifier = Modifier.padding(start = 16.dp),
-                        text = stringResource(id = R.string.price, trip.totalPrice)
-                    )
+                    if(trip.totalPrice!=0){
+                        Text(
+                            modifier = Modifier.padding(start = 16.dp),
+                            text = stringResource(id = R.string.price, trip.totalPrice)
+                        )
+                    }
                 }
             }
 
@@ -182,11 +207,8 @@ fun TripBody(
 
                         val trainShortName = (when (schedule.train.number) {
                             "1", "2" -> context.resources.getString(R.string.tour_train)
-                            else -> {
-                                TrainType.getName(schedule.train.typeCode)
-                                    ?.let { context.resources.getString(it) }
-                            }
-                        } ?: schedule.train.fullName.localize()) + "-${schedule.train.number}"
+                            else -> context.resources.getString(schedule.train.type.trainName)
+                        }) + "-${schedule.train.number}"
 
                         onTrainButtonClicked(trainShortName)
                     }
@@ -393,7 +415,7 @@ fun ScheduleItemPreview() {
     ScheduleItem(
         modifier = Modifier,
         schedule = TrainSchedule(
-            train = Train(number = "9527", typeCode = 3),
+            train = Train(number = "9527", type = TrainType.NEW_TC),
             price = 500,
             stops = stops
         ),

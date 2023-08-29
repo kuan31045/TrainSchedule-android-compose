@@ -77,8 +77,8 @@ fun TrainNavGraph(
 
                 TripListScreen(
                     navigateBack = { navController.navigateUp() },
-                    onTripItemClicked = { trip->
-                        viewModel.setTrip(trip)
+                    onTripItemClicked = { trip, isTransferTrip->
+                        viewModel.setTrip(trip, isTransferTrip)
                         navController.navigate(Screen.DETAIL.route)
                     }
                 )

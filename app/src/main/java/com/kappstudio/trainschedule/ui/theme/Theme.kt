@@ -109,7 +109,7 @@ fun TrainScheduleTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        shapes = Shapes,
-        content = content
+        content = content,
+        shapes = Shapes
     )
 }

@@ -100,4 +100,7 @@ dependencies {
 
     // WheelPicker
     implementation("com.github.commandiron:WheelPickerCompose:1.1.11")
+
+    //Jsoup
+    implementation("org.jsoup:jsoup:1.14.3")
 }

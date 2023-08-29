@@ -62,6 +62,7 @@ import com.kappstudio.trainschedule.ui.components.LoadingDot
 import com.kappstudio.trainschedule.ui.components.RepeatArrowAnim
 import com.kappstudio.trainschedule.ui.components.TrainIcon
 import com.kappstudio.trainschedule.util.TrainFlag
+import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.getNowDateTime
 import com.kappstudio.trainschedule.util.localize
@@ -361,6 +362,7 @@ fun TrainInfoPreview() {
         train = Train(
             number = "123",
             headSign = "往高雄",
+            type = TrainType.NEW_TC,
             flags = listOf(TrainFlag.DAILY_FLAG, TrainFlag.BIKE_FLAG)
         ), date = "2023-10-10"
     )

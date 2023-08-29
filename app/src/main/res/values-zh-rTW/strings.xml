@@ -29,10 +29,10 @@
     <string name="not_find_route">查無結果</string>
     <string name="direct">直達</string>
     <string name="time_desc">時間</string>
-    <string name="time_format">%1\$d 小時 %2\$d 分鐘</string>
+    <string name="time_format">%1\$d 小時 %2\$d 分</string>
     <string name="hour">小時</string>
-    <string name="transferTimes">次轉乘</string>
-    <string name="minute">分鐘</string>
+    <string name="transferTimes">轉</string>
+    <string name="minute">分</string>
     <string name="departed">已離站</string>
     <string name="delete_desc">刪除</string>
     <string name="no_favorite">最愛為空</string>
@@ -58,4 +58,5 @@
     <string name="bike">自行車</string>
     <string name="breast_feed">哺乳室</string>
     <string name="wheel_chair">輪椅座</string>
+    <string name="train">列車</string>
 </resources>

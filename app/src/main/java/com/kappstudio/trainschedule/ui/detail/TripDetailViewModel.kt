@@ -1,9 +1,14 @@
 package com.kappstudio.trainschedule.ui.detail
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
+import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.getNowDateTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,18 +34,24 @@ class TripDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TripDetailUiState())
     val uiState: StateFlow<TripDetailUiState> = _uiState.asStateFlow()
 
+    var loadingState: LoadingStatus by mutableStateOf(LoadingStatus.Loading)
+        private set
+
     val dateTimeState: StateFlow<LocalDateTime> = trainRepository.selectedDateTime.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = getNowDateTime(),
     )
 
-    fun setTrip(trip: Trip) {
+    fun setTrip(trip: Trip, isTransferTrip: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(trip = trip)
         }
-        viewModelScope.launch {
-            fetchTrainsDelayTime()
+
+        if (isTransferTrip) {
+            fetchStop()
+        } else {
+            viewModelScope.launch { fetchTrainsDelayTime() }
         }
     }
 
@@ -55,6 +66,39 @@ class TripDetailViewModel @Inject constructor(
             currentState.copy(
                 trip = uiState.value.trip.copy(trainSchedules = newSchedules)
             )
+        }
+    }
+
+    fun fetchStop() {
+        loadingState = LoadingStatus.Loading
+        viewModelScope.launch {
+            val result = trainRepository.fetchStopsOfSchedules(
+                uiState.value.trip.trainSchedules
+            )
+
+            loadingState = when (result) {
+                is Result.Success -> {
+                    val newTrip = uiState.value.trip.copy(
+                        trainSchedules = result.data
+                    )
+                    _uiState.update { currentState ->
+                        currentState.copy(trip = newTrip)
+                    }
+                    LoadingStatus.Done
+                }
+
+                is Result.Fail -> {
+                    LoadingStatus.Error(result.error)
+                }
+
+                is Result.Error -> {
+                    LoadingStatus.Error(result.exception.toString())
+                }
+
+                else -> {
+                    LoadingStatus.Loading
+                }
+            }
         }
     }
 }

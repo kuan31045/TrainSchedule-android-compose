@@ -33,6 +33,8 @@ interface TrainRepository {
 
     fun getAllPathsStream(): Flow<List<Path>>
 
+    suspend fun getAllStations(): List<Station>
+
     suspend fun isCurrentPathFavorite(): Boolean
 
     suspend fun fetchTrainDelay(trainNumber: String): Int?
@@ -42,4 +44,6 @@ interface TrainRepository {
     suspend fun getStationsOfLine(id: String): List<Station>
 
     suspend fun fetchStationLiveBoardOfTrain(trainNumber: String):List< StationLiveBoard>
+
+    suspend fun fetchStopsOfSchedules(schedules: List<TrainSchedule>): Result<List<TrainSchedule>>
 }

@@ -32,6 +32,7 @@ data class TripListUiState(
     val trips: List<Trip> = emptyList(),
     val isFavorite: Boolean = false,
     val initialTripIndex: Int = 0,
+    val canTransfer: Boolean = false,
     val filteredTrainTypes: List<TrainType> = emptyList(),
     val isFiltering: Boolean = false,
 )
@@ -43,13 +44,13 @@ class TripListViewModel @Inject constructor(
 ) : ViewModel() {
     private val timeType: SelectedType =
         enumValues<SelectedType>()[savedStateHandle[TIME_TYPE_INT]!!]
-    private val canTransfer: Boolean = savedStateHandle[CAN_TRANSFER_BOOLEAN]!!
 
     private val trips: MutableStateFlow<List<Trip>> = MutableStateFlow(emptyList())
 
     private val _uiState = MutableStateFlow(
         TripListUiState(
-            filteredTrainTypes = TrainType.getTypes(savedStateHandle[TRAIN_TYPE_INT]!!)
+            filteredTrainTypes = TrainType.getTypes(savedStateHandle[TRAIN_TYPE_INT]!!),
+            canTransfer = savedStateHandle[CAN_TRANSFER_BOOLEAN]!!
         )
     )
     val uiState: StateFlow<TripListUiState> = _uiState.asStateFlow()
@@ -113,9 +114,8 @@ class TripListViewModel @Inject constructor(
     }
 
     private fun filterTrips() {
-        val types = uiState.value.filteredTrainTypes.map { type -> type.typeCode }
         val newTrips: List<Trip> = trips.value.filter { trip ->
-            trip.trainSchedules.all { schedule -> schedule.train.typeCode in types }
+            trip.trainSchedules.all { schedule -> schedule.train.type in uiState.value.filteredTrainTypes }
         }.sortedBy { it.startTime }
         _uiState.update { currentState ->
             currentState.copy(trips = newTrips)
@@ -140,9 +140,10 @@ class TripListViewModel @Inject constructor(
     }
 
     fun searchTrips() {
+        loadingState = LoadingStatus.Loading
         viewModelScope.launch {
             val result =
-                if (canTransfer) {
+                if (uiState.value.canTransfer) {
                     trainRepository.fetchTransferTrips()
                 } else {
                     trainRepository.fetchTrips()

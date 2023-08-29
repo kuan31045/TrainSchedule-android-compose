@@ -13,6 +13,7 @@ import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs
 import com.kappstudio.trainschedule.util.LoadingStatus
+import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.getNowDateTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -33,7 +34,12 @@ enum class RunningStatus {
 }
 
 data class TrainUiState(
-    val trainSchedule: TrainSchedule = TrainSchedule(train = Train(""), stops = emptyList()),
+    val trainSchedule: TrainSchedule = TrainSchedule(
+        train = Train(
+            number = "",
+            type = TrainType.UNKNOWN
+        ), stops = emptyList()
+    ),
     val trainShortName: String = "",
     val delay: Long = 0,
     val runningStatus: RunningStatus = RunningStatus.NOT_YET,
@@ -98,6 +104,7 @@ class TrainViewModel @Inject constructor(
     }
 
     fun getTrain() {
+        loadingState = LoadingStatus.Loading
         val trainNumber = uiState.value.trainShortName.split("-").last()
         viewModelScope.launch {
             val result = trainRepository.fetchTrainSchedule(

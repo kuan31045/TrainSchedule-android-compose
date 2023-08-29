@@ -17,6 +17,7 @@ import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.util.TrainFlag
+import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.addDate
 import com.kappstudio.trainschedule.util.countyMap
 import java.time.LocalDate
@@ -47,7 +48,7 @@ fun TrainInfoDto.toTrain(): Train {
     return Train(
         number = trainNo,
         fullName = trainTypeName,
-        typeCode = trainTypeCode.toInt(),
+        type = TrainType.fromCode(trainTypeCode.toInt()),
         startStation = Station(id = startingStationId, name = startingStationName),
         endStation = Station(id = endingStationId, name = endingStationName),
         headSign = headSign,
