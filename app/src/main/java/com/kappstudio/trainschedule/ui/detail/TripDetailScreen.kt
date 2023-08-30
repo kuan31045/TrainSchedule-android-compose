@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +34,8 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,12 +64,10 @@ import com.kappstudio.trainschedule.ui.components.RoundRectRoute
 import com.kappstudio.trainschedule.ui.components.SmallStationPoint
 import com.kappstudio.trainschedule.ui.components.TimeText
 import com.kappstudio.trainschedule.ui.components.TrainLargeTopAppBar
-import com.kappstudio.trainschedule.ui.components.TrainText
 import com.kappstudio.trainschedule.ui.components.pullrefreshm3.PullRefreshIndicator
 import com.kappstudio.trainschedule.ui.components.pullrefreshm3.pullRefresh
 import com.kappstudio.trainschedule.ui.components.pullrefreshm3.rememberPullRefreshState
 import com.kappstudio.trainschedule.util.LoadingStatus
-import com.kappstudio.trainschedule.util.TrainStatus
 import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.localize
@@ -151,14 +152,14 @@ fun TripDetailScreen(
 
                 is LoadingStatus.Error -> {
                     ErrorLayout(
-                        modifier = Modifier.padding(top =160.dp, start = 16.dp, end = 16.dp),
+                        modifier = Modifier.padding(top = 160.dp, start = 16.dp, end = 16.dp),
                         text = loadingState.error,
                         retry = { viewModel.fetchStop() }
                     )
                 }
             }
         }
-        if(loadingState == LoadingStatus.Done){
+        if (loadingState == LoadingStatus.Done) {
             PullRefreshIndicator(
                 modifier = Modifier
                     .align(alignment = Alignment.TopCenter)
@@ -190,13 +191,16 @@ fun TripBody(
             ) {
             item {
                 Row(modifier = Modifier.padding(bottom = 4.dp)) {
-                    Text(text = date, fontSize = 16.sp)
-                    if(trip.totalPrice!=0){
-                        Text(
-                            modifier = Modifier.padding(start = 16.dp),
-                            text = stringResource(id = R.string.price, trip.totalPrice)
-                        )
-                    }
+                    Text(text = date, fontSize = 18.sp)
+                    Text(
+                        modifier = Modifier
+                            .padding(start = 8.dp),
+                        text = trip.startTime.format(timeFormatter) + "-" + trip.endTime.format(
+                            timeFormatter
+                        ),
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 }
             }
 
@@ -215,6 +219,14 @@ fun TripBody(
                 )
                 if (schedule != trip.trainSchedules.last()) {
                     TransferLayout()
+                }
+            }
+
+            item {
+                if (trip.totalPrice != 0) {
+                    Text(
+                        text = stringResource(id = R.string.price, trip.totalPrice)
+                    )
                 }
             }
         }
@@ -259,78 +271,84 @@ fun ScheduleItem(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            BigStationLayout(text = schedule.stops.first().station.name.localize())
+            BigStationLayout(
+                station = schedule.stops.first().station.name.localize(),
+                time = schedule.stops.first().departureTime.format(
+                    timeFormatter
+                )
+            )
 
-            Button(onClick = onTrainButtonClicked) {
-                TrainText(train = schedule.train)
+
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+               Button(onClick = onTrainButtonClicked) {
+                   Text(
+                       modifier = modifier,
+                       text = when (schedule.train.number) {
+                           "1", "2" -> stringResource(id = R.string.tour_train)
+                           else -> stringResource(schedule.train.type.trainName)
+                       } + " ${schedule.train.number}",
+                       fontSize = 16.sp
+                   )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+
+                Text(
+                    text = when(schedule.train.delay)  {
+                        null -> ""
+                        0-> stringResource(id = R.string.on_time)
+                        else -> stringResource(id = R.string.delay, schedule.train.delay)
+                    },
+                    color = when(schedule.train.delay)  {
+                        null -> MaterialTheme.colorScheme.onPrimary
+                        0-> com.kappstudio.trainschedule.ui.theme.on_time
+                        else -> MaterialTheme.colorScheme.error
+                    }
+                )
             }
 
-            TrainTimeLayout(
-                train = schedule.train,
-                departureTime = schedule.getStartTime().format(timeFormatter)
-            )
 
             StopsLayout(stops = schedule.stops)
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                BigStationLayout(
-                    modifier = Modifier.weight(1f),
-                    text = schedule.stops.last().station.name.localize()
-                )
-                Text(
-                    text = schedule.getEndTime().format(timeFormatter),
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
+
+            BigStationLayout(
+                station = schedule.stops.last().station.name.localize(),
+                time = schedule.getEndTime().format(timeFormatter)
+            )
+
 
             Divider(thickness = 1.dp)
         }
     }
 }
 
-@Composable
-fun TrainTimeLayout(modifier: Modifier = Modifier, train: Train, departureTime: String) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            modifier = Modifier
-                .padding(start = 4.dp)
-                .weight(1f),
-            text = when (train.status) {
-                TrainStatus.DELAY -> stringResource(
-                    id = R.string.delay, train.delay ?: 1
-                )
-
-                else -> stringResource(id = train.status.status)
-            },
-            color = when (train.status) {
-                TrainStatus.EXPECTED -> MaterialTheme.colorScheme.outline
-                TrainStatus.ON_TIME -> com.kappstudio.trainschedule.ui.theme.on_time
-                TrainStatus.DELAY -> MaterialTheme.colorScheme.error
-            }
-        )
-        Text(text = departureTime, style = MaterialTheme.typography.titleLarge)
-    }
-}
 
 @Composable
 fun BigStationLayout(
     modifier: Modifier = Modifier,
-    text: String,
+    station: String,
+    time: String,
 ) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         BigStationPoint()
         Text(
             modifier = Modifier
                 .padding(start = 2.dp)
+                .weight(1f)
                 .layout { measurable, constraints ->
                     val placeable = measurable.measure(constraints)
                     layout(placeable.width, placeable.height) {
                         placeable.place(-24.dp.roundToPx(), 0)
                     }
                 },
-            text = text,
+            text = station,
             style = MaterialTheme.typography.titleLarge
         )
+        Text(text = time, style = MaterialTheme.typography.titleLarge)
+
     }
 }
 

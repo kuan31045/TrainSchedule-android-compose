@@ -34,7 +34,7 @@ class TripDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TripDetailUiState())
     val uiState: StateFlow<TripDetailUiState> = _uiState.asStateFlow()
 
-    var loadingState: LoadingStatus by mutableStateOf(LoadingStatus.Loading)
+    var loadingState: LoadingStatus by mutableStateOf(LoadingStatus.Done)
         private set
 
     val dateTimeState: StateFlow<LocalDateTime> = trainRepository.selectedDateTime.stateIn(
@@ -84,6 +84,7 @@ class TripDetailViewModel @Inject constructor(
                     _uiState.update { currentState ->
                         currentState.copy(trip = newTrip)
                     }
+                    fetchTrainsDelayTime()
                     LoadingStatus.Done
                 }
 

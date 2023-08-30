@@ -1,7 +1,6 @@
 package com.kappstudio.trainschedule.domain.model
 
 import com.kappstudio.trainschedule.util.TrainFlag
-import com.kappstudio.trainschedule.util.TrainStatus
 import com.kappstudio.trainschedule.util.TrainType
 
 data class Train(
@@ -16,6 +15,5 @@ data class Train(
     val overNightStationId: String = "",
     val flags: List<TrainFlag> = emptyList(),
 ){
-    val status: TrainStatus = TrainStatus.getTrainStatus(this)
     val isOverNight: Boolean = overNightStationId != ""
 }

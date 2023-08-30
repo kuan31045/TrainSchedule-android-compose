@@ -35,18 +35,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Station
@@ -55,10 +51,8 @@ import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.ui.components.ErrorLayout
 import com.kappstudio.trainschedule.ui.components.LoadingDot
 import com.kappstudio.trainschedule.ui.components.TimeText
-import com.kappstudio.trainschedule.ui.components.TrainText
 import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.TrainType
-import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.getNowDateTime
 import com.kappstudio.trainschedule.util.timeFormatter
 import com.kappstudio.trainschedule.util.toggle
@@ -220,12 +214,12 @@ fun TripColumn(
         modifier = modifier,
         state = listState,
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(  16.dp)
+        contentPadding = PaddingValues(16.dp)
     ) {
         items(
-            items = trips ,
+            items = trips,
 
-        ) { trip ->
+            ) { trip ->
             TripItem(
                 modifier = Modifier.fillMaxSize(),
                 trip = trip,
@@ -252,14 +246,27 @@ fun TripItem(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            TripItemTopLayout(trip = trip)
+            TripItemTopLayout(trip = trip, hasDeparted = hasDeparted)
 
             Divider(
                 thickness = 0.6.dp,
                 modifier = Modifier.padding(vertical = 10.dp)
             )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TrainText(trains = trip.trainSchedules.map { it.train })
 
-            TrainsLayout(trains = trip.trainSchedules.map { it.train }, hasDeparted = hasDeparted)
+                if (trip.totalPrice > 0 && hasDeparted) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(R.string.departed),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
         }
     }
 
@@ -275,6 +282,7 @@ fun TripItem(
 fun TripItemTopLayout(
     modifier: Modifier = Modifier,
     trip: Trip,
+    hasDeparted: Boolean,
 ) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
         Text(
@@ -310,14 +318,22 @@ fun TripItemTopLayout(
             color = MaterialTheme.colorScheme.onPrimaryContainer
         )
         Column(
+            modifier = Modifier.padding(top = 4.dp),
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             TimeText(minutes = trip.durationMinutes)
-            if(trip.totalPrice!=0){
+            if (trip.totalPrice != 0) {
                 Text(
                     text = "$ " + trip.totalPrice,
                     style = MaterialTheme.typography.bodyMedium
+                )
+            }
+            if (trip.totalPrice == 0 && hasDeparted) {
+                Text(
+                    text = stringResource(R.string.departed),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
                 )
             }
         }
@@ -325,25 +341,17 @@ fun TripItemTopLayout(
 }
 
 @Composable
-fun TrainsLayout(
-    modifier: Modifier = Modifier,
+fun TrainText(
     trains: List<Train>,
-    hasDeparted: Boolean,
 ) {
-    Row(modifier = modifier) {
-        trains.forEach { train ->
-            TrainText(train = train)
-            if (train != trains.last()) Text(text = ", ")
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        if (hasDeparted) {
-            Text(
-                text = stringResource(R.string.departed),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
+    val texts: List<String> = trains.map { train ->
+        when (train.number) {
+            "1", "2" -> stringResource(id = R.string.tour_train)
+            else -> stringResource(train.type.trainName)
+        } + " ${train.number}"
     }
+
+    Text(text = texts.joinToString { "$it " })
 }
 
 @Preview
