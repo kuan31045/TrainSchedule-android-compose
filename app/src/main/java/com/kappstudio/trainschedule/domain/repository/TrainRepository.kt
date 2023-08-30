@@ -2,6 +2,7 @@ package com.kappstudio.trainschedule.domain.repository
 
 import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.data.Result
+import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
@@ -17,7 +18,7 @@ interface TrainRepository {
 
     suspend fun fetchAccessToken(): String
 
-    suspend fun fetchStationsAndLines(): Result<List<Station>>
+    suspend fun fetchStationsAndLines(): Result<Boolean>
 
     suspend fun saveCurrentPath(path: Path)
 
@@ -34,6 +35,10 @@ interface TrainRepository {
     fun getAllPathsStream(): Flow<List<Path>>
 
     suspend fun getAllStations(): List<Station>
+
+    fun getAllStationsStream(): Flow<List<Station>>
+
+    fun getAllLinesStream(): Flow<List<Line>>
 
     suspend fun isCurrentPathFavorite(): Boolean
 

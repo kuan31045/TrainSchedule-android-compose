@@ -16,9 +16,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.kappstudio.trainschedule.data.Result
+import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.util.getNowDateTime
+import com.kappstudio.trainschedule.util.lineMap
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -26,13 +28,15 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 
 data class HomeUiState(
-    val stationsOfCounty: Map<Name, List<Station>> = emptyMap(),
+    val stations: Map<Name, List<Station>> = emptyMap(),
     val selectedStationType: SelectedType = SelectedType.DEPARTURE,
-    val selectedCounty: Name = Name(),
+    val selectedCatalog: Name = Name(),
     val timeType: SelectedType = SelectedType.DEPARTURE,
     val trainMainType: TrainMainType = TrainMainType.ALL,
     val canTransfer: Boolean = false,
-)
+) {
+    val stationsNameOfSelectedCatalog = stations[selectedCatalog]?.map { it.name } ?: emptyList()
+}
 
 enum class TrainMainType(@StringRes val text: Int) {
     ALL(R.string.all),
@@ -47,7 +51,7 @@ enum class SelectedType(@StringRes val text: Int) {
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val trainRepository: TrainRepository
+    private val trainRepository: TrainRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -65,26 +69,59 @@ class HomeViewModel @Inject constructor(
         initialValue = getNowDateTime(),
     )
 
+    val stationState: StateFlow<List<Station>> =
+        trainRepository.getAllStationsStream()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList(),
+            )
+
+    val lineState: StateFlow<List<Line>> =
+        trainRepository.getAllLinesStream()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList(),
+            )
+
     var loadingState: LoadingStatus by mutableStateOf(LoadingStatus.Loading)
         private set
 
     init {
-        saveDateTime(getNowDateTime(),0)
-        getStations()
+        saveDateTime(getNowDateTime(), 0)
+        fetchStationsAndLines()
     }
 
-    fun selectCounty(county: Name) {
+    fun setupStationList() {
+
+        val stationOfLineMap = mutableMapOf<Name, List<Station>>()
+
+        lineMap.forEach { (name, ids) ->
+            stationOfLineMap[name] =
+                lineState.value.filter { it.id == ids.first || it.id == ids.second }
+                    .flatMap { it.stations }
+        }
+
+        val stationOfCountryMap = stationState.value.groupBy { it.county }.minus(Name())
+
         _uiState.update { currentState ->
             currentState.copy(
-                selectedCounty = county
+                stations = stationOfCountryMap + stationOfLineMap
             )
         }
     }
 
+    fun selectCatalog(catalog: Name) {
+        _uiState.update { currentState ->
+            currentState.copy(selectedCatalog = catalog)
+        }
+    }
+
     fun selectStation(stationName: Name) {
-        val county = uiState.value.selectedCounty
+        val catalog = uiState.value.selectedCatalog
         val station =
-            uiState.value.stationsOfCounty[county]?.first { station -> station.name == stationName }
+            uiState.value.stations[catalog]?.first { station -> station.name == stationName }
 
         val path = when (uiState.value.selectedStationType) {
             SelectedType.DEPARTURE -> {
@@ -107,14 +144,14 @@ class HomeViewModel @Inject constructor(
     private fun savePath(path: Path) {
         viewModelScope.launch {
             trainRepository.saveCurrentPath(path)
-            selectCounty(getCurrentPathCounty())
+            selectCatalog(getCurrentPathCatalog())
         }
     }
 
     fun saveDateTime(dateTime: LocalDateTime, ordinal: Int) {
         _uiState.update { currentState ->
             currentState.copy(
-                timeType =  enumValues<SelectedType>()[ordinal]
+                timeType = enumValues<SelectedType>()[ordinal]
             )
         }
         viewModelScope.launch {
@@ -129,7 +166,7 @@ class HomeViewModel @Inject constructor(
             )
         }
 
-        selectCounty(getCurrentPathCounty())
+        selectCatalog(getCurrentPathCatalog())
     }
 
     fun swapPath() {
@@ -141,14 +178,22 @@ class HomeViewModel @Inject constructor(
         )
     }
 
-    private fun getCurrentPathCounty(): Name {
-        return when (uiState.value.selectedStationType) {
-            SelectedType.DEPARTURE -> pathState.value.departureStation.county
-            SelectedType.ARRIVAL -> pathState.value.arrivalStation.county
+    private fun getCurrentPathCatalog(): Name {
+        val station = when (uiState.value.selectedStationType) {
+            SelectedType.DEPARTURE -> pathState.value.departureStation
+            SelectedType.ARRIVAL -> pathState.value.arrivalStation
+        }
+
+        return if (station.county != Name()) {
+            station.county
+        } else {
+            uiState.value.stations.keys.firstOrNull { key ->
+                uiState.value.stations[key]?.contains(station) ?: false
+            } ?: Name()
         }
     }
 
-    fun setTransfer(){
+    fun setTransfer() {
         _uiState.update { currentState ->
             currentState.copy(
                 canTransfer = uiState.value.canTransfer.not()
@@ -156,7 +201,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun selectTrainType(ordinal:Int) {
+    fun selectTrainType(ordinal: Int) {
         _uiState.update { currentState ->
             currentState.copy(
                 trainMainType = enumValues<TrainMainType>()[ordinal]
@@ -164,16 +209,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun getStations() {
+    fun fetchStationsAndLines() {
+        loadingState = LoadingStatus.Loading
         viewModelScope.launch {
             val result = trainRepository.fetchStationsAndLines()
             loadingState = when (result) {
                 is Result.Success -> {
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            stationsOfCounty = result.data.groupBy { it.county }.minus(Name())
-                        )
-                    }
+                    setupStationList()
                     LoadingStatus.Done
                 }
 

@@ -9,6 +9,7 @@ import com.kappstudio.trainschedule.data.remote.dto.StationLiveBoardDto
 import com.kappstudio.trainschedule.data.remote.dto.StopTimeDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainInfoDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
+import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Station
@@ -124,5 +125,12 @@ fun StationLiveBoardDto.toStationLiveBoard(): StationLiveBoard {
         delay = delayTime.toLong(),
         runningStatus = runningStatus,
         updateTime = updateTime
+    )
+}
+
+fun LineEntity.toLine(): Line {
+    return Line(
+        id = id,
+        stations = stations.map { it.toStation() }
     )
 }

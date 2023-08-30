@@ -16,4 +16,7 @@ interface StationDao {
 
     @Query("SELECT * from stations ORDER BY id ASC")
     suspend fun getAllStations(): List<StationEntity>
+
+    @Query("SELECT * from stations ORDER BY id ASC")
+    fun getAllStationsStream():Flow<List<StationEntity>>
 }

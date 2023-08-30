@@ -19,12 +19,14 @@ import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
 import com.kappstudio.trainschedule.data.HtmlParser
+import com.kappstudio.trainschedule.data.toLine
 import com.kappstudio.trainschedule.data.toLineEntity
 import com.kappstudio.trainschedule.data.toPath
 import com.kappstudio.trainschedule.data.toPathEntity
 import com.kappstudio.trainschedule.data.toStationEntity
 import com.kappstudio.trainschedule.data.toStationLiveBoard
 import com.kappstudio.trainschedule.data.toTrainSchedule
+import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.StationLiveBoard
@@ -120,7 +122,7 @@ class TrainRepositoryImpl @Inject constructor(
         return localToken.first().accessToken
     }
 
-    override suspend fun fetchStationsAndLines(): Result<List<Station>> {
+    override suspend fun fetchStationsAndLines(): Result<Boolean> {
         return try {
             val stationResult = api.getStations(fetchAccessToken())
             trainDb.stationDao.upsertAll(stationResult.stations.map { it.toStationEntity() })
@@ -128,7 +130,7 @@ class TrainRepositoryImpl @Inject constructor(
             val lineResult = api.getLines(fetchAccessToken())
             trainDb.lineDao.upsertAll(lineResult.lines.map { it.toLineEntity() })
 
-            Result.Success(stationResult.stations.map { it.toStation() })
+            Result.Success(true)
         } catch (e: Exception) {
             Timber.w("getStations exception = ${e.message}")
             Result.Error(e)
@@ -268,6 +270,22 @@ class TrainRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Timber.w("fetchTripStops exception = ${e.message}")
             Result.Error(e)
+        }
+    }
+
+    override fun getAllStationsStream(): Flow<List<Station>> {
+        return trainDb.stationDao.getAllStationsStream().map { stationEntities ->
+            withContext(Dispatchers.IO) {
+                stationEntities.map { it.toStation() }
+            }
+        }
+    }
+
+    override fun getAllLinesStream(): Flow<List<Line>> {
+        return trainDb.lineDao.getAllLinesStream().map { lineEntities ->
+            withContext(Dispatchers.IO) {
+                lineEntities.map { it.toLine() }
+            }
         }
     }
 

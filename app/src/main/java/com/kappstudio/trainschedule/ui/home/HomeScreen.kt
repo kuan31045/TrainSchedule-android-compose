@@ -61,6 +61,8 @@ fun HomeScreen(
     val uiState = viewModel.uiState.collectAsState()
     val pathState = viewModel.pathState.collectAsState()
     val dateState = viewModel.dateTimeState.collectAsState()
+    val stationState = viewModel.stationState.collectAsState()
+    val lineState = viewModel.lineState.collectAsState()
 
     Scaffold(
         topBar = {

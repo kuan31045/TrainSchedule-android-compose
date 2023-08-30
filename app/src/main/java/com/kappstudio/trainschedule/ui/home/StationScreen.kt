@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -25,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,9 +39,13 @@ import androidx.compose.ui.unit.dp
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.ui.TrainTopAppBar
+import com.kappstudio.trainschedule.ui.components.ErrorLayout
+import com.kappstudio.trainschedule.ui.components.LoadingDot
 import com.kappstudio.trainschedule.ui.components.SwapButton
+import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.bigStations
 import com.kappstudio.trainschedule.util.localize
+import kotlinx.coroutines.launch
 
 @Composable
 fun StationScreen(
@@ -49,6 +55,10 @@ fun StationScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val pathState = viewModel.pathState.collectAsState()
+    val loadingState = viewModel.loadingState
+    val stationState = viewModel.stationState.collectAsState()
+
+    viewModel.setupStationList()
 
     Scaffold(
         topBar = {
@@ -72,7 +82,6 @@ fun StationScreen(
             modifier = Modifier.padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
             StationTopLayout(
                 selectedType = uiState.value.selectedStationType,
                 departureStation = pathState.value.departureStation.name.localize(),
@@ -80,31 +89,41 @@ fun StationScreen(
                 onStationButtonClicked = { viewModel.changeSelectedStation(it) },
                 onSwapButtonClicked = { viewModel.swapPath() },
             )
+            when {
+                loadingState is LoadingStatus.Loading && stationState.value.isEmpty() ->
+                    LoadingDot()
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 8.dp)
-            ) {
-                SingleSelectColumn(
-                    items = uiState.value.stationsOfCounty.keys.toList(),
-                    selected = uiState.value.selectedCounty,
-                    onItemClicked = { viewModel.selectCounty(it) },
-                    modifier = Modifier.weight(1f)
-                )
-                SingleSelectColumn(
-                    items =
-                    uiState.value.stationsOfCounty[uiState.value.selectedCounty]?.map { it.name }
-                        ?: emptyList(),
-                    bigStation = bigStations,
-                    selected = when (uiState.value.selectedStationType) {
-                        SelectedType.DEPARTURE -> pathState.value.departureStation.name
-                        SelectedType.ARRIVAL -> pathState.value.arrivalStation.name
-                    },
-                    onItemClicked = { viewModel.selectStation(it) },
-                    modifier = Modifier.weight(1f)
-                )
+                loadingState is LoadingStatus.Error && stationState.value.isEmpty() ->
+                    ErrorLayout(
+                        modifier = Modifier.padding(16.dp),
+                        text = loadingState.error,
+                        retry = { viewModel.fetchStationsAndLines() })
+
+                else -> {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        SingleSelectColumn(
+                            items = uiState.value.stations.keys.toList(),
+                            selected = uiState.value.selectedCatalog,
+                            onItemClicked = { viewModel.selectCatalog(it) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        SingleSelectColumn(
+                            items = uiState.value.stationsNameOfSelectedCatalog,
+                            bigStation = bigStations,
+                            selected = when (uiState.value.selectedStationType) {
+                                SelectedType.DEPARTURE -> pathState.value.departureStation.name
+                                SelectedType.ARRIVAL -> pathState.value.arrivalStation.name
+                            },
+                            onItemClicked = { viewModel.selectStation(it) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
             }
         }
     }
@@ -133,7 +152,7 @@ fun StationTopLayout(
             station = departureStation,
             onClicked = { onStationButtonClicked(SelectedType.DEPARTURE) }
         )
-        SwapButton(modifier = Modifier.padding(top=48.dp),onClicked = onSwapButtonClicked)
+        SwapButton(modifier = Modifier.padding(top = 48.dp), onClicked = onSwapButtonClicked)
         StationButton(
             modifier = Modifier.weight(1f),
             isSelected = selectedType == SelectedType.ARRIVAL,
@@ -142,7 +161,6 @@ fun StationTopLayout(
             onClicked = { onStationButtonClicked(SelectedType.ARRIVAL) }
         )
     }
-
 }
 
 @Composable
@@ -193,15 +211,26 @@ fun SingleSelectColumn(
     onItemClicked: (Name) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    var alreadyRolled by rememberSaveable { mutableStateOf(false) }
+
     var isItemSelected by rememberSaveable { mutableStateOf(false) }
 
     LazyColumn(
-        modifier = modifier
+        modifier = modifier,
+        state = listState
     ) {
+        coroutineScope.launch {
+            if (items.indexOf(selected) > 0 && !alreadyRolled) {
+                alreadyRolled = true
+                listState.scrollToItem(index = items.indexOf(selected) - 1)
+            }
+        }
         items(
             items = items
         ) { item ->
-            isItemSelected = item==selected
+            isItemSelected = item == selected
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,12 +242,12 @@ fun SingleSelectColumn(
                 Text(
                     text = item.localize(),
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if(isItemSelected) FontWeight.Bold else FontWeight.Normal,
+                    fontWeight = if (isItemSelected) FontWeight.Bold else FontWeight.Normal,
                     color = if (item.zh in bigStation) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.onBackground
                 )
                 if (isItemSelected) {
                     Icon(
-                        modifier=Modifier.size(20.dp),
+                        modifier = Modifier.size(20.dp),
                         imageVector = Icons.Default.Check,
                         contentDescription = stringResource(id = R.string.checked_desc),
                         tint = MaterialTheme.colorScheme.tertiary
@@ -251,7 +280,6 @@ fun SingleSelectColumnPreview() {
             Name("Hsinchu", "新竹"),
             Name("Kaohsiung", "高雄"),
         ),
-        selected = Name("Hsinchu", "新竹"),
-        onItemClicked = {}
+        selected = Name("Hsinchu", "新竹"), onItemClicked = {}
     )
 }

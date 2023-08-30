@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
 import com.kappstudio.trainschedule.data.local.entity.LineEntity
+import com.kappstudio.trainschedule.data.local.entity.StationEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -13,4 +14,7 @@ interface LineDao {
 
     @Query("SELECT * from lines WHERE id = :id")
     fun get(id: String): LineEntity
+
+    @Query("SELECT * from lines ORDER BY id ASC")
+    fun getAllLinesStream():Flow<List<LineEntity>>
 }
