@@ -1,5 +1,8 @@
 package com.kappstudio.trainschedule.ui.detail
 
+import android.content.Context
+import android.content.Intent
+import android.provider.CalendarContract
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,10 +35,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,6 +76,7 @@ import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.localize
 import com.kappstudio.trainschedule.util.timeFormatter
+import com.kappstudio.trainschedule.util.toSec
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Duration
@@ -88,6 +93,8 @@ fun TripDetailScreen(
     val uiState = viewModel.uiState.collectAsState()
     val dateTimeState = viewModel.dateTimeState.collectAsState()
     val loadingState = viewModel.loadingState
+
+    var menuExpanded by rememberSaveable { mutableStateOf(false) }
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -121,11 +128,62 @@ fun TripDetailScreen(
                                 contentDescription = stringResource(id = R.string.to_home_desc)
                             )
                         }
-                        IconButton(onClick = {}) {
+                        IconButton(
+                            enabled = loadingState == LoadingStatus.Done,
+                            onClick = {
+                                menuExpanded = true
+                            }) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = stringResource(id = R.string.more_desc)
                             )
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            val context = LocalContext.current
+                            val subject = stringResource(id = R.string.train_trip)
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.share)) },
+                                onClick = {
+                                    menuExpanded = false
+                                    shareTrip(
+                                        context = context,
+                                        subject = subject,
+                                        summary = uiState.value.trip.toSummary(
+                                            context = context,
+                                            hasTitle = true
+                                        )
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Share,
+                                        contentDescription = null
+                                    )
+                                })
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.add_to_google_calendar)) },
+                                onClick = {
+                                    menuExpanded = false
+                                    addToCalendar(
+                                        context = context,
+                                        title = uiState.value.trip.path.getTitle(),
+                                        summary = uiState.value.trip.toSummary(
+                                            context = context,
+                                            hasTitle = false
+                                        ),
+                                        startTimeMillis = uiState.value.trip.startTime.toSec(),
+                                        endTimeMillis = uiState.value.trip.endTime.toSec()
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painterResource(id = R.drawable.ic_edit_calendar),
+                                        contentDescription = null
+                                    )
+                                })
                         }
                     }
                 )
@@ -284,27 +342,27 @@ fun ScheduleItem(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-               Button(onClick = onTrainButtonClicked) {
-                   Text(
-                       modifier = modifier,
-                       text = when (schedule.train.number) {
-                           "1", "2" -> stringResource(id = R.string.tour_train)
-                           else -> stringResource(schedule.train.type.trainName)
-                       } + " ${schedule.train.number}",
-                       fontSize = 16.sp
-                   )
+                Button(onClick = onTrainButtonClicked) {
+                    Text(
+                        modifier = modifier,
+                        text = when (schedule.train.number) {
+                            "1", "2" -> stringResource(id = R.string.tour_train)
+                            else -> stringResource(schedule.train.type.trainName)
+                        } + " ${schedule.train.number}",
+                        fontSize = 16.sp
+                    )
                 }
                 Spacer(modifier = Modifier.weight(1f))
 
                 Text(
-                    text = when(schedule.train.delay)  {
+                    text = when (schedule.train.delay) {
                         null -> ""
-                        0-> stringResource(id = R.string.on_time)
+                        0 -> stringResource(id = R.string.on_time)
                         else -> stringResource(id = R.string.delay, schedule.train.delay)
                     },
-                    color = when(schedule.train.delay)  {
+                    color = when (schedule.train.delay) {
                         null -> MaterialTheme.colorScheme.onPrimary
-                        0-> com.kappstudio.trainschedule.ui.theme.on_time
+                        0 -> com.kappstudio.trainschedule.ui.theme.on_time
                         else -> MaterialTheme.colorScheme.error
                     }
                 )
@@ -393,7 +451,7 @@ fun StopsLayout(
         ) {
             Column {
                 stops.drop(1).dropLast(1).forEach {
-                    PassStationItem(text = it.station.name.localize())
+                    PassedStationItem(text = it.station.name.localize())
                 }
             }
         }
@@ -404,7 +462,7 @@ fun StopsLayout(
 }
 
 @Composable
-fun PassStationItem(modifier: Modifier = Modifier, text: String) {
+fun PassedStationItem(modifier: Modifier = Modifier, text: String) {
     Row(
         modifier = modifier.padding(horizontal = 4.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -416,6 +474,36 @@ fun PassStationItem(modifier: Modifier = Modifier, text: String) {
             color = MaterialTheme.colorScheme.secondary
         )
     }
+}
+
+private fun shareTrip(context: Context, subject: String, summary: String) {
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, summary)
+    }
+
+    context.startActivity(
+        Intent.createChooser(
+            intent,
+            context.getString(R.string.train_trip),
+        ),
+    )
+}
+
+private fun addToCalendar(
+    context: Context, title: String, summary: String, startTimeMillis: Long,
+    endTimeMillis: Long,
+) {
+    val intent = Intent(Intent.ACTION_INSERT).apply {
+        data = CalendarContract.Events.CONTENT_URI
+        putExtra(CalendarContract.Events.TITLE, title)
+        putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startTimeMillis)
+        putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endTimeMillis)
+        putExtra(CalendarContract.Events.ALL_DAY, false)
+        putExtra(CalendarContract.Events.DESCRIPTION, summary)
+    }
+    context.startActivity(intent)
 }
 
 @Preview

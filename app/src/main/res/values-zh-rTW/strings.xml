@@ -59,4 +59,7 @@
     <string name="breast_feed">哺乳室</string>
     <string name="wheel_chair">輪椅座</string>
     <string name="train">列車</string>
+    <string name="share">分享</string>
+    <string name="add_to_google_calendar">新增至日曆</string>
+    <string name="train_trip">火車行程</string>
 </resources>

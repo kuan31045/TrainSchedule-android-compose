@@ -58,4 +58,7 @@
     <string name="breast_feed">Breastfeeding Room</string>
     <string name="wheel_chair">Wheelchair Seat</string>
     <string name="train">Train</string>
+    <string name="share">Share</string>
+    <string name="add_to_google_calendar">Add to Calendar</string>
+    <string name="train_trip">Train Trip</string>
 </resources>
