@@ -61,4 +61,43 @@
     <string name="share">Share</string>
     <string name="add_to_google_calendar">Add to Calendar</string>
     <string name="train_trip">Train Trip</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="appearance_theme">Appearance</string>
+    <string name="system_default">System default</string>
+    <string name="light_theme">Light theme</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="dynamic_theme">Dynamic theme</string>
+
+    <string name="privacy_policy_full">
+        Train Schedule (referred to as "we," "our," or "the app") respects your privacy. This Privacy Policy explains how we collect, use, protect, and process your personal information. Please read this Privacy Policy carefully before using the app.\n\n
+
+Information Collection and Use\n
+We do not collect any personally identifiable information, including but not limited to your name, email address, contact information, or other identifying information. The main function of this app is to provide train schedule query services and does not require you to provide any personal information.\n\n
+
+Permissions\n
+The app may request certain basic access permissions, such as access to your network connection to retrieve train schedule information. These permissions are solely used to provide the core functionality of the app, and we do not use them to collect your personal information or other sensitive data.\n\n
+
+Information Sharing\n
+We do not share, sell, rent, or otherwise disclose any of your personal information to third parties.\n\n
+
+Advertisements\n
+The app does not contain advertisements, and we do not display ads within the app.\n\n
+
+Information Security\n
+We employ appropriate technical and security measures to protect your personal information from unauthorized access, use, or disclosure. However, please note that the security of any internet transmission cannot be guaranteed.\n\n
+
+Contact Us\n
+If you have any questions about this Privacy Policy or our information collection and usage practices, please contact us through the following:\n\n
+
+Email: kuanappstudio@gmail.com\n\n
+
+Changes to Privacy Policy\n
+We reserve the right to modify this Privacy Policy at any time. We will post any changes to this page and provide notice of any changes before they take effect. Please check this Privacy Policy regularly for updates.\n\n
+
+Last Updated: 2023/08/31\n\n
+
+Please note that this Privacy Policy only applies to this app and not to other apps or websites developed or operated by third parties, even if you access these apps or websites through this app. Please review the privacy policies of other apps or websites before using them.
+
+    </string>
+
 </resources>

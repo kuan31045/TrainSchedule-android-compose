@@ -64,7 +64,7 @@ fun DateTimeDialog(
         onDismissRequest = closeDialog,
         title = {
             SegmentedControl(
-                modifier = Modifier.padding(horizontal = 8.dp),
+                modifier = Modifier.padding(top = 8.dp,start = 8.dp,end = 8.dp),
                 items = SelectedType.values().map { stringResource(id = it.text) },
                 onItemSelected = { selectedIndex = it },
                 selectedIndex = selectedIndex

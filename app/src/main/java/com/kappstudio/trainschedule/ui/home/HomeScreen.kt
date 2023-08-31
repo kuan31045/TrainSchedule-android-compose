@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -64,6 +68,10 @@ fun HomeScreen(
     val stationState = viewModel.stationState.collectAsState()
     val lineState = viewModel.lineState.collectAsState()
 
+    var isMenuExpanded by rememberSaveable { mutableStateOf(false) }
+    var shouldShowThemeDialog by rememberSaveable { mutableStateOf(false) }
+    var shouldShowPolicyDialog by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TrainTopAppBar(
@@ -76,6 +84,46 @@ fun HomeScreen(
                             contentDescription = stringResource(id = R.string.favorite_title)
                         )
                     }
+                    IconButton(
+                        onClick = { isMenuExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(id = R.string.more_desc)
+                        )
+                    }
+
+                    //-----Menu---------------------------------------------------------------------
+                    DropdownMenu(
+                        expanded = isMenuExpanded,
+                        onDismissRequest = { isMenuExpanded = false }
+                    ) {
+
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.appearance_theme)) },
+                            onClick = {
+                                isMenuExpanded = false
+                                shouldShowThemeDialog = true
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painterResource(id = R.drawable.ic_brightness_medium),
+                                    contentDescription = null
+                                )
+                            })
+
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.privacy_policy)) },
+                            onClick = {
+                                isMenuExpanded = false
+                                shouldShowPolicyDialog = true
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painterResource(id = R.drawable.ic_policy),
+                                    contentDescription = null
+                                )
+                            })
+                    }
                 }
             )
         },
@@ -85,6 +133,15 @@ fun HomeScreen(
             modifier = Modifier.padding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            //-----Theme Dialog---------------------------------------------------------------------
+            if(shouldShowThemeDialog){
+
+            }
+
+            //-----Policy Dialog--------------------------------------------------------------------
+            if(shouldShowPolicyDialog){
+                PolicyDialog ( closeDialog = {shouldShowPolicyDialog = false})
+            }
 
             HomeStationLayout(
                 modifier = Modifier
@@ -243,7 +300,7 @@ fun DateTimeLayout(
         }
     }
 
-    //-----Open Dialog------------------------------------------------------------------------------
+    //-----Date Time Dialog-------------------------------------------------------------------------
     if (shouldShowDialog) {
         DateTimeDialog(
             closeDialog = { shouldShowDialog = false },

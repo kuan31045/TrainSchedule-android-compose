@@ -94,7 +94,7 @@ fun TripDetailScreen(
     val dateTimeState = viewModel.dateTimeState.collectAsState()
     val loadingState = viewModel.loadingState
 
-    var menuExpanded by rememberSaveable { mutableStateOf(false) }
+    var isMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -131,7 +131,7 @@ fun TripDetailScreen(
                         IconButton(
                             enabled = loadingState == LoadingStatus.Done,
                             onClick = {
-                                menuExpanded = true
+                                isMenuExpanded = true
                             }) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
@@ -139,15 +139,15 @@ fun TripDetailScreen(
                             )
                         }
                         DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
+                            expanded = isMenuExpanded,
+                            onDismissRequest = { isMenuExpanded = false }
                         ) {
                             val context = LocalContext.current
                             val subject = stringResource(id = R.string.train_trip)
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.share)) },
                                 onClick = {
-                                    menuExpanded = false
+                                    isMenuExpanded = false
                                     shareTrip(
                                         context = context,
                                         subject = subject,
@@ -166,7 +166,7 @@ fun TripDetailScreen(
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.add_to_google_calendar)) },
                                 onClick = {
-                                    menuExpanded = false
+                                    isMenuExpanded = false
                                     addToCalendar(
                                         context = context,
                                         title = uiState.value.trip.path.getTitle(),
