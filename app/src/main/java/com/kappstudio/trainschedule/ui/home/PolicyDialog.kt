@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,12 +16,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.kappstudio.trainschedule.R
+import com.kappstudio.trainschedule.ui.theme.isLight
 
 @Composable
 fun PolicyDialog(modifier: Modifier = Modifier, closeDialog: () -> Unit) {
     AlertDialog(
-        containerColor = MaterialTheme.colorScheme.onSecondary,
-        modifier = modifier
+        containerColor = if (MaterialTheme.colorScheme.isLight()) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            AlertDialogDefaults.containerColor
+        }, modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 56.dp),
         onDismissRequest = closeDialog,

@@ -55,7 +55,7 @@ fun SegmentedControl(
                     onClick = { onItemSelected(index) },
                     colors = CardDefaults.cardColors(
                         containerColor = if (selectedIndex == index) {
-                            MaterialTheme.colorScheme.onPrimary
+                            MaterialTheme.colorScheme.onSecondary
                         } else {
                             MaterialTheme.colorScheme.outline
                         },

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
@@ -21,6 +22,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.kappstudio.trainschedule.AppTheme
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.components.FullWidthDivider
+import com.kappstudio.trainschedule.ui.theme.isLight
 
 @Composable
 fun ThemeDialog(
@@ -34,8 +36,11 @@ fun ThemeDialog(
 
 
     AlertDialog(
-        containerColor = MaterialTheme.colorScheme.onSecondary,
-        modifier = modifier
+        containerColor = if (MaterialTheme.colorScheme.isLight()) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            AlertDialogDefaults.containerColor
+        }, modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
         onDismissRequest = closeDialog,
@@ -65,7 +70,7 @@ fun ThemeDialog(
                         )
                     }
                 }
-                FullWidthDivider(modifier = Modifier.padding(top=16.dp))
+                FullWidthDivider(modifier = Modifier.padding(top = 16.dp))
 
 
             }

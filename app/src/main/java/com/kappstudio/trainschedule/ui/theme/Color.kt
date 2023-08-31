@@ -1,10 +1,14 @@
 package com.kappstudio.trainschedule.ui.theme
 
+import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+
+fun ColorScheme.isLight() = this.background.luminance() > 0.5
 
 val on_time = Color(0xFF00aa3e)
 
-val md_theme_light_primary = Color(0xFF3D5AA9)
+val md_theme_light_primary = Color(0xFF5673C0)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
 val md_theme_light_primaryContainer = Color(0xFFDBE1FF)
 val md_theme_light_onPrimaryContainer = Color(0xFF00174A)
@@ -36,13 +40,13 @@ val md_theme_light_outlineVariant = Color(0xFFC5C6D0)
 val md_theme_light_scrim = Color(0xFF000000)
 
 
-val md_theme_dark_primary = Color(0xFFB3C5FF)
-val md_theme_dark_onPrimary = Color(0xFF002A76)
+val md_theme_dark_primary = Color(0xFF6674A3)
+val md_theme_dark_onPrimary = Color(0xFFFFFFFF)
 val md_theme_dark_primaryContainer = Color(0xFF224290)
 val md_theme_dark_onPrimaryContainer = Color(0xFFDBE1FF)
 val md_theme_dark_secondary = Color(0xFFC1C6DD)
 val md_theme_dark_onSecondary = Color(0xFF2A3042)
-val md_theme_dark_secondaryContainer = Color(0xFF414659)
+val md_theme_dark_secondaryContainer = Color(0xFFB8BDCF)
 val md_theme_dark_onSecondaryContainer = Color(0xFFDDE1F9)
 val md_theme_dark_tertiary = Color(0xFFE2BBDC)
 val md_theme_dark_onTertiary = Color(0xFF422741)

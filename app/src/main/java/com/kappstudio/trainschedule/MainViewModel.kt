@@ -22,17 +22,17 @@ class MainViewModel @Inject constructor(
     preferenceRepository: PreferenceRepository,
 ) : ViewModel() {
 
-    val appThemeState: StateFlow<AppTheme> = preferenceRepository.appThemeCode.map {
+    val appThemeState: StateFlow<AppTheme?> = preferenceRepository.appThemeCode.map {
         enumValues<AppTheme>()[it]
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = AppTheme.DEFAULT,
+        initialValue = null,
     )
 
-    val dynamicColorState: StateFlow<Boolean> = preferenceRepository.isDynamicColor.stateIn(
+    val dynamicColorState: StateFlow<Boolean?> = preferenceRepository.isDynamicColor.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = true,
+        initialValue = null,
     )
 }

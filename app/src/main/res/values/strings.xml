@@ -67,6 +67,7 @@
     <string name="light_theme">Light theme</string>
     <string name="dark_theme">Dark theme</string>
     <string name="dynamic_color">Dynamic color</string>
+    <string name="transfer">Transfer</string>
 
     <string name="privacy_policy_full">
         Train Schedule (referred to as "we," "our," or "the app") respects your privacy. This Privacy Policy explains how we collect, use, protect, and process your personal information. Please read this Privacy Policy carefully before using the app.\n\n

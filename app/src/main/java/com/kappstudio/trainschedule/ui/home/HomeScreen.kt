@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -32,8 +33,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.TrainTopAppBar
-import com.kappstudio.trainschedule.ui.components.GradientButton
 import com.kappstudio.trainschedule.ui.components.SegmentedControl
 import com.kappstudio.trainschedule.ui.components.SwapButton
 import com.kappstudio.trainschedule.util.dateWeekFormatter
@@ -98,13 +96,20 @@ fun HomeScreen(
 
                     //-----Menu---------------------------------------------------------------------
                     DropdownMenu(
-                        modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
+                        modifier = Modifier.background(MaterialTheme.colorScheme.onSecondary),
                         expanded = isMenuExpanded,
                         onDismissRequest = { isMenuExpanded = false }
                     ) {
 
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.appearance)) },
+                            text = {
+                                Text(
+                                    modifier = Modifier.padding(
+                                        end = dimensionResource(id = R.dimen.menu_end_padding)
+                                    ),
+                                    text = stringResource(R.string.appearance)
+                                )
+                            },
                             onClick = {
                                 isMenuExpanded = false
                                 shouldShowThemeDialog = true
@@ -117,7 +122,14 @@ fun HomeScreen(
                             })
 
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.privacy_policy)) },
+                            text = {
+                                Text(
+                                    modifier = Modifier.padding(
+                                        end = dimensionResource(id = R.dimen.menu_end_padding)
+                                    ),
+                                    text = stringResource(R.string.privacy_policy)
+                                )
+                            },
                             onClick = {
                                 isMenuExpanded = false
                                 shouldShowPolicyDialog = true
@@ -378,20 +390,18 @@ fun SearchButton(
         modifier = modifier.fillMaxWidth(),
         shadowElevation = dimensionResource(R.dimen.surface_shadow_elevation_16)
     ) {
-        GradientButton(
+        Button(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp, start = 8.dp, end = 8.dp),
-            text = stringResource(id = R.string.search),
-            textColor = Color.White,
-            gradient = Brush.horizontalGradient(
-                colors = listOf(
-                    MaterialTheme.colorScheme.surfaceTint,
-                    MaterialTheme.colorScheme.primary
-                )
-            ),
-            onClicked = onClicked
-        )
+                .padding(24.dp),
+            onClick = onClicked
+        ) {
+            Text(
+                modifier = Modifier.padding(2.dp),
+                text = stringResource(id = R.string.search),
+                fontSize = 18.sp
+            )
+        }
     }
 }
 

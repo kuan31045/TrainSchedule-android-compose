@@ -34,6 +34,7 @@ import com.kappstudio.trainschedule.ui.TrainTopAppBar
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ModalBottomSheet
@@ -80,7 +81,7 @@ fun TripListScreen(
                             Icon(
                                 painter = painterResource(R.drawable.ic_star),
                                 contentDescription = stringResource(R.string.remove_favorite_desc),
-                                tint = MaterialTheme.colorScheme.inversePrimary
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         } else {
                             Icon(
@@ -120,7 +121,10 @@ fun TripListScreen(
                             modifier = Modifier.fillMaxSize(),
                             trips = uiState.value.trips,
                             initialIndex = uiState.value.initialTripIndex,
-                            onTripItemClicked = { onTripItemClicked(it, uiState.value.canTransfer) }
+                            onTripItemClicked = {
+                                onTripItemClicked(it, uiState.value.canTransfer)
+                            },
+                            canTransfer = uiState.value.canTransfer
                         )
 
                     } else {
@@ -206,6 +210,7 @@ fun TripColumn(
     trips: List<Trip>,
     initialIndex: Int,
     onTripItemClicked: (Trip) -> Unit,
+    canTransfer: Boolean,
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
     val currentDateTime = getNowDateTime()
@@ -225,7 +230,8 @@ fun TripColumn(
                 trip = trip,
                 isLastLeftTrip = trips.lastOrNull { it.startTime < currentDateTime } == trip,
                 hasDeparted = trip.startTime < currentDateTime,
-                onTripItemClicked = { onTripItemClicked(it) }
+                onTripItemClicked = { onTripItemClicked(it) },
+                canTransfer = canTransfer
             )
         }
     }
@@ -239,19 +245,25 @@ fun TripItem(
     isLastLeftTrip: Boolean,
     hasDeparted: Boolean,
     onTripItemClicked: (Trip) -> Unit,
+    canTransfer: Boolean,
 ) {
     Card(
         modifier = modifier,
-        onClick = { onTripItemClicked(trip) }
+        onClick = { onTripItemClicked(trip) },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.13f),
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
             TripItemTopLayout(trip = trip, hasDeparted = hasDeparted)
 
             Divider(
-                thickness = 0.6.dp,
-                modifier = Modifier.padding(vertical = 10.dp)
+                modifier = Modifier.padding(
+                    vertical = if (canTransfer) 14.dp else 10.dp
+                )
             )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -370,6 +382,7 @@ fun TripItemPreview() {
         ),
         hasDeparted = false,
         isLastLeftTrip = false,
-        onTripItemClicked = { _ -> }
+        onTripItemClicked = { _ -> },
+        canTransfer = false
     )
 }

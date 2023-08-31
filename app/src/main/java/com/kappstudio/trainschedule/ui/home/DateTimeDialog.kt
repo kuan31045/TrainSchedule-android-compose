@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -29,10 +30,10 @@ import com.commandiron.wheel_picker_compose.core.WheelPickerDefaults
 import com.commandiron.wheel_picker_compose.core.WheelTextPicker
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.components.SegmentedControl
+import com.kappstudio.trainschedule.ui.theme.isLight
 import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.getNowDateTime
 import com.kappstudio.trainschedule.util.toFormatterTime
-import com.kappstudio.trainschedule.util.timeFormatter
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -57,14 +58,18 @@ fun DateTimeDialog(
     var heightIs by remember { mutableStateOf(0.dp) }
 
     AlertDialog(
-        containerColor = MaterialTheme.colorScheme.onSecondary,
+        containerColor = if (MaterialTheme.colorScheme.isLight()) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            AlertDialogDefaults.containerColor
+        },
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
         onDismissRequest = closeDialog,
         title = {
             SegmentedControl(
-                modifier = Modifier.padding(top = 8.dp,start = 8.dp,end = 8.dp),
+                modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp),
                 items = SelectedType.values().map { stringResource(id = it.text) },
                 onItemSelected = { selectedIndex = it },
                 selectedIndex = selectedIndex
@@ -141,5 +146,6 @@ fun DateDialogPreview() {
         closeDialog = {},
         defaultDateTime = getNowDateTime(),
         defaultSelectedIndex = 0,
-        confirmTime = { _, _ -> })
+        confirmTime = { _, _ -> }
+    )
 }

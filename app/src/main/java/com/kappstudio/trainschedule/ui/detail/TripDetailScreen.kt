@@ -52,6 +52,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
@@ -140,14 +141,21 @@ fun TripDetailScreen(
                             )
                         }
                         DropdownMenu(
-                            modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
+                            modifier = Modifier.background(MaterialTheme.colorScheme.onSecondary),
                             expanded = isMenuExpanded,
                             onDismissRequest = { isMenuExpanded = false }
                         ) {
                             val context = LocalContext.current
                             val subject = stringResource(id = R.string.train_trip)
                             DropdownMenuItem(
-                                text = { Text(stringResource(R.string.share)) },
+                                text = {
+                                    Text(
+                                        modifier = Modifier.padding(
+                                            end = dimensionResource(id = R.dimen.menu_end_padding)
+                                        ),
+                                        text = stringResource(R.string.share)
+                                    )
+                                },
                                 onClick = {
                                     isMenuExpanded = false
                                     shareTrip(
@@ -166,7 +174,14 @@ fun TripDetailScreen(
                                     )
                                 })
                             DropdownMenuItem(
-                                text = { Text(stringResource(R.string.add_to_google_calendar)) },
+                                text = {
+                                    Text(
+                                        modifier = Modifier.padding(
+                                            end = dimensionResource(id = R.dimen.menu_end_padding)
+                                        ),
+                                        text = stringResource(R.string.add_to_google_calendar)
+                                    )
+                                },
                                 onClick = {
                                     isMenuExpanded = false
                                     addToCalendar(
@@ -302,7 +317,7 @@ fun TransferLayout(modifier: Modifier = Modifier) {
                 painter = painterResource(id = R.drawable.ic_transfer_within_a_station),
                 contentDescription = null
             )
-            Text(modifier = Modifier.padding(start = 24.dp), text = "轉乘")
+            Text(modifier = Modifier.padding(start = 24.dp), text = stringResource(R.string.transfer))
         }
         Divider(modifier = Modifier.padding(start = 56.dp, end = 8.dp), thickness = 1.dp)
     }

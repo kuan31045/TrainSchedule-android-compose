@@ -41,7 +41,7 @@ class PreferenceRepositoryImpl @Inject constructor(
             }
         }
         .map { preferences ->
-            val isDynamicTheme = preferences[IS_DYNAMIC_COLOR] ?: true
+            val isDynamicTheme = preferences[IS_DYNAMIC_COLOR] ?: false
             isDynamicTheme
         }
 

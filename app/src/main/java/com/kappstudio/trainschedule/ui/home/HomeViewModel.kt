@@ -72,7 +72,7 @@ class HomeViewModel @Inject constructor(
     val dynamicColorState: StateFlow<Boolean> = preferenceRepository.isDynamicColor.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = true,
+        initialValue = false,
     )
 
     val pathState: StateFlow<Path> = trainRepository.currentPath.stateIn(

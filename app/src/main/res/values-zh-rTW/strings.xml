@@ -68,6 +68,8 @@
     <string name="light_theme">淺色主題</string>
     <string name="dark_theme">深色主題</string>
     <string name="dynamic_color">動態佈景</string>
+    <string name="transfer">轉乘</string>
+
     <string name="privacy_policy_full">Train Schedule（以下稱為「我們」、「我們的」、「本應用程式」）尊重您的隱私權。本隱私權政策旨在說明我們如何收集、使用、保護和處理您的個人資訊。請在使用本應用程式之前仔細閱讀本隱私權政策。\n\n
 資訊收集與使用\n
 我們不收集任何個人識別資訊，包括但不限於您的姓名、電子郵件地址、聯絡方式或其他識別性資訊。本應用程式的主要功能是提供火車時刻表查詢服務，並不要求您提供任何個人資訊。\n\n
