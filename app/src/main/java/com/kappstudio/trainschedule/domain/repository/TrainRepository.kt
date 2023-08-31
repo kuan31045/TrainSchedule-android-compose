@@ -48,7 +48,7 @@ interface TrainRepository {
 
     suspend fun getStationsOfLine(id: String): List<Station>
 
-    suspend fun fetchStationLiveBoardOfTrain(trainNumber: String):List< StationLiveBoard>
+    suspend fun fetchStationLiveBoardOfTrain(trainNumber: String): List<StationLiveBoard>
 
     suspend fun fetchStopsOfSchedules(schedules: List<TrainSchedule>): Result<List<TrainSchedule>>
 }

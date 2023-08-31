@@ -22,7 +22,7 @@ fun PolicyDialog(modifier: Modifier = Modifier, closeDialog: () -> Unit) {
         containerColor = MaterialTheme.colorScheme.onSecondary,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 48.dp),
+            .padding(horizontal = 24.dp, vertical = 56.dp),
         onDismissRequest = closeDialog,
         title = {
             Text(text = stringResource(id = R.string.privacy_policy))

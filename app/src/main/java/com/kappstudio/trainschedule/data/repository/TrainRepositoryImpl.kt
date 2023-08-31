@@ -404,6 +404,7 @@ class TrainRepositoryImpl @Inject constructor(
         val TOKEN_EXPIRE_TIME = longPreferencesKey("token_expire_time")
         val CURRENT_PATH = stringPreferencesKey("current_path")
         val SELECTED_DATE_TIME = stringPreferencesKey("selected_date_time")
+
         val defaultPath = Path(
             departureStation = Station(
                 id = "1000",

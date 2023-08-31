@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.CalendarContract
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -139,6 +140,7 @@ fun TripDetailScreen(
                             )
                         }
                         DropdownMenu(
+                            modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
                             expanded = isMenuExpanded,
                             onDismissRequest = { isMenuExpanded = false }
                         ) {

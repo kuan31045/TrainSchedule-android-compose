@@ -1,5 +1,6 @@
 package com.kappstudio.trainschedule.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -68,6 +69,9 @@ fun HomeScreen(
     val stationState = viewModel.stationState.collectAsState()
     val lineState = viewModel.lineState.collectAsState()
 
+    val appThemeState = viewModel.appThemeState.collectAsState()
+    val dynamicColorState = viewModel.dynamicColorState.collectAsState()
+
     var isMenuExpanded by rememberSaveable { mutableStateOf(false) }
     var shouldShowThemeDialog by rememberSaveable { mutableStateOf(false) }
     var shouldShowPolicyDialog by rememberSaveable { mutableStateOf(false) }
@@ -94,12 +98,13 @@ fun HomeScreen(
 
                     //-----Menu---------------------------------------------------------------------
                     DropdownMenu(
+                        modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
                         expanded = isMenuExpanded,
                         onDismissRequest = { isMenuExpanded = false }
                     ) {
 
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.appearance_theme)) },
+                            text = { Text(stringResource(R.string.appearance)) },
                             onClick = {
                                 isMenuExpanded = false
                                 shouldShowThemeDialog = true
@@ -134,13 +139,19 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             //-----Theme Dialog---------------------------------------------------------------------
-            if(shouldShowThemeDialog){
-
+            if (shouldShowThemeDialog) {
+                ThemeDialog(
+                    closeDialog = { shouldShowThemeDialog = false },
+                    selectedTheme = appThemeState.value,
+                    onThemePreferenceChanged = { viewModel.saveAppThemePreference(it) },
+                    isDynamic = dynamicColorState.value,
+                    onDynamicPreferenceChanged = { viewModel.saveDynamicColorPreference(it) }
+                )
             }
 
             //-----Policy Dialog--------------------------------------------------------------------
-            if(shouldShowPolicyDialog){
-                PolicyDialog ( closeDialog = {shouldShowPolicyDialog = false})
+            if (shouldShowPolicyDialog) {
+                PolicyDialog(closeDialog = { shouldShowPolicyDialog = false })
             }
 
             HomeStationLayout(
@@ -408,7 +419,7 @@ fun TrainTypeSelectionPreview() {
 @Composable
 fun DateTimeLayoutPreview() {
     DateTimeLayout(
-        dateTime =  getNowDateTime(),
+        dateTime = getNowDateTime(),
         timeType = SelectedType.DEPARTURE,
         confirmTime = { _, _ -> }
     )

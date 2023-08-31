@@ -1,8 +1,6 @@
 package com.kappstudio.trainschedule.ui
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -35,7 +33,7 @@ fun TrainTopAppBar(
     navigateUp: () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    Surface(shadowElevation = dimensionResource(R.dimen.surface_shadow_elevation_4)) {
+    Surface(shadowElevation = dimensionResource(R.dimen.surface_shadow_elevation)) {
 
         CenterAlignedTopAppBar(
             modifier = modifier,

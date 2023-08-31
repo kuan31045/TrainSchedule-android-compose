@@ -8,7 +8,9 @@ import com.kappstudio.trainschedule.BuildConfig
 import com.kappstudio.trainschedule.data.local.DataStoreManager
 import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.TrainApi
+import com.kappstudio.trainschedule.data.repository.PreferenceRepositoryImpl
 import com.kappstudio.trainschedule.data.repository.TrainRepositoryImpl
+import com.kappstudio.trainschedule.domain.repository.PreferenceRepository
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
 import dagger.Module
 import dagger.Provides
@@ -40,7 +42,6 @@ object AppModule {
         ).build()
     }
 
-
     @Provides
     @Singleton
     fun provideTrainApi(): TrainApi {
@@ -70,5 +71,13 @@ object AppModule {
         trainDb: TrainDatabase,
     ): TrainRepository {
         return TrainRepositoryImpl(api = api, dataStore = dataStore, trainDb = trainDb)
+    }
+
+    @Provides
+    @Singleton
+    fun providePreferenceRepository(
+        dataStore: DataStore<Preferences>,
+    ): PreferenceRepository {
+        return PreferenceRepositoryImpl(dataStore = dataStore)
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kappstudio.trainschedule.AppTheme
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
@@ -19,10 +20,12 @@ import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
+import com.kappstudio.trainschedule.domain.repository.PreferenceRepository
 import com.kappstudio.trainschedule.util.getNowDateTime
 import com.kappstudio.trainschedule.util.lineMap
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -33,7 +36,7 @@ data class HomeUiState(
     val selectedCatalog: Name = Name(),
     val timeType: SelectedType = SelectedType.DEPARTURE,
     val trainMainType: TrainMainType = TrainMainType.ALL,
-    val canTransfer: Boolean = false,
+    val canTransfer: Boolean = false
 ) {
     val stationsNameOfSelectedCatalog = stations[selectedCatalog]?.map { it.name } ?: emptyList()
 }
@@ -52,10 +55,25 @@ enum class SelectedType(@StringRes val text: Int) {
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val trainRepository: TrainRepository,
+    private val preferenceRepository: PreferenceRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    val appThemeState: StateFlow<AppTheme> = preferenceRepository.appThemeCode.map {
+        enumValues<AppTheme>()[it]
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = AppTheme.DEFAULT,
+    )
+
+    val dynamicColorState: StateFlow<Boolean> = preferenceRepository.isDynamicColor.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = true,
+    )
 
     val pathState: StateFlow<Path> = trainRepository.currentPath.stateIn(
         scope = viewModelScope,
@@ -69,21 +87,17 @@ class HomeViewModel @Inject constructor(
         initialValue = getNowDateTime(),
     )
 
-    val stationState: StateFlow<List<Station>> =
-        trainRepository.getAllStationsStream()
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList(),
-            )
+    val stationState: StateFlow<List<Station>> = trainRepository.getAllStationsStream().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
 
-    val lineState: StateFlow<List<Line>> =
-        trainRepository.getAllLinesStream()
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList(),
-            )
+    val lineState: StateFlow<List<Line>> = trainRepository.getAllLinesStream().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
 
     var loadingState: LoadingStatus by mutableStateOf(LoadingStatus.Loading)
         private set
@@ -93,13 +107,25 @@ class HomeViewModel @Inject constructor(
         fetchStationsAndLines()
     }
 
+    fun saveAppThemePreference(code: Int) {
+        viewModelScope.launch {
+            preferenceRepository.saveAppThemePreference(code)
+        }
+    }
+
+    fun saveDynamicColorPreference(isDynamic: Boolean) {
+        viewModelScope.launch {
+            preferenceRepository.saveDynamicColorPreference(isDynamic)
+        }
+    }
+
     fun setupStationList() {
 
         val stationOfLineMap = mutableMapOf<Name, List<Station>>()
 
-        lineMap.forEach { (name, ids) ->
+        lineMap.forEach { (name, idPair) ->
             stationOfLineMap[name] =
-                lineState.value.filter { it.id == ids.first || it.id == ids.second }
+                lineState.value.filter { it.id == idPair.first || it.id == idPair.second }
                     .flatMap { it.stations }
         }
 
