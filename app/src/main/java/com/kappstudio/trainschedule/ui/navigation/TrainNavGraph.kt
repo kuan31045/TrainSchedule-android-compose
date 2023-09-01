@@ -40,7 +40,7 @@ fun TrainNavGraph(
         navigation(startDestination = Screen.SPLASH.route, route = Screen.PARENT.route) {
 
             composable(route = Screen.SPLASH.route) {
-                SplashScreen(navToHomeScreen = {
+                SplashScreen(onNavToHomeScreen = {
                     navController.popBackStack()
                     navController.navigate(Screen.HOME.route)
                 })
@@ -65,12 +65,12 @@ fun TrainNavGraph(
             composable(route = Screen.STATION.route) { backStackEntry ->
                 StationScreen(
                     viewModel = backStackEntry.sharedViewModel(navController = navController),
-                    navigateBack = { navController.navigateUp() }
+                    onNavigateUp = { navController.navigateUp() }
                 )
             }
 
             composable(route = Screen.FAVORITE.route) {
-                FavoriteScreen(navigateBack = { navController.navigateUp() })
+                FavoriteScreen(onNavigateUp = { navController.navigateUp() })
             }
 
             composable(route = RoutesWithArgs.TRIPS,
@@ -84,7 +84,7 @@ fun TrainNavGraph(
                     backStackEntry.sharedViewModel(navController = navController)
 
                 TripListScreen(
-                    navigateBack = { navController.navigateUp() },
+                    onNavigateUp = { navController.navigateUp() },
                     onTripItemClicked = { trip, isTransferTrip ->
                         viewModel.setTrip(trip, isTransferTrip)
                         navController.navigate(Screen.DETAIL.route)

@@ -43,7 +43,7 @@ fun DateTimeDialog(
     modifier: Modifier = Modifier,
     defaultDateTime: LocalDateTime,
     defaultSelectedIndex: Int,
-    closeDialog: () -> Unit,
+    onDismiss: () -> Unit,
     confirmTime: (LocalDateTime, Int) -> Unit,
 ) {
     var selectedIndex by rememberSaveable { mutableStateOf(defaultSelectedIndex) }
@@ -66,7 +66,7 @@ fun DateTimeDialog(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
-        onDismissRequest = closeDialog,
+        onDismissRequest = onDismiss,
         title = {
             SegmentedControl(
                 modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp),
@@ -122,12 +122,12 @@ fun DateTimeDialog(
                     Text(stringResource(id = R.string.current_time))
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                TextButton(onClick = closeDialog) {
+                TextButton(onClick = onDismiss) {
                     Text(stringResource(id = R.string.cancel))
                 }
                 TextButton(onClick = {
                     confirmTime(date.atTime(time), selectedIndex)
-                    closeDialog()
+                    onDismiss()
                 }) {
                     Text(stringResource(id = R.string.ok))
                 }
@@ -143,7 +143,7 @@ fun DateTimeDialog(
 @Composable
 fun DateDialogPreview() {
     DateTimeDialog(
-        closeDialog = {},
+        onDismiss = {},
         defaultDateTime = getNowDateTime(),
         defaultSelectedIndex = 0,
         confirmTime = { _, _ -> }

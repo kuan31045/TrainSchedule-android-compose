@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
 import com.kappstudio.trainschedule.data.local.entity.LineEntity
-import com.kappstudio.trainschedule.data.local.entity.StationEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

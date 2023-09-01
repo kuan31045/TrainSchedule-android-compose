@@ -332,7 +332,7 @@ class TrainRepositoryImpl @Inject constructor(
 
     override suspend fun isCurrentPathFavorite(): Boolean {
         return withContext(Dispatchers.IO) {
-            trainDb.pathDao.getPath(currentPath.first().toPathEntity().id) != null
+            trainDb.pathDao.get(currentPath.first().toPathEntity().id) != null
         }
     }
 

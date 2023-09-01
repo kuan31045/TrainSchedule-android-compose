@@ -20,5 +20,5 @@ interface PathDao {
     fun getAllPaths(): Flow<List<PathEntity>>
 
     @Query("SELECT * from paths WHERE id = :id")
-    fun getPath(id: String): PathEntity?
+    fun get(id: String): PathEntity?
 }

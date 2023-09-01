@@ -61,7 +61,7 @@ import com.kappstudio.trainschedule.util.toggle
 @Composable
 fun TripListScreen(
     modifier: Modifier = Modifier,
-    navigateBack: () -> Unit,
+    onNavigateUp: () -> Unit,
     viewModel: TripListViewModel = hiltViewModel(),
     onTripItemClicked: (Trip, Boolean) -> Unit,
 ) {
@@ -74,7 +74,7 @@ fun TripListScreen(
             TrainTopAppBar(
                 title = pathState.value.getTitle(),
                 canNavigateBack = true,
-                navigateUp = navigateBack,
+                navigateUp = onNavigateUp,
                 actions = {
                     IconButton(onClick = { viewModel.toggleFavorite() }) {
                         if (uiState.value.isFavorite) {
@@ -137,7 +137,7 @@ fun TripListScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(16.dp),
-                        text = stringResource(id = loadingState.errorStringRes) ,
+                        text = stringResource(id = loadingState.errorStringRes),
                         retry = { viewModel.searchTrips() }
                     )
                 }
@@ -148,7 +148,7 @@ fun TripListScreen(
                 FilterBottomSheet(
                     modifier = Modifier.fillMaxSize(),
                     defaultTypes = uiState.value.filteredTrainTypes,
-                    closeBottomSheet = { viewModel.closeFilter(it) }
+                    onDismiss = { viewModel.closeFilter(it) }
                 )
             }
         }
@@ -160,7 +160,7 @@ fun TripListScreen(
 fun FilterBottomSheet(
     modifier: Modifier = Modifier,
     defaultTypes: List<TrainType>,
-    closeBottomSheet: (List<TrainType>) -> Unit,
+    onDismiss: (List<TrainType>) -> Unit,
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState()
     var filteredTypes by rememberSaveable { mutableStateOf(defaultTypes) }
@@ -168,7 +168,7 @@ fun FilterBottomSheet(
     ModalBottomSheet(
         modifier = modifier,
         sheetState = modalBottomSheetState,
-        onDismissRequest = { closeBottomSheet(filteredTypes) }
+        onDismissRequest = { onDismiss(filteredTypes) }
     ) {
         Column {
             Text(
@@ -317,7 +317,7 @@ fun TripItemTopLayout(
                 text = if (trip.transferCount == 0) {
                     stringResource(id = R.string.direct)
                 } else {
-                    trip.transferCount.toString() + stringResource(id = R.string.transferTimes)
+                    trip.transferCount.toString() + " " + stringResource(id = R.string.transferTimes)
                 },
                 style = MaterialTheme.typography.labelSmall
             )

@@ -45,7 +45,6 @@ import com.kappstudio.trainschedule.ui.components.SegmentedControl
 import com.kappstudio.trainschedule.ui.components.SwapButton
 import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.getNowDateTime
-import com.kappstudio.trainschedule.util.localize
 import com.kappstudio.trainschedule.util.timeFormatter
 import java.time.LocalDateTime
 
@@ -153,7 +152,7 @@ fun HomeScreen(
             //-----Theme Dialog---------------------------------------------------------------------
             if (shouldShowThemeDialog) {
                 ThemeDialog(
-                    closeDialog = { shouldShowThemeDialog = false },
+                    onDismiss = { shouldShowThemeDialog = false },
                     selectedTheme = appThemeState.value,
                     onThemePreferenceChanged = { viewModel.saveAppThemePreference(it) },
                     isDynamic = dynamicColorState.value,
@@ -163,7 +162,7 @@ fun HomeScreen(
 
             //-----Policy Dialog--------------------------------------------------------------------
             if (shouldShowPolicyDialog) {
-                PolicyDialog(closeDialog = { shouldShowPolicyDialog = false })
+                PolicyDialog(onDismiss = { shouldShowPolicyDialog = false })
             }
 
             HomeStationLayout(
@@ -326,7 +325,7 @@ fun DateTimeLayout(
     //-----Date Time Dialog-------------------------------------------------------------------------
     if (shouldShowDialog) {
         DateTimeDialog(
-            closeDialog = { shouldShowDialog = false },
+            onDismiss = { shouldShowDialog = false },
             defaultDateTime = dateTime,
             defaultSelectedIndex = timeType.ordinal,
             confirmTime = { dateTime, selectedType ->

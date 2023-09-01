@@ -30,12 +30,11 @@ import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.ui.TrainTopAppBar
-import com.kappstudio.trainschedule.util.localize
 
 @Composable
 fun FavoriteScreen(
     modifier: Modifier = Modifier,
-    navigateBack: () -> Unit,
+    onNavigateUp: () -> Unit,
     viewModel: FavoriteViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState.collectAsState()
@@ -45,7 +44,7 @@ fun FavoriteScreen(
             TrainTopAppBar(
                 title = stringResource(id = R.string.favorite_title),
                 canNavigateBack = true,
-                navigateUp = navigateBack
+                navigateUp = onNavigateUp
             )
         },
         modifier = modifier.fillMaxSize(),
@@ -64,7 +63,7 @@ fun FavoriteScreen(
                     onDeleteButtonClicked = { viewModel.deletePath(it) },
                     onPathClicked = {
                         viewModel.saveCurrentPath(it)
-                        navigateBack()
+                        onNavigateUp()
                     }
                 )
             } else {

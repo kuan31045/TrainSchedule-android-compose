@@ -65,7 +65,7 @@ import com.kappstudio.trainschedule.util.TrainFlag
 import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.getNowDateTime
-import com.kappstudio.trainschedule.util.localize
+
 import com.kappstudio.trainschedule.util.timeFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -143,7 +143,7 @@ fun TrainScreen(
                             .fillMaxSize()
                             .padding(16.dp),
                         text = stringResource(id = loadingState.errorStringRes),
-                        retry = { viewModel.getTrain() }
+                        retry = { viewModel.fetchTrain() }
                     )
                 }
             }

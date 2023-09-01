@@ -29,7 +29,7 @@
     <string name="direct">Direct</string>
     <string name="time_desc">Time</string>
     <string name="time_format">%1\$d h %2\$d m</string>
-    <string name="transferTimes">Changes</string>
+    <string name="transferTimes">Change</string>
     <string name="hour">h</string>
     <string name="minute">m</string>
     <string name="departed">Departed</string>

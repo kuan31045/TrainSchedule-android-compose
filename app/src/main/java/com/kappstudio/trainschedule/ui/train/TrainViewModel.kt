@@ -72,7 +72,7 @@ class TrainViewModel @Inject constructor(
         private set
 
     init {
-        getTrain()
+        fetchTrain()
     }
 
     private fun checkRunningStatus() {
@@ -104,7 +104,7 @@ class TrainViewModel @Inject constructor(
         }
     }
 
-    fun getTrain() {
+    fun fetchTrain() {
         loadingState = LoadingStatus.Loading
         val trainNumber = uiState.value.trainShortName.split("-").last()
         viewModelScope.launch {
@@ -119,7 +119,7 @@ class TrainViewModel @Inject constructor(
                             trainSchedule = result.data
                         )
                     }
-                    getStationLiveBoard()
+                    fetchStationLiveBoard()
                     LoadingStatus.Done
                 }
 
@@ -138,7 +138,7 @@ class TrainViewModel @Inject constructor(
         }
     }
 
-    fun getStationLiveBoard() {
+    fun fetchStationLiveBoard() {
         viewModelScope.launch {
             checkRunningStatus()
             while (uiState.value.runningStatus == RunningStatus.RUNNING) {

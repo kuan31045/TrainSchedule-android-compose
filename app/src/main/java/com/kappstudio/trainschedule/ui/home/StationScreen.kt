@@ -44,14 +44,13 @@ import com.kappstudio.trainschedule.ui.components.LoadingDot
 import com.kappstudio.trainschedule.ui.components.SwapButton
 import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.bigStations
-import com.kappstudio.trainschedule.util.localize
 import kotlinx.coroutines.launch
 
 @Composable
 fun StationScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
-    navigateBack: () -> Unit,
+    onNavigateUp: () -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val pathState = viewModel.pathState.collectAsState()
@@ -65,9 +64,9 @@ fun StationScreen(
             TrainTopAppBar(
                 title = stringResource(R.string.station_title),
                 canNavigateBack = true,
-                navigateUp = navigateBack,
+                navigateUp = onNavigateUp,
                 actions = {
-                    IconButton(onClick = navigateBack) {
+                    IconButton(onClick = onNavigateUp) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = stringResource(id = R.string.checked_desc)

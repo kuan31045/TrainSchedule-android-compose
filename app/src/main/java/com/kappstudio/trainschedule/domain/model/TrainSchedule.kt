@@ -18,8 +18,8 @@ data class TrainSchedule(
         val arrival = context.resources.getString(R.string.arrival)
 
         return context.resources.getString(train.type.trainName) + train.number + "\n" +
-                stops.first().station.localName + " " + getStartTime()
-            .format(timeFormatter) + " " + departure + "\n" + stops.last().station.localName + " " + getEndTime()
+                stops.first().station.name.localize() + " " + getStartTime()
+            .format(timeFormatter) + " " + departure + "\n" + stops.last().station.name.localize() + " " + getEndTime()
             .format(timeFormatter) + " " + arrival + "\n"
     }
 }

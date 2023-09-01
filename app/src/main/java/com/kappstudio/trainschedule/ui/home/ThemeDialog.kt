@@ -27,13 +27,12 @@ import com.kappstudio.trainschedule.ui.theme.isLight
 @Composable
 fun ThemeDialog(
     modifier: Modifier = Modifier,
-    closeDialog: () -> Unit,
+    onDismiss: () -> Unit,
     selectedTheme: AppTheme,
     onThemePreferenceChanged: (Int) -> Unit,
     isDynamic: Boolean,
     onDynamicPreferenceChanged: (Boolean) -> Unit,
 ) {
-
 
     AlertDialog(
         containerColor = if (MaterialTheme.colorScheme.isLight()) {
@@ -43,7 +42,7 @@ fun ThemeDialog(
         }, modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
-        onDismissRequest = closeDialog,
+        onDismissRequest = onDismiss,
         title = {
             Text(text = stringResource(id = R.string.appearance))
         },

@@ -23,7 +23,7 @@ import com.kappstudio.trainschedule.R
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(navToHomeScreen: () -> Unit) {
+fun SplashScreen(onNavToHomeScreen: () -> Unit) {
     var startAnimation by rememberSaveable { mutableStateOf(false) }
     val alphaAnim = animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0f,
@@ -35,7 +35,7 @@ fun SplashScreen(navToHomeScreen: () -> Unit) {
     LaunchedEffect(key1 = startAnimation) {
         startAnimation = true
         delay(1400)
-        navToHomeScreen()
+        onNavToHomeScreen()
     }
     Splash(alpha = alphaAnim.value)
 }
@@ -56,7 +56,7 @@ fun Splash(modifier: Modifier = Modifier, alpha: Float) {
                 .alpha(alpha = alpha),
             painter = painterResource(id = R.drawable.ic_train),
             contentDescription = "Logo",
-            tint = MaterialTheme.colorScheme.inversePrimary
+            tint = MaterialTheme.colorScheme.primary
         )
     }
 }

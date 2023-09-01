@@ -76,7 +76,6 @@ import com.kappstudio.trainschedule.ui.components.pullrefreshm3.rememberPullRefr
 import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.dateWeekFormatter
-import com.kappstudio.trainschedule.util.localize
 import com.kappstudio.trainschedule.util.timeFormatter
 import com.kappstudio.trainschedule.util.toSec
 import kotlinx.coroutines.delay

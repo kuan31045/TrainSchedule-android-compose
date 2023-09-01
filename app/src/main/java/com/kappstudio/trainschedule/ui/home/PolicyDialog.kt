@@ -19,7 +19,7 @@ import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.theme.isLight
 
 @Composable
-fun PolicyDialog(modifier: Modifier = Modifier, closeDialog: () -> Unit) {
+fun PolicyDialog(modifier: Modifier = Modifier, onDismiss: () -> Unit) {
     AlertDialog(
         containerColor = if (MaterialTheme.colorScheme.isLight()) {
             MaterialTheme.colorScheme.onPrimary
@@ -28,7 +28,7 @@ fun PolicyDialog(modifier: Modifier = Modifier, closeDialog: () -> Unit) {
         }, modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 56.dp),
-        onDismissRequest = closeDialog,
+        onDismissRequest = onDismiss,
         title = {
             Text(text = stringResource(id = R.string.privacy_policy))
         },
@@ -41,7 +41,7 @@ fun PolicyDialog(modifier: Modifier = Modifier, closeDialog: () -> Unit) {
             )
         },
         confirmButton = {
-            TextButton(onClick = closeDialog) {
+            TextButton(onClick = onDismiss) {
                 Text(stringResource(id = R.string.ok))
             }
         },
