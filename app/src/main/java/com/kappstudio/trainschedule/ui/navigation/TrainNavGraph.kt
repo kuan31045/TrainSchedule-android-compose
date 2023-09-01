@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navOptions
+import com.kappstudio.trainschedule.ui.splash.SplashScreen
 import com.kappstudio.trainschedule.ui.detail.TripDetailScreen
 import com.kappstudio.trainschedule.ui.detail.TripDetailViewModel
 import com.kappstudio.trainschedule.ui.favorite.FavoriteScreen
@@ -36,7 +37,14 @@ fun TrainNavGraph(
         startDestination = Screen.PARENT.route,
         modifier = modifier
     ) {
-        navigation(startDestination = Screen.HOME.route, route = Screen.PARENT.route) {
+        navigation(startDestination = Screen.SPLASH.route, route = Screen.PARENT.route) {
+
+            composable(route = Screen.SPLASH.route) {
+                SplashScreen(navToHomeScreen = {
+                    navController.popBackStack()
+                    navController.navigate(Screen.HOME.route)
+                })
+            }
 
             composable(route = Screen.HOME.route) { backStackEntry ->
                 HomeScreen(
@@ -77,7 +85,7 @@ fun TrainNavGraph(
 
                 TripListScreen(
                     navigateBack = { navController.navigateUp() },
-                    onTripItemClicked = { trip, isTransferTrip->
+                    onTripItemClicked = { trip, isTransferTrip ->
                         viewModel.setTrip(trip, isTransferTrip)
                         navController.navigate(Screen.DETAIL.route)
                     }
@@ -88,7 +96,7 @@ fun TrainNavGraph(
                 TripDetailScreen(
                     viewModel = backStackEntry.sharedViewModel(navController = navController),
                     onNavigateUp = { navController.navigateUp() },
-                    onTrainButtonClicked = {train->
+                    onTrainButtonClicked = { train ->
                         navController.navigate(Screen.TRAIN.route + "/$train")
                     },
                     onHomeButtonClicked = { navController.navigateToHome() }

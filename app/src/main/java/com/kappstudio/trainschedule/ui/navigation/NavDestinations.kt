@@ -7,6 +7,7 @@ import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TRAIN_TYPE_INT
 
 enum class Screen(val route: String) {
     PARENT(route = "parent"),
+    SPLASH(route = "splash"),
     HOME(route = "home"),
     STATION(route = "station"),
     TRIPS(route = "trips"),
