@@ -100,5 +100,8 @@ Last Updated: 2023/08/31\n\n
 Please note that this Privacy Policy only applies to this app and not to other apps or websites developed or operated by third parties, even if you access these apps or websites through this app. Please review the privacy policies of other apps or websites before using them.
 
     </string>
+    <string name="internet_not_connected">Please check network connection</string>
+    <string name="api_maintenance">TDX API maybe in maintenance, sorry!</string>
+    <string name="web_update">The official website of Taiwan Railways is possibly undergoing an update. We will handle it as soon as possible. Sorry!</string>
 
 </resources>

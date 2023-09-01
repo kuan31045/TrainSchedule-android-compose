@@ -35,7 +35,7 @@
     <string name="minute">分</string>
     <string name="departed">已離站</string>
     <string name="delete_desc">刪除</string>
-    <string name="no_favorite">最愛為空</string>
+    <string name="no_favorite">尚無最愛</string>
     <string name="tour_train">觀光列車</string>
     <string name="tc_express">自強</string>
     <string name="new_tc_express">新自強</string>
@@ -99,5 +99,8 @@
 請注意，本隱私權政策僅適用於本應用程式，不適用於其他由第三方開發或經營的應用程式或網站，即使您透過本應用程式訪問這些應用程式或網站。請在使用其他應用程式或網站之前仔細閱讀其隱私權政策。
 
 </string>
+    <string name="internet_not_connected">請檢查網路連線</string>
+    <string name="api_maintenance">TDX Api 可能正在維護中，請見諒!</string>
+    <string name="web_update">台鐵官網可能正在更新，我們會儘快處理。請見諒!</string>
 
 </resources>

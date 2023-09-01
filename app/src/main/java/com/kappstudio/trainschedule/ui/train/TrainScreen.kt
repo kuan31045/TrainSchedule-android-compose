@@ -142,7 +142,7 @@ fun TrainScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(16.dp),
-                        text = loadingState.error,
+                        text = stringResource(id = loadingState.errorStringRes),
                         retry = { viewModel.getTrain() }
                     )
                 }

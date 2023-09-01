@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Trip
@@ -162,11 +163,15 @@ class TripListViewModel @Inject constructor(
                 }
 
                 is Result.Fail -> {
-                    LoadingStatus.Error(result.error)
+                    LoadingStatus.Error(result.stringRes)
                 }
 
                 is Result.Error -> {
-                    LoadingStatus.Error(result.exception.toString())
+                    if (uiState.value.canTransfer) {
+                        LoadingStatus.Error(R.string.web_update)
+                    } else {
+                        LoadingStatus.Error(R.string.api_maintenance)
+                    }
                 }
 
                 else -> {

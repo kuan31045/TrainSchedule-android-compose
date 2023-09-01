@@ -246,11 +246,11 @@ class HomeViewModel @Inject constructor(
                 }
 
                 is Result.Fail -> {
-                    LoadingStatus.Error(result.error)
+                    LoadingStatus.Error(result.stringRes)
                 }
 
                 is Result.Error -> {
-                    LoadingStatus.Error(result.exception.toString())
+                    LoadingStatus.Error(R.string.api_maintenance)
                 }
 
                 else -> {

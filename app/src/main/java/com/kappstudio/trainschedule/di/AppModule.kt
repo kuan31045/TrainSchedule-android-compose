@@ -1,6 +1,7 @@
 package com.kappstudio.trainschedule.di
 
 import android.content.Context
+import android.net.ConnectivityManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
@@ -44,6 +45,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideConnectivityManager(@ApplicationContext context: Context): ConnectivityManager {
+        return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    }
+
+    @Provides
+    @Singleton
     fun provideTrainApi(): TrainApi {
         val client = OkHttpClient.Builder()
             .addInterceptor(
@@ -69,8 +76,14 @@ object AppModule {
         api: TrainApi,
         dataStore: DataStore<Preferences>,
         trainDb: TrainDatabase,
+        connectivityManager: ConnectivityManager,
     ): TrainRepository {
-        return TrainRepositoryImpl(api = api, dataStore = dataStore, trainDb = trainDb)
+        return TrainRepositoryImpl(
+            api = api,
+            dataStore = dataStore,
+            trainDb = trainDb,
+            connectivityManager = connectivityManager
+        )
     }
 
     @Provides

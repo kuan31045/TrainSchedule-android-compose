@@ -96,7 +96,7 @@ fun StationScreen(
                 loadingState is LoadingStatus.Error && stationState.value.isEmpty() ->
                     ErrorLayout(
                         modifier = Modifier.padding(16.dp),
-                        text = loadingState.error,
+                        text = stringResource(id = loadingState.errorStringRes),
                         retry = { viewModel.fetchStationsAndLines() })
 
                 else -> {

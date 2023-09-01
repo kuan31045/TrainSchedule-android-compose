@@ -1,5 +1,6 @@
 package com.kappstudio.trainschedule.data.repository
 
+import android.net.ConnectivityManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -7,6 +8,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.gson.Gson
+import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.data.remote.TrainApi
 import com.kappstudio.trainschedule.data.toStation
 import com.kappstudio.trainschedule.domain.model.Station
@@ -53,6 +55,7 @@ class TrainRepositoryImpl @Inject constructor(
     private val api: TrainApi,
     private val dataStore: DataStore<Preferences>,
     private val trainDb: TrainDatabase,
+    private val connectivityManager: ConnectivityManager,
 ) : TrainRepository {
 
     private val localToken = dataStore.data
@@ -133,7 +136,12 @@ class TrainRepositoryImpl @Inject constructor(
             Result.Success(true)
         } catch (e: Exception) {
             Timber.w("getStations exception = ${e.message}")
-            Result.Error(e)
+
+            if (connectivityManager.activeNetwork == null) {
+                Result.Fail(R.string.internet_not_connected)
+            } else {
+                Result.Error(e)
+            }
         }
     }
 
@@ -191,7 +199,12 @@ class TrainRepositoryImpl @Inject constructor(
             })
         } catch (e: Exception) {
             Timber.w("fetchTrips exception = ${e.message}")
-            Result.Error(e)
+
+            if (connectivityManager.activeNetwork == null) {
+                Result.Fail(R.string.internet_not_connected)
+            } else {
+                Result.Error(e)
+            }
         }
     }
 
@@ -224,7 +237,12 @@ class TrainRepositoryImpl @Inject constructor(
             Result.Success(trips)
         } catch (e: Exception) {
             Timber.w("fetchTransferTrips exception = ${e.message}")
-            Result.Error(e)
+
+            if (connectivityManager.activeNetwork == null) {
+                Result.Fail(R.string.internet_not_connected)
+            } else {
+                Result.Error(e)
+            }
         }
     }
 
@@ -269,7 +287,12 @@ class TrainRepositoryImpl @Inject constructor(
             Result.Success(trainSchedules)
         } catch (e: Exception) {
             Timber.w("fetchTripStops exception = ${e.message}")
-            Result.Error(e)
+
+            if (connectivityManager.activeNetwork == null) {
+                Result.Fail(R.string.internet_not_connected)
+            } else {
+                Result.Error(e)
+            }
         }
     }
 
@@ -347,7 +370,12 @@ class TrainRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Timber.w("fetchTrain exception = ${e.message}")
-            Result.Error(e)
+
+            if (connectivityManager.activeNetwork == null) {
+                Result.Fail(R.string.internet_not_connected)
+            } else {
+                Result.Error(e)
+            }
         }
     }
 

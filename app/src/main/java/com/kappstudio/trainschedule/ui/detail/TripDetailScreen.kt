@@ -228,7 +228,7 @@ fun TripDetailScreen(
                 is LoadingStatus.Error -> {
                     ErrorLayout(
                         modifier = Modifier.padding(top = 160.dp, start = 16.dp, end = 16.dp),
-                        text = loadingState.error,
+                        text = stringResource(id = loadingState.errorStringRes) ,
                         retry = { viewModel.fetchStop() }
                     )
                 }
