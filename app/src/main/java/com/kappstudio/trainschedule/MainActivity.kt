@@ -22,6 +22,7 @@ class MainActivity : ComponentActivity() {
             val viewModel: MainViewModel = viewModel()
             val appThemeState = viewModel.appThemeState.collectAsState()
             val dynamicColorState = viewModel.dynamicColorState.collectAsState()
+
             if (appThemeState.value != null && dynamicColorState.value != null) {
                 TrainScheduleTheme(
                     darkTheme = when (appThemeState.value) {
@@ -37,7 +38,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-
         }
     }
 }

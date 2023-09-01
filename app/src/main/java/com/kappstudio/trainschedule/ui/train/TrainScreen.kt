@@ -85,7 +85,7 @@ fun TrainScreen(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             rememberTopAppBarState(
-                initialHeightOffset = -242f
+                initialHeightOffset = -248f
             )
         )
     val loadingState = viewModel.loadingState

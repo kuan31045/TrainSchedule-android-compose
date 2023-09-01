@@ -2,6 +2,7 @@ package com.kappstudio.trainschedule.ui.theme
 
 import android.app.Activity
 import android.os.Build
+import android.view.View
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -83,12 +84,20 @@ private val DarkColors = darkColorScheme(
     scrim = md_theme_dark_scrim,
 )
 
+
+fun setStatueBarColor(view: View, color: Color) {
+    if (!view.isInEditMode) {
+        val window = (view.context as Activity).window
+        window.statusBarColor = color.toArgb()
+    }
+}
+
 @Composable
 fun TrainScheduleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+ but turned off for training purposes
     dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {

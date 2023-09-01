@@ -7,10 +7,13 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,6 +21,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.navigation.TrainNavGraph
+import com.kappstudio.trainschedule.ui.theme.setStatueBarColor
 
 @Composable
 fun TrainApp(navController: NavHostController = rememberNavController()) {
@@ -33,6 +37,13 @@ fun TrainTopAppBar(
     navigateUp: () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
 ) {
+    val view = LocalView.current
+    val color = MaterialTheme.colorScheme.background
+
+    SideEffect {
+        setStatueBarColor(view = view, color = color)
+    }
+
     Surface(shadowElevation = dimensionResource(R.dimen.surface_shadow_elevation)) {
 
         CenterAlignedTopAppBar(
