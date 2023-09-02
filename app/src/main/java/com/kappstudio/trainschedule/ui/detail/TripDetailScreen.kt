@@ -226,8 +226,10 @@ fun TripDetailScreen(
 
                 is LoadingStatus.Error -> {
                     ErrorLayout(
-                        modifier = Modifier.padding(top = 160.dp, start = 16.dp, end = 16.dp),
-                        text = stringResource(id = loadingState.errorStringRes) ,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 160.dp, start = 16.dp, end = 16.dp),
+                        text = stringResource(id = loadingState.errorStringRes),
                         retry = { viewModel.fetchStop() }
                     )
                 }
@@ -316,7 +318,10 @@ fun TransferLayout(modifier: Modifier = Modifier) {
                 painter = painterResource(id = R.drawable.ic_transfer_within_a_station),
                 contentDescription = null
             )
-            Text(modifier = Modifier.padding(start = 24.dp), text = stringResource(R.string.transfer))
+            Text(
+                modifier = Modifier.padding(start = 24.dp),
+                text = stringResource(R.string.transfer)
+            )
         }
         Divider(modifier = Modifier.padding(start = 56.dp, end = 8.dp), thickness = 1.dp)
     }
