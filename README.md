@@ -7,11 +7,11 @@ It base on **Jetpack Compose** and **Material 3** for UI development, and adhere
  
  
   
- <img src="art/home.png" align="left" width="32%"/>
+ <img src="art/googleplay.png" align="left" width="32%"/>
 
  
 
-<img src="art/gif1.gif" alt="gif1" style="width: 40%; height: 40%;" />
+<img src="art/demo.gif" alt="gif1"  width="40%"/>
 
 
 <br>
