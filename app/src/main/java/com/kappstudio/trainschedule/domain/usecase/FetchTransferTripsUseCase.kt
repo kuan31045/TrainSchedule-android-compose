@@ -21,7 +21,9 @@ import com.kappstudio.trainschedule.data.Result
 
 const val BASIC_URL =
     "https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/querybytime?startTime=00:00&endTime=23:59&transfer=NORMAL&trainTypeList=ALL&rideDate="
-
+/**
+ * Scrape timetable document and parse it into trip list.
+ */
 class FetchTransferTripsUseCase @Inject constructor(
     private val trainRepository: TrainRepository,
 ) {

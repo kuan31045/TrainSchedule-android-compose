@@ -8,7 +8,6 @@ import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
-import com.kappstudio.trainschedule.domain.model.Trip
 import kotlinx.coroutines.flow.Flow
 import org.jsoup.nodes.Document
 import java.time.LocalDateTime
@@ -27,11 +26,11 @@ interface TrainRepository {
 
     suspend fun saveSelectedDateTime(dateTime: LocalDateTime)
 
-    suspend fun fetchTimetables(): Result<List<TrainTimetableDto>>
+    suspend fun fetchTimetables(path: Path): Result<List<TrainTimetableDto>>
 
-    suspend fun scrapeTimetablesDocFromTwRailwayWeb(url:String): Result<Document>
+    suspend fun scrapeTimetablesDocFromTwRailwayWeb(url: String): Result<Document>
 
-    suspend fun fetchFares(): List<ODFareDto>?
+    suspend fun fetchFares(path: Path): List<ODFareDto>?
 
     suspend fun insertPath(path: Path)
 
@@ -54,6 +53,4 @@ interface TrainRepository {
     suspend fun getStationsOfLine(id: String): List<Station>
 
     suspend fun fetchStationLiveBoardOfTrain(trainNumber: String): List<StationLiveBoard>
-
-    suspend fun fetchStopsOfSchedules(schedules: List<TrainSchedule>): Result<List<TrainSchedule>>
 }

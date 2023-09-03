@@ -14,6 +14,7 @@ import com.kappstudio.trainschedule.data.repository.TrainRepositoryImpl
 import com.kappstudio.trainschedule.domain.repository.PreferenceRepository
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
 import com.kappstudio.trainschedule.domain.usecase.FetchDirectTripsUseCase
+import com.kappstudio.trainschedule.domain.usecase.FetchStopsAndFaresOfSchedulesUseCase
 import com.kappstudio.trainschedule.domain.usecase.FetchTransferTripsUseCase
 import dagger.Module
 import dagger.Provides
@@ -107,5 +108,11 @@ object AppModule {
     @Singleton
     fun provideFetchTransferTripsUseCase(trainRepository: TrainRepository): FetchTransferTripsUseCase {
         return FetchTransferTripsUseCase(trainRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFetchStopsAndFaresOfSchedulesUseCase(trainRepository: TrainRepository): FetchStopsAndFaresOfSchedulesUseCase {
+        return FetchStopsAndFaresOfSchedulesUseCase(trainRepository)
     }
 }

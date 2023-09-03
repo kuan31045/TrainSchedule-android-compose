@@ -9,6 +9,7 @@ import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
+import com.kappstudio.trainschedule.domain.usecase.FetchStopsAndFaresOfSchedulesUseCase
 import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.getNowDateTime
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,6 +31,7 @@ data class TripDetailUiState(
 @HiltViewModel
 class TripDetailViewModel @Inject constructor(
     private val trainRepository: TrainRepository,
+    private val fetchStopsAndFaresOfSchedulesUseCase: FetchStopsAndFaresOfSchedulesUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TripDetailUiState())
@@ -73,7 +75,7 @@ class TripDetailViewModel @Inject constructor(
     fun fetchStop() {
         loadingState = LoadingStatus.Loading
         viewModelScope.launch {
-            val result = trainRepository.fetchStopsOfSchedules(
+            val result = fetchStopsAndFaresOfSchedulesUseCase(
                 uiState.value.trip.trainSchedules
             )
 

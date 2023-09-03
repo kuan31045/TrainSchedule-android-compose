@@ -21,13 +21,14 @@ class FetchDirectTripsUseCase @Inject constructor(
         val path = trainRepository.currentPath.first()
         val date = trainRepository.selectedDateTime.first().toLocalDate()
 
-        val result = trainRepository.fetchTimetables()
-        val fares = trainRepository.fetchFares()
-        val trips: MutableList<Trip> = mutableListOf()
+        val result = trainRepository.fetchTimetables(path)
+        val fares = trainRepository.fetchFares(path)
 
         when (result) {
 
             is Result.Success -> {
+                val trips: MutableList<Trip> = mutableListOf()
+
                 for (timetable in result.data) {
                     val startTime = timetable.stopTimes.first().departureTime.addDate(date)
                     val endTime = timetable.stopTimes.last().arrivalTime.addDate(date)

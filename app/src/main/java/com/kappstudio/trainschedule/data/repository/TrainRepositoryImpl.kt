@@ -33,12 +33,8 @@ import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
-import com.kappstudio.trainschedule.domain.model.Trip
-import com.kappstudio.trainschedule.util.addDate
-import com.kappstudio.trainschedule.util.dateFormatter
 import com.kappstudio.trainschedule.util.getNowDateTime
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -49,9 +45,6 @@ import java.io.IOException
 import java.lang.Math.abs
 import java.time.Duration
 import java.time.LocalDateTime
-import java.net.URLEncoder
-import java.time.LocalDate
-
 
 class TrainRepositoryImpl @Inject constructor(
     private val api: TrainApi,
@@ -160,15 +153,15 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchTimetables(): Result<List<TrainTimetableDto>> {
+    override suspend fun fetchTimetables(path: Path): Result<List<TrainTimetableDto>> {
 
         val date = selectedDateTime.first().toLocalDate()
 
         return try {
             val result = api.getTrainTimetable(
                 token = fetchAccessToken(),
-                departureStationId = currentPath.first().departureStation.id,
-                arrivalStationId = currentPath.first().arrivalStation.id,
+                departureStationId = path.departureStation.id,
+                arrivalStationId = path.arrivalStation.id,
                 date = date.toString()
             )
             Result.Success(result.trainTimetables)
@@ -200,67 +193,17 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchFares(): List<ODFareDto>? {
+    override suspend fun fetchFares(path: Path): List<ODFareDto>? {
         return try {
             api.getODFare(
                 token = fetchAccessToken(),
-                departureStationId = currentPath.first().departureStation.id,
-                arrivalStationId = currentPath.first().arrivalStation.id,
+                departureStationId = path.departureStation.id,
+                arrivalStationId = path.arrivalStation.id,
             ).odFares
 
         } catch (e: Exception) {
             Timber.w("getTrainLiveBoard exception = ${e.message}")
             null
-        }
-    }
-
-    override suspend fun fetchStopsOfSchedules(schedules: List<TrainSchedule>): Result<List<TrainSchedule>> {
-
-        val date = selectedDateTime.first().toLocalDate()
-
-        return try {
-            val trainSchedules: MutableList<TrainSchedule> = mutableListOf()
-
-            schedules.forEach { schedule ->
-                val timeTables = api.getTrainTimetable(
-                    token = fetchAccessToken(),
-                    departureStationId = schedule.path.departureStation.id,
-                    arrivalStationId = schedule.path.arrivalStation.id,
-                    date = date.toString()
-                )
-
-                delay(300)
-
-                val fares = api.getODFare(
-                    token = fetchAccessToken(),
-                    departureStationId = schedule.path.departureStation.id,
-                    arrivalStationId = schedule.path.arrivalStation.id,
-                ).odFares
-
-                val timeTable = timeTables.trainTimetables.first {
-                    it.trainInfoDto.trainNo == schedule.train.number
-                }
-
-                trainSchedules.add(
-                    timeTable.toTrainSchedule(
-                        price = fares.firstOrNull { fare ->
-                            timeTable.trainInfoDto.direction == fare.direction
-                                    && timeTable.trainInfoDto.trainTypeCode.toInt() == fare.trainType
-                        }?.fares?.first()?.price ?: 0,
-                        date = date
-                    )
-                )
-            }
-
-            Result.Success(trainSchedules)
-        } catch (e: Exception) {
-            Timber.w("fetchTripStops exception = ${e.message}")
-
-            if (connectivityManager.isConnected()) {
-                Result.Error(e)
-            } else {
-                Result.Fail(R.string.internet_not_connected)
-            }
         }
     }
 
