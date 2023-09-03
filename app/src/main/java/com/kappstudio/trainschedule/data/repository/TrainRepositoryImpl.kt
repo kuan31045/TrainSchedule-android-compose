@@ -20,8 +20,6 @@ import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
-import com.kappstudio.trainschedule.data.HtmlParser
-import com.kappstudio.trainschedule.data.remote.dto.FareDto
 import com.kappstudio.trainschedule.data.remote.dto.ODFareDto
 import com.kappstudio.trainschedule.data.toLine
 import com.kappstudio.trainschedule.data.toLineEntity
@@ -46,12 +44,14 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import java.io.IOException
 import java.lang.Math.abs
 import java.time.Duration
 import java.time.LocalDateTime
 import java.net.URLEncoder
 import java.time.LocalDate
+
 
 class TrainRepositoryImpl @Inject constructor(
     private val api: TrainApi,
@@ -139,10 +139,10 @@ class TrainRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Timber.w("getStations exception = ${e.message}")
 
-            if (connectivityManager.activeNetwork == null) {
-                Result.Fail(R.string.internet_not_connected)
-            } else {
+            if (connectivityManager.isConnected()) {
                 Result.Error(e)
+            } else {
+                Result.Fail(R.string.internet_not_connected)
             }
         }
     }
@@ -174,50 +174,28 @@ class TrainRepositoryImpl @Inject constructor(
             Result.Success(result.trainTimetables)
 
         } catch (e: Exception) {
-            Timber.w("fetchTrips exception = ${e.message}")
+            Timber.w("fetchTimetables exception = ${e.message}")
 
-            if (connectivityManager.activeNetwork == null) {
-                Result.Fail(R.string.internet_not_connected)
-            } else {
+            if (connectivityManager.isConnected()) {
                 Result.Error(e)
+            } else {
+                Result.Fail(R.string.internet_not_connected)
             }
         }
     }
 
-    override suspend fun fetchTransferTrips(): Result<List<Trip>> {
+    override suspend fun scrapeTimetablesDocFromTwRailwayWeb(url: String): Result<Document> {
         return try {
-            val allStation = getAllStations()
-            val date = selectedDateTime.first().toLocalDate()
-            val url = getSearchTripUrl(
-                date = date,
-                departureStation = currentPath.first().departureStation,
-                arrivalStation = currentPath.first().arrivalStation
-            )
             val doc = withContext(Dispatchers.IO) { Jsoup.connect(url).get() }
+            Result.Success(doc)
 
-            var trips = HtmlParser.parseTripV1(
-                allStations = allStation,
-                date = date,
-                currentPath = currentPath.first(),
-                doc = doc
-            )
-            if (trips.isEmpty()) {
-                trips = HtmlParser.parseTripV2(
-                    allStations = allStation,
-                    date = date,
-                    currentPath = currentPath.first(),
-                    doc = doc
-                )
-            }
-
-            Result.Success(trips)
         } catch (e: Exception) {
-            Timber.w("fetchTransferTrips exception = ${e.message}")
+            Timber.w("scrapeTimetablesDocFromTwRailwayWeb exception = ${e.message}")
 
-            if (connectivityManager.activeNetwork == null) {
-                Result.Fail(R.string.internet_not_connected)
-            } else {
+            if (connectivityManager.isConnected()) {
                 Result.Error(e)
+            } else {
+                Result.Fail(R.string.internet_not_connected)
             }
         }
     }
@@ -278,10 +256,10 @@ class TrainRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Timber.w("fetchTripStops exception = ${e.message}")
 
-            if (connectivityManager.activeNetwork == null) {
-                Result.Fail(R.string.internet_not_connected)
-            } else {
+            if (connectivityManager.isConnected()) {
                 Result.Error(e)
+            } else {
+                Result.Fail(R.string.internet_not_connected)
             }
         }
     }
@@ -361,10 +339,10 @@ class TrainRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Timber.w("fetchTrain exception = ${e.message}")
 
-            if (connectivityManager.activeNetwork == null) {
-                Result.Fail(R.string.internet_not_connected)
-            } else {
+            if (connectivityManager.isConnected()) {
                 Result.Error(e)
+            } else {
+                Result.Fail(R.string.internet_not_connected)
             }
         }
     }
@@ -403,20 +381,9 @@ class TrainRepositoryImpl @Inject constructor(
         return if (overNightIndex != -1 && overNightIndex <= queryIndex) 1 else 0
     }
 
-    private fun getSearchTripUrl(
-        date: LocalDate,
-        departureStation: Station,
-        arrivalStation: Station,
-    ): String {
-        val rideDate: String = date.format(dateFormatter)
-        val startStation: String =
-            departureStation.id + "-" + URLEncoder.encode(departureStation.name.zh, "UTF-8")
-        val endStation: String =
-            arrivalStation.id + "-" + URLEncoder.encode(arrivalStation.name.zh, "UTF-8")
-        return "https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/querybytime?startTime=00:00&endTime=23:59&transfer=NORMAL&trainTypeList=ALL&rideDate=$rideDate&endStation=$endStation&startStation=$startStation&sort=travelTime,asc"
-    }
-
     private companion object {
+        fun ConnectivityManager.isConnected() = this.activeNetwork != null
+
         const val BEARER = "Bearer "
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
         val TOKEN_EXPIRE_TIME = longPreferencesKey("token_expire_time")

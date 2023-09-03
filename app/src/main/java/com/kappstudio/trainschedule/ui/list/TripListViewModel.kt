@@ -12,6 +12,7 @@ import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Trip
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
 import com.kappstudio.trainschedule.domain.usecase.FetchDirectTripsUseCase
+import com.kappstudio.trainschedule.domain.usecase.FetchTransferTripsUseCase
 import com.kappstudio.trainschedule.ui.home.SelectedType
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.CAN_TRANSFER_BOOLEAN
 import com.kappstudio.trainschedule.ui.navigation.NavigationArgs.TIME_TYPE_INT
@@ -43,6 +44,7 @@ data class TripListUiState(
 class TripListViewModel @Inject constructor(
     private val trainRepository: TrainRepository,
     private val fetchDirectTripsUseCase: FetchDirectTripsUseCase,
+    private val fetchTransferTripsUseCase: FetchTransferTripsUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val timeType: SelectedType =
@@ -147,7 +149,7 @@ class TripListViewModel @Inject constructor(
         viewModelScope.launch {
             val result =
                 if (uiState.value.canTransfer) {
-                    trainRepository.fetchTransferTrips()
+                    fetchTransferTripsUseCase()
                 } else {
                     fetchDirectTripsUseCase()
                 }
