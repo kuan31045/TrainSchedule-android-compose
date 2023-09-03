@@ -5,11 +5,11 @@ It base on **Jetpack Compose** and **Material 3** for UI development, and adhere
  
 <br>
  
- 
-  
- <img src="art/googleplay.png" align="left" width="32%"/>
-
- 
+<div style="float: left; width: 32%;">
+  <a href="https://play.google.com/store/apps/details?id=com.kappstudio.trainschedule">
+   <img src="art/googleplay.png" align="left" width="32%"/> 
+  </a>
+</div>
 
 <img src="art/demo.gif" alt="gif1"  width="40%"/>
 
