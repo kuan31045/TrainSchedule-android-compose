@@ -2,6 +2,8 @@ package com.kappstudio.trainschedule.domain.repository
 
 import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.data.Result
+import com.kappstudio.trainschedule.data.remote.dto.ODFareDto
+import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
 import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.StationLiveBoard
@@ -24,9 +26,11 @@ interface TrainRepository {
 
     suspend fun saveSelectedDateTime(dateTime: LocalDateTime)
 
-    suspend fun fetchTrips(): Result<List<Trip>>
+    suspend fun fetchTimetables(): Result<List<TrainTimetableDto>>
 
     suspend fun fetchTransferTrips(): Result<List<Trip>>
+
+    suspend fun fetchFares(): List<ODFareDto>?
 
     suspend fun insertPath(path: Path)
 

@@ -21,6 +21,8 @@ import com.kappstudio.trainschedule.data.local.TrainDatabase
 import com.kappstudio.trainschedule.data.remote.dto.TokenDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
 import com.kappstudio.trainschedule.data.HtmlParser
+import com.kappstudio.trainschedule.data.remote.dto.FareDto
+import com.kappstudio.trainschedule.data.remote.dto.ODFareDto
 import com.kappstudio.trainschedule.data.toLine
 import com.kappstudio.trainschedule.data.toLineEntity
 import com.kappstudio.trainschedule.data.toPath
@@ -158,7 +160,7 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchTrips(): Result<List<Trip>> {
+    override suspend fun fetchTimetables(): Result<List<TrainTimetableDto>> {
 
         val date = selectedDateTime.first().toLocalDate()
 
@@ -169,34 +171,8 @@ class TrainRepositoryImpl @Inject constructor(
                 arrivalStationId = currentPath.first().arrivalStation.id,
                 date = date.toString()
             )
-            delay(500)
+            Result.Success(result.trainTimetables)
 
-            val fares = api.getODFare(
-                token = fetchAccessToken(),
-                departureStationId = currentPath.first().departureStation.id,
-                arrivalStationId = currentPath.first().arrivalStation.id,
-            ).odFares
-
-            Result.Success(result.trainTimetables.map { timeTable ->
-
-                val startTime = timeTable.stopTimes.first().departureTime.addDate(date)
-                val endTime = timeTable.stopTimes.last().arrivalTime.addDate(date)
-
-                Trip(
-                    path = currentPath.first(),
-                    startTime = startTime,
-                    endTime = if (endTime >= startTime) endTime else endTime.plusDays(1),
-                    trainSchedules = listOf(
-                        timeTable.toTrainSchedule(
-                            price = fares.firstOrNull { fare ->
-                                timeTable.trainInfoDto.direction == fare.direction
-                                        && timeTable.trainInfoDto.trainTypeCode.toInt() == fare.trainType
-                            }?.fares?.first()?.price ?: 0,
-                            date = date
-                        )
-                    )
-                )
-            })
         } catch (e: Exception) {
             Timber.w("fetchTrips exception = ${e.message}")
 
@@ -243,6 +219,20 @@ class TrainRepositoryImpl @Inject constructor(
             } else {
                 Result.Error(e)
             }
+        }
+    }
+
+    override suspend fun fetchFares(): List<ODFareDto>? {
+        return try {
+            api.getODFare(
+                token = fetchAccessToken(),
+                departureStationId = currentPath.first().departureStation.id,
+                arrivalStationId = currentPath.first().arrivalStation.id,
+            ).odFares
+
+        } catch (e: Exception) {
+            Timber.w("getTrainLiveBoard exception = ${e.message}")
+            null
         }
     }
 

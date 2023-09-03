@@ -13,6 +13,7 @@ import com.kappstudio.trainschedule.data.repository.PreferenceRepositoryImpl
 import com.kappstudio.trainschedule.data.repository.TrainRepositoryImpl
 import com.kappstudio.trainschedule.domain.repository.PreferenceRepository
 import com.kappstudio.trainschedule.domain.repository.TrainRepository
+import com.kappstudio.trainschedule.domain.usecase.FetchDirectTripsUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,6 +30,7 @@ import javax.inject.Singleton
 object AppModule {
 
     @Provides
+    @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return DataStoreManager.createDataStore(context)
     }
@@ -92,5 +94,11 @@ object AppModule {
         dataStore: DataStore<Preferences>,
     ): PreferenceRepository {
         return PreferenceRepositoryImpl(dataStore = dataStore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFetchDirectTripsUseCase(repository: TrainRepository): FetchDirectTripsUseCase {
+        return FetchDirectTripsUseCase(repository)
     }
 }
