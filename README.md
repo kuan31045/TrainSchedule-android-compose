@@ -72,16 +72,16 @@ Follow Google recommended [Guide to app architecture](https://developer.android.
 * **RepositoryImpl**: Implement the repository interface methods from domain layer
 * **DataSource**: Retrofit, Room, DataStore
 * **ModelMappingExt**: Provide extension functions to map between remote DTO, local entity, and domain model
-<br>
+  
 
 ## 3rd Libraries
 * [Timber](https://github.com/JakeWharton/timber) - Logger with a small, extensible API
 * [WheelPickerCompose](https://github.com/commandiron/WheelPickerCompose) - Date and time wheel picker in Jetpack Compose
-<br>
+  
 
 ## Api Source
 * [TDX Api](https://tdx.transportdata.tw/api-service/swagger) 
-<br>
+
 
 ## Learning Resources
 <a href="https://developer.android.com/courses/android-basics-compose/course?hl=en">Android Basics with Compose</a><br>
