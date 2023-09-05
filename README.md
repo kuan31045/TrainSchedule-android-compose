@@ -32,8 +32,8 @@ It is based on **Jetpack Compose** and **Material 3** for UI development, while 
 * DataStore
 * Dark theme & Dynamic color
 
-<img src="art/demo.gif" align="right" width="32%"/>
 
+<img src="art/demo.gif" align="right" width="32%"/>
 
 ## Tech Stacks
 * [Jetpack Compose](https://developer.android.com/jetpack/compose) - Build declarative and reusable UI with Kotlin
@@ -51,16 +51,7 @@ It is based on **Jetpack Compose** and **Material 3** for UI development, while 
 <br><br>
 <img src="art/theme.gif" width="25%"/>
 
-
-
 <br>
-
-
-
-
-
-
-
 
 ## Architectures
  
@@ -69,30 +60,28 @@ It is based on **Jetpack Compose** and **Material 3** for UI development, while 
 Follow Google recommended [Guide to app architecture](https://developer.android.com/jetpack/guide) to structure project architecture based on UI layer, Date layer and Domain layer.
 
 ### UI layer
-* **ViewModel**: Fetch data from higher layers, update UI State(StateFlow) and handle UI event.
-  
-* **Composable Screen**: Collect UI state from ViewModel as an immutable state, then passed down to composable widgets for displaying the UI. Invoke the ViewModel's function when a UI event occurs.
+* **ViewModel**: Fetch data from higher layers, update UI State(StateFlow) and handle UI events
+* **Composable Screen**: Collect the UI state from the ViewModel as an immutable state, then pass it down to composable widgets for displaying the UI. Invoke the ViewModel's function when a UI event occurs
 
 ### Domain layer
- * **Use Case**:
- * **Model**:
-   
+ * **Use Case**: Responsible for encapsulating complex business logics, and can be reused by multiple ViewModels
+ * **Model**: Data classes representing real-world concepts essential for the UI layer
+* **Repository Interface**: Define a contract for data access and provide methods for retrieving
+  
 ### Date layer
-* **RepositoryImpl**
-  
-* **Retrofit, Room, DataStore**
+* **RepositoryImpl**: Implement the repository interface methods from domain layer
+* **DataSource**: Retrofit, Room, DataStore
+* **ModelMappingExt**: Provide extension functions to map between remote DTO, local entity, and domain model
+<br>
 
-* **ModelMappingExt**: Use the ext function to map remote dto, local entity, and domain model
-
-
-  
-* **Repository Interface**:
-
-## Coustom UI
-
-## 3rd Library
+## 3rd Libraries
+* [Timber](https://github.com/JakeWharton/timber) - Logger with a small, extensible API
+* [WheelPickerCompose](https://github.com/commandiron/WheelPickerCompose) - Date and time wheel picker in Jetpack Compose
+<br>
 
 ## Api Source
+* [TDX Api](https://tdx.transportdata.tw/api-service/swagger) 
+<br>
 
 ## Learning Resources
 <a href="https://developer.android.com/courses/android-basics-compose/course?hl=en">Android Basics with Compose</a><br>
@@ -100,4 +89,3 @@ Follow Google recommended [Guide to app architecture](https://developer.android.
 <a href="https://developer.android.com/jetpack/compose/architecture">Architecting your Compose UI</a><br>
 <a href="https://youtu.be/1yiuxWK74vI?si=TwmxcFl0AQnSNJxJ">Introduction to drawing in Compose</a><br>
 
-## LICENSE
