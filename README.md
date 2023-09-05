@@ -65,7 +65,7 @@ Follow Google recommended [Guide to app architecture](https://developer.android.
 
 ### Domain layer
  * **Use Case**: Responsible for encapsulating complex business logics, and can be reused by multiple ViewModels
- * **Model**: Data classes representing real-world concepts essential for the UI layer
+ * **Model**: Data classes that are representing real-world concepts for the user
 * **Repository Interface**: Define a contract for data access and provide methods for retrieving
   
 ### Date layer
