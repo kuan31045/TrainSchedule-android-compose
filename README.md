@@ -48,7 +48,7 @@ It is based on **Jetpack Compose** and **Material 3** for UI development, while 
 * [Datastore](https://developer.android.com/topic/libraries/architecture/datastore) - Aynchronous and consistent data storage for key-value pairs or typed objects
 * [Dynamic color](https://developer.android.com/jetpack/compose/designsystems/material3#dynamic_color_schemes) - Derive custom colors from a user's wallpaper to be applied to the app UI
 
-<br>
+<br><br>
 <img src="art/theme.gif" width="25%"/>
 
 
@@ -63,32 +63,30 @@ It is based on **Jetpack Compose** and **Material 3** for UI development, while 
 
 
 ## Architectures
- <p align="center">
-  <a href="https://developer.android.com/static/topic/libraries/architecture/images/mad-arch-overview.png">
-    <img src="https://developer.android.com/static/topic/libraries/architecture/images/mad-arch-overview.png" alt="Architectures" width='70%'
-  </a>
-</p>
+ 
+![架構](https://github.com/kuan31045/TrainSchedule/assets/51369777/00373ecf-3e4a-4d36-9796-11eec35288d2)
 
 Follow Google recommended [Guide to app architecture](https://developer.android.com/jetpack/guide) to structure project architecture based on UI layer, Date layer and Domain layer.
 
 ### UI layer
-* ViewModel: Fetch data from higher layers, update UI State(StateFlow) and handle UI event.
+* **ViewModel**: Fetch data from higher layers, update UI State(StateFlow) and handle UI event.
   
-* Composable Function: Using collectAsState() function to collect UI state from ViewModel as an immutable state, then passed down to composable componets for displaying the UI. When a UI event occurs, it will call a function within the ViewModel.
+* **Composable Screen**: Collect UI state from ViewModel as an immutable state, then passed down to composable widgets for displaying the UI. Invoke the ViewModel's function when a UI event occurs.
 
-
-
- 
-
-
-
-
-
+### Domain layer
+ * **Use Case**:
+ * **Model**:
    
 ### Date layer
+* **RepositoryImpl**
   
-### Domain layer
- 
+* **Retrofit, Room, DataStore**
+
+* **ModelMappingExt**: Use the ext function to map remote dto, local entity, and domain model
+
+
+  
+* **Repository Interface**:
 
 ## Coustom UI
 
