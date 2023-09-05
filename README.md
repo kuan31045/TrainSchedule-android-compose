@@ -68,7 +68,7 @@ Follow Google recommended [Guide to app architecture](https://developer.android.
  * **Model**: Data classes that are representing real-world concepts for the user
 * **Repository Interface**: Define a contract for data access and provide methods for retrieving
   
-### Date layer
+### Data layer
 * **RepositoryImpl**: Implement the repository interface methods from domain layer
 * **DataSource**: Retrofit, Room, DataStore
 * **ModelMappingExt**: Provide extension functions to map between remote DTO, local entity, and domain model
