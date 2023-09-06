@@ -57,7 +57,7 @@ It is based on **Jetpack Compose** and **Material 3** for UI development, while 
  
 ![架構](https://github.com/kuan31045/TrainSchedule/assets/51369777/00373ecf-3e4a-4d36-9796-11eec35288d2)
 
-Follow Google recommended [Guide to app architecture](https://developer.android.com/jetpack/guide) to structure project architecture based on UI layer, Date layer and Domain layer.
+Follow Google recommended [Guide to app architecture](https://developer.android.com/jetpack/guide) to structure project architecture based on UI layer, Domain layer and Data layer.
 
 ### UI layer
 * **ViewModel**: Fetch data from higher layers, update UI State(StateFlow) and handle UI events
@@ -70,7 +70,7 @@ Follow Google recommended [Guide to app architecture](https://developer.android.
   
 ### Data layer
 * **RepositoryImpl**: Implement the repository interface methods from domain layer
-* **DataSource**: Retrofit, Room, DataStore
+* **Data Source**: Retrofit, Room, DataStore
 * **ModelMappingExt**: Provide extension functions to map between remote DTO, local entity, and domain model
   
 
