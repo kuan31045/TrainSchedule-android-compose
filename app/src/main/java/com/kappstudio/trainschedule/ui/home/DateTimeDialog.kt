@@ -94,7 +94,11 @@ fun DateTimeDialog(
                         rowCount = 3,
                         texts = timeList.map { it.format(dateWeekFormatter) }
                     ) { index ->
-                        date = timeList[index]
+                        date = try {
+                            timeList[index]
+                        } catch (e: Exception) {
+                            timeList.last()
+                        }
                         null
                     }
                     WheelTimePicker(

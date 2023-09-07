@@ -84,14 +84,6 @@ private val DarkColors = darkColorScheme(
     scrim = md_theme_dark_scrim,
 )
 
-
-fun setStatueBarColor(view: View, color: Color) {
-    if (!view.isInEditMode) {
-        val window = (view.context as Activity).window
-        window.statusBarColor = color.toArgb()
-    }
-}
-
 @Composable
 fun TrainScheduleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

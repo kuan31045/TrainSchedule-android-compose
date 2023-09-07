@@ -235,6 +235,7 @@ fun TripDetailScreen(
                 }
             }
         }
+
         if (loadingState == LoadingStatus.Done) {
             PullRefreshIndicator(
                 modifier = Modifier
@@ -244,7 +245,6 @@ fun TripDetailScreen(
                 state = refreshState,
             )
         }
-
     }
 }
 
@@ -284,7 +284,6 @@ fun TripBody(
                 ScheduleItem(
                     schedule = schedule,
                     onTrainButtonClicked = {
-
                         val trainShortName = (when (schedule.train.number) {
                             "1", "2" -> context.resources.getString(R.string.tour_train)
                             else -> context.resources.getString(schedule.train.type.trainName)
@@ -323,6 +322,7 @@ fun TransferLayout(modifier: Modifier = Modifier) {
                 text = stringResource(R.string.transfer)
             )
         }
+
         Divider(modifier = Modifier.padding(start = 56.dp, end = 8.dp), thickness = 1.dp)
     }
 }
@@ -331,7 +331,6 @@ fun TransferLayout(modifier: Modifier = Modifier) {
 fun ScheduleItem(
     modifier: Modifier = Modifier,
     schedule: TrainSchedule,
-    lateMinutes: Int = 0,
     onTrainButtonClicked: () -> Unit,
 ) {
     var heightIs by remember { mutableStateOf(0.dp) }
@@ -357,8 +356,6 @@ fun ScheduleItem(
                 )
             )
 
-
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -373,6 +370,7 @@ fun ScheduleItem(
                         fontSize = 16.sp
                     )
                 }
+
                 Spacer(modifier = Modifier.weight(1f))
 
                 Text(
@@ -389,21 +387,17 @@ fun ScheduleItem(
                 )
             }
 
-
             StopsLayout(stops = schedule.stops)
-
 
             BigStationLayout(
                 station = schedule.stops.last().station.name.localize(),
                 time = schedule.getEndTime().format(timeFormatter)
             )
 
-
             Divider(thickness = 1.dp)
         }
     }
 }
-
 
 @Composable
 fun BigStationLayout(
@@ -427,7 +421,6 @@ fun BigStationLayout(
             style = MaterialTheme.typography.titleLarge
         )
         Text(text = time, style = MaterialTheme.typography.titleLarge)
-
     }
 }
 
@@ -440,6 +433,7 @@ fun StopsLayout(
 
     Column(modifier = modifier) {
         Divider(thickness = 1.dp)
+
         Row(
             modifier = Modifier
                 .padding(vertical = 12.dp)
@@ -461,12 +455,13 @@ fun StopsLayout(
                 fontSize = 16.sp
             )
             TimeText(
-                minutes =
-
-                Duration.between(stops.first().departureTime, stops.last().arrivalTime).toMinutes()
-
+                minutes = Duration.between(
+                    stops.first().departureTime,
+                    stops.last().arrivalTime
+                ).toMinutes()
             )
         }
+
         AnimatedVisibility(
             visible = isExpanded
         ) {
@@ -476,6 +471,7 @@ fun StopsLayout(
                 }
             }
         }
+
         if (!isExpanded) {
             Divider(thickness = 1.dp)
         }
