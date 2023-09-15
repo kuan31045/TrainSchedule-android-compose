@@ -7,6 +7,10 @@ It is based on **Jetpack Compose** and **Material 3** for UI development, while 
   <a href="https://play.google.com/store/apps/details?id=com.kappstudio.trainschedule">
     <img src="art/googleplay.png" alt="GooglePlay" width='30%'
   </a>
+    <a href="https://play.google.com/store/apps/details?id=com.kappstudio.trainschedule">
+              <img src="art/qrcode_play.google.com.png" alt="GooglePlay" width='12%'
+
+  </a>
 </p>
 <br>
 
