@@ -36,10 +36,8 @@ enum class RunningStatus {
 
 data class TrainUiState(
     val trainSchedule: TrainSchedule = TrainSchedule(
-        train = Train(
-            number = "",
-            type = TrainType.UNKNOWN
-        ), stops = emptyList()
+        train = Train(number = "", type = TrainType.UNKNOWN),
+        stops = emptyList()
     ),
     val trainShortName: String = "",
     val delay: Long = 0,
@@ -76,11 +74,10 @@ class TrainViewModel @Inject constructor(
     }
 
     private fun checkRunningStatus() {
-
         val nowTime = getNowDateTime()
         val notYet =
-            nowTime < uiState.value.trainSchedule.stops.first().departureTime.minusHours(
-                1
+            nowTime < uiState.value.trainSchedule.stops.first().departureTime.minusMinutes(
+                5
             )
 
         val isFinished =
@@ -138,7 +135,7 @@ class TrainViewModel @Inject constructor(
         }
     }
 
-    fun fetchStationLiveBoard() {
+    private fun fetchStationLiveBoard() {
         viewModelScope.launch {
             checkRunningStatus()
             while (uiState.value.runningStatus == RunningStatus.RUNNING) {
@@ -146,17 +143,29 @@ class TrainViewModel @Inject constructor(
                 val liveBoardResult = trainRepository.fetchStationLiveBoardOfTrain(
                     trainNumber = uiState.value.trainSchedule.train.number,
                 )
+
+                val currentTime = getNowDateTime()
+
                 if (liveBoardResult.isNotEmpty()) {
                     val index = uiState.value.trainSchedule.stops.indexOfFirst {
                         it.station.id == liveBoardResult.first().stationId
                     }
+                    val indexByTime = getTrainIndexByTime()
+                    val delay = liveBoardResult.first().delay
 
                     _uiState.update { currentState ->
                         currentState.copy(
-                            delay = liveBoardResult.first().delay,
+                            delay = delay,
                             liveBoards = liveBoardResult,
-                            trainIndex = index,
-                            currentTime = getNowDateTime()
+                            trainIndex = if (index > indexByTime) getTrainIndexByTime(delay) else index,
+                            currentTime = currentTime
+                        )
+                    }
+                } else {
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            trainIndex = getTrainIndexByTime(),
+                            currentTime = currentTime
                         )
                     }
                 }
@@ -165,5 +174,14 @@ class TrainViewModel @Inject constructor(
                 delay((20000L..30000L).random())
             }
         }
+    }
+
+    private fun getTrainIndexByTime(delay: Long = 0): Int {
+        val time = getNowDateTime().minusMinutes(delay)
+        val index = uiState.value.trainSchedule.stops.indexOfFirst { stop ->
+            time <= stop.departureTime
+        }
+
+        return if (index < 0) uiState.value.trainSchedule.stops.size - 1 else index
     }
 }

@@ -65,7 +65,6 @@ import com.kappstudio.trainschedule.util.TrainFlag
 import com.kappstudio.trainschedule.util.TrainType
 import com.kappstudio.trainschedule.util.dateWeekFormatter
 import com.kappstudio.trainschedule.util.getNowDateTime
-
 import com.kappstudio.trainschedule.util.timeFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -132,7 +131,8 @@ fun TrainScreen(
                             stops = uiState.value.trainSchedule.stops,
                             liveBoards = uiState.value.liveBoards,
                             trainIndex = uiState.value.trainIndex,
-                            currentTime = uiState.value.currentTime
+                            currentTime = uiState.value.currentTime,
+                            runningStatus = uiState.value.runningStatus
                         )
                     }
                 }
@@ -158,6 +158,7 @@ fun StopsBody(
     trainIndex: Int,
     liveBoards: List<StationLiveBoard>,
     currentTime: LocalDateTime,
+    runningStatus: RunningStatus,
 ) {
     val listState = rememberLazyListState()
     var alreadyRolled by rememberSaveable { mutableStateOf(false) }
@@ -175,6 +176,7 @@ fun StopsBody(
                 listState.animateScrollToItem(index = trainIndex)
             }
         }
+
         itemsIndexed(stops) { index, stop ->
             StopItem(
                 stop = stop,
@@ -182,7 +184,8 @@ fun StopsBody(
                 trainIndex = trainIndex,
                 isLast = index == stops.size - 1,
                 liveBoard = liveBoards.firstOrNull { it.stationId == stop.station.id },
-                currentTime = currentTime
+                currentTime = currentTime,
+                runningStatus = runningStatus
             )
             Divider()
         }
@@ -198,14 +201,15 @@ fun StopItem(
     isLast: Boolean,
     liveBoard: StationLiveBoard? = null,
     currentTime: LocalDateTime,
+    runningStatus: RunningStatus,
 ) {
-    val textColor = if (index < trainIndex) {
+    val textColor = if ((index < trainIndex) || (runningStatus == RunningStatus.FINISH)) {
         MaterialTheme.colorScheme.outline
     } else {
         Color.Unspecified
     }
 
-    val routeColor = if ((index < trainIndex) || (isLast && currentTime > stop.arrivalTime)) {
+    val routeColor = if ((index < trainIndex) || (runningStatus == RunningStatus.FINISH)) {
         MaterialTheme.colorScheme.outline
     } else {
         MaterialTheme.colorScheme.primary
@@ -227,8 +231,8 @@ fun StopItem(
                     .size(width = 25.dp, height = heightIs)
                     .drawBehind { drawRect(routeColor) }
             )
-            if (index == trainIndex && liveBoard != null) {
-                if (currentTime < stop.arrivalTime.plusMinutes(liveBoard.delay)) {
+            if (index == trainIndex && runningStatus == RunningStatus.RUNNING) {
+                if (currentTime < stop.arrivalTime.plusMinutes(liveBoard?.delay ?: 0)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         TrainIcon()
                         RepeatArrowAnim()
@@ -385,6 +389,7 @@ fun StopsColumnPreview() {
         stops = stops,
         liveBoards = emptyList(),
         trainIndex = 1,
-        currentTime = getNowDateTime()
+        currentTime = getNowDateTime(),
+        runningStatus = RunningStatus.RUNNING
     )
 }
