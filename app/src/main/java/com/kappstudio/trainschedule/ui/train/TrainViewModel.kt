@@ -40,6 +40,7 @@ data class TrainUiState(
         stops = emptyList()
     ),
     val trainShortName: String = "",
+    val trainNumber: String = "",
     val delay: Long = 0,
     val runningStatus: RunningStatus = RunningStatus.NOT_YET,
     val liveBoards: List<StationLiveBoard> = emptyList(),
@@ -53,9 +54,12 @@ class TrainViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
+    private val trainShortName: String = savedStateHandle[NavigationArgs.TRAIN_STRING]!!
+
     private val _uiState = MutableStateFlow(
         TrainUiState(
-            trainShortName = savedStateHandle[NavigationArgs.TRAIN_STRING]!!,
+            trainShortName = trainShortName,
+            trainNumber = trainShortName.split("-").last()
         )
     )
     val uiState: StateFlow<TrainUiState> = _uiState.asStateFlow()
@@ -70,7 +74,17 @@ class TrainViewModel @Inject constructor(
         private set
 
     init {
+        fetchInitialDelay()
         fetchTrain()
+    }
+
+    private fun fetchInitialDelay() {
+        viewModelScope.launch {
+            val delay = trainRepository.fetchTrainDelay(uiState.value.trainNumber)?.toLong() ?: 0
+            _uiState.update { currentState ->
+                currentState.copy(delay = delay)
+            }
+        }
     }
 
     private fun checkRunningStatus() {
@@ -103,7 +117,7 @@ class TrainViewModel @Inject constructor(
 
     fun fetchTrain() {
         loadingState = LoadingStatus.Loading
-        val trainNumber = uiState.value.trainShortName.split("-").last()
+        val trainNumber = uiState.value.trainNumber
         viewModelScope.launch {
             val result = trainRepository.fetchTrainSchedule(
                 trainNumber = trainNumber,
