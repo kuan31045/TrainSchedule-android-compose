@@ -13,7 +13,7 @@ android {
         applicationId "com.kappstudio.trainschedule"
         minSdk 28
         targetSdk 33
-        versionCode 8
+        versionCode 9
         versionName "1.0.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
