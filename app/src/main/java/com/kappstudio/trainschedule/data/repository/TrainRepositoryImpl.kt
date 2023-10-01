@@ -247,16 +247,6 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchTrainDelay(trainNumber: String): Int? {
-        return try {
-            val result = api.getTrainLiveBoard(fetchAccessToken(), trainNumber)
-            result.trainLiveBoards?.first()?.delayTime
-        } catch (e: Exception) {
-            Timber.w("getTrainLiveBoard exception = ${e.message}")
-            null
-        }
-    }
-
     override suspend fun fetchTrainSchedule(trainNumber: String): Result<TrainSchedule> {
         return try {
             val result = api.getGeneralTrainTimetable(

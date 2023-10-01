@@ -111,12 +111,14 @@ class TrainViewModel @Inject constructor(
         }
     }
 
-    private fun fetchInitialDelay() {
-        viewModelScope.launch {
-            val delay = trainRepository.fetchTrainDelay(trainNumber)?.toLong() ?: 0
-            _uiState.update { currentState ->
-                currentState.copy(delay = delay)
-            }
+    private suspend fun fetchInitialDelay() {
+        val liveBoardResult = trainRepository.fetchStationLiveBoardOfTrain(
+            trainNumber = trainNumber,
+        )
+        val delay = liveBoardResult.firstOrNull()?.delay ?: 0
+
+        _uiState.update { currentState ->
+            currentState.copy(delay = delay)
         }
     }
 
@@ -126,7 +128,7 @@ class TrainViewModel @Inject constructor(
             while (uiState.value.runningStatus == RunningStatus.RUNNING) {
 
                 val liveBoardResult = trainRepository.fetchStationLiveBoardOfTrain(
-                    trainNumber = uiState.value.trainSchedule.train.number,
+                    trainNumber = trainNumber,
                 )
 
                 val currentTime = getNowDateTime()
@@ -164,9 +166,7 @@ class TrainViewModel @Inject constructor(
     private fun checkRunningStatus() {
         val currentTime = getNowDateTime()
         val notYet =
-            currentTime < uiState.value.trainSchedule.stops.first().departureTime.minusMinutes(
-                5
-            )
+            currentTime < uiState.value.trainSchedule.stops.first().arrivalTime
 
         val isFinished =
             currentTime > uiState.value.trainSchedule.stops.last().arrivalTime.plusMinutes(

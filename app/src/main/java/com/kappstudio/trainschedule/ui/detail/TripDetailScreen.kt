@@ -92,7 +92,6 @@ fun TripDetailScreen(
     onHomeButtonClicked: () -> Unit,
 ) {
     val uiState = viewModel.uiState.collectAsState()
-    val dateTimeState = viewModel.dateTimeState.collectAsState()
     val loadingState = viewModel.loadingState
 
     var isMenuExpanded by rememberSaveable { mutableStateOf(false) }
@@ -218,7 +217,6 @@ fun TripDetailScreen(
                             .fillMaxSize()
                             .padding(innerPadding)
                             .padding(horizontal = 16.dp),
-                        date = dateTimeState.value.format(dateWeekFormatter),
                         trip = uiState.value.trip,
                         onTrainButtonClicked = { onTrainButtonClicked(it) }
                     )
@@ -251,7 +249,6 @@ fun TripDetailScreen(
 @Composable
 fun TripBody(
     modifier: Modifier = Modifier,
-    date: String,
     trip: Trip,
     onTrainButtonClicked: (String) -> Unit,
 ) {
@@ -267,7 +264,7 @@ fun TripBody(
             ) {
             item {
                 Row(modifier = Modifier.padding(bottom = 4.dp)) {
-                    Text(text = date, fontSize = 18.sp)
+                    Text(text = trip.startTime.format(dateWeekFormatter), fontSize = 18.sp)
                     Text(
                         modifier = Modifier
                             .padding(start = 8.dp),
@@ -376,12 +373,12 @@ fun ScheduleItem(
                 Text(
                     text = when (schedule.train.delay) {
                         null -> ""
-                        0 -> stringResource(id = R.string.on_time)
+                        0L -> stringResource(id = R.string.on_time)
                         else -> stringResource(id = R.string.delay, schedule.train.delay)
                     },
                     color = when (schedule.train.delay) {
                         null -> MaterialTheme.colorScheme.onPrimary
-                        0 -> com.kappstudio.trainschedule.ui.theme.on_time
+                        0L -> com.kappstudio.trainschedule.ui.theme.on_time
                         else -> MaterialTheme.colorScheme.error
                     }
                 )

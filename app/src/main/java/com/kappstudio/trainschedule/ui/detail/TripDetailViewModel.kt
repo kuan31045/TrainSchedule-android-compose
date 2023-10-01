@@ -14,14 +14,10 @@ import com.kappstudio.trainschedule.util.LoadingStatus
 import com.kappstudio.trainschedule.util.getNowDateTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 data class TripDetailUiState(
@@ -40,12 +36,6 @@ class TripDetailViewModel @Inject constructor(
     var loadingState: LoadingStatus by mutableStateOf(LoadingStatus.Done)
         private set
 
-    val dateTimeState: StateFlow<LocalDateTime> = trainRepository.selectedDateTime.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = getNowDateTime(),
-    )
-
     fun setTrip(trip: Trip, isTransferTrip: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(trip = trip)
@@ -59,11 +49,17 @@ class TripDetailViewModel @Inject constructor(
     }
 
     suspend fun fetchTrainsDelayTime() {
-        if (dateTimeState.value.toLocalDate() > LocalDate.now()) {
+        if (uiState.value.trip.startTime.minusHours(4) > getNowDateTime()) {
             return
         }
+
+        val liveBoardResult = trainRepository.fetchStationLiveBoardOfTrain(
+            trainNumber = uiState.value.trip.trainSchedules.first().train.number,
+        )
+        val delay = liveBoardResult.firstOrNull()?.delay
+
         val newSchedules = uiState.value.trip.trainSchedules.map {
-            it.copy(train = it.train.copy(delay = trainRepository.fetchTrainDelay(it.train.number)))
+            it.copy(train = it.train.copy(delay = delay))
         }
         _uiState.update { currentState ->
             currentState.copy(

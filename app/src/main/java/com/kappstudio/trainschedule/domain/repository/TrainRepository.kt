@@ -46,8 +46,6 @@ interface TrainRepository {
 
     suspend fun isCurrentPathFavorite(): Boolean
 
-    suspend fun fetchTrainDelay(trainNumber: String): Int?
-
     suspend fun fetchTrainSchedule(trainNumber: String): Result<TrainSchedule>
 
     suspend fun getStationsOfLine(id: String): List<Station>

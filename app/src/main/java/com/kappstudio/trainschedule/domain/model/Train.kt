@@ -9,7 +9,7 @@ data class Train(
     val type: TrainType,
     val startStation: Station = Station(),
     val endStation: Station = Station(),
-    val delay: Int? = null,
+    val delay: Long? = null,
     val headSign: String = "",
     val note: String = "",
     val overNightStationId: String = "",
