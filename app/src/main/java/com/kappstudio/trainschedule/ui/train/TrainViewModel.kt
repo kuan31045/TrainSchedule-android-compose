@@ -40,9 +40,8 @@ data class TrainUiState(
         stops = emptyList()
     ),
     val trainShortName: String = "",
-    val trainNumber: String = "",
-    val delay: Long = 0,
     val runningStatus: RunningStatus = RunningStatus.NOT_YET,
+    val delay: Long = 0,
     val liveBoards: List<StationLiveBoard> = emptyList(),
     val trainIndex: Int = 0,
     val currentTime: LocalDateTime = getNowDateTime(),
@@ -55,11 +54,11 @@ class TrainViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val trainShortName: String = savedStateHandle[NavigationArgs.TRAIN_STRING]!!
+    private val trainNumber = trainShortName.split("-").last()
 
     private val _uiState = MutableStateFlow(
         TrainUiState(
-            trainShortName = trainShortName,
-            trainNumber = trainShortName.split("-").last()
+            trainShortName = trainShortName
         )
     )
     val uiState: StateFlow<TrainUiState> = _uiState.asStateFlow()
@@ -74,54 +73,17 @@ class TrainViewModel @Inject constructor(
         private set
 
     init {
-        fetchInitialDelay()
         fetchTrain()
-    }
-
-    private fun fetchInitialDelay() {
-        viewModelScope.launch {
-            val delay = trainRepository.fetchTrainDelay(uiState.value.trainNumber)?.toLong() ?: 0
-            _uiState.update { currentState ->
-                currentState.copy(delay = delay)
-            }
-        }
-    }
-
-    private fun checkRunningStatus() {
-        val nowTime = getNowDateTime()
-        val notYet =
-            nowTime < uiState.value.trainSchedule.stops.first().departureTime.minusMinutes(
-                5
-            )
-
-        val isFinished =
-            nowTime > uiState.value.trainSchedule.stops.last().arrivalTime.plusMinutes(
-                uiState.value.delay
-            )
-
-        _uiState.update { currentState ->
-            currentState.copy(
-                runningStatus = when {
-                    notYet -> RunningStatus.NOT_YET
-                    isFinished -> RunningStatus.FINISH
-                    else -> RunningStatus.RUNNING
-                },
-                trainIndex = if (isFinished) {
-                    currentState.trainSchedule.stops.size - 1
-                } else {
-                    currentState.trainIndex
-                }
-            )
-        }
     }
 
     fun fetchTrain() {
         loadingState = LoadingStatus.Loading
-        val trainNumber = uiState.value.trainNumber
         viewModelScope.launch {
             val result = trainRepository.fetchTrainSchedule(
                 trainNumber = trainNumber,
             )
+
+            fetchInitialDelay()
 
             loadingState = when (result) {
                 is Result.Success -> {
@@ -145,6 +107,15 @@ class TrainViewModel @Inject constructor(
                 else -> {
                     LoadingStatus.Loading
                 }
+            }
+        }
+    }
+
+    private fun fetchInitialDelay() {
+        viewModelScope.launch {
+            val delay = trainRepository.fetchTrainDelay(trainNumber)?.toLong() ?: 0
+            _uiState.update { currentState ->
+                currentState.copy(delay = delay)
             }
         }
     }
@@ -187,6 +158,34 @@ class TrainViewModel @Inject constructor(
                 checkRunningStatus()
                 delay((20000L..30000L).random())
             }
+        }
+    }
+
+    private fun checkRunningStatus() {
+        val currentTime = getNowDateTime()
+        val notYet =
+            currentTime < uiState.value.trainSchedule.stops.first().departureTime.minusMinutes(
+                5
+            )
+
+        val isFinished =
+            currentTime > uiState.value.trainSchedule.stops.last().arrivalTime.plusMinutes(
+                uiState.value.delay
+            )
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                runningStatus = when {
+                    notYet -> RunningStatus.NOT_YET
+                    isFinished -> RunningStatus.FINISH
+                    else -> RunningStatus.RUNNING
+                },
+                trainIndex = if (isFinished) {
+                    currentState.trainSchedule.stops.size - 1
+                } else {
+                    currentState.trainIndex
+                }
+            )
         }
     }
 
