@@ -1,5 +1,6 @@
 package com.kappstudio.trainschedule.domain.usecase
 
+import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.data.Result
 import com.kappstudio.trainschedule.data.toTrainSchedule
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
@@ -31,9 +32,9 @@ class FetchStopsAndFaresOfSchedulesUseCase @Inject constructor(
                 delay((200L..300L).random())
 
                 val fares = trainRepository.fetchFares(schedule.path)
-                val timeTable = result.data.first { timetable ->
+                val timeTable = result.data.firstOrNull { timetable ->
                     timetable.trainInfoDto.trainNo == schedule.train.number
-                }
+                } ?: return@withContext Result.Fail(R.string.web_update)
 
                 newSchedules.add(
                     timeTable.toTrainSchedule(
