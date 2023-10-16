@@ -114,7 +114,7 @@ class TrainRepositoryImpl @Inject constructor(
                         newToken.expiresIn * 1000 / 2 + System.currentTimeMillis()
                 }
             } catch (e: Exception) {
-                Timber.w("getToken exception = ${e.message}")
+                Timber.w("getToken exception : ${e.message}")
             }
         }
         return localToken.first().accessToken
@@ -130,7 +130,7 @@ class TrainRepositoryImpl @Inject constructor(
 
             Result.Success(true)
         } catch (e: Exception) {
-            Timber.w("getStations exception = ${e.message}")
+            Timber.w("getStations exception : ${e.message}")
 
             if (connectivityManager.isConnected()) {
                 Result.Error(e)
@@ -167,7 +167,7 @@ class TrainRepositoryImpl @Inject constructor(
             Result.Success(result.trainTimetables)
 
         } catch (e: Exception) {
-            Timber.w("fetchTimetables exception = ${e.message}")
+            Timber.w("fetchTimetables exception : ${e.message}")
 
             if (connectivityManager.isConnected()) {
                 Result.Error(e)
@@ -183,7 +183,7 @@ class TrainRepositoryImpl @Inject constructor(
             Result.Success(doc)
 
         } catch (e: Exception) {
-            Timber.w("scrapeTimetablesDocFromTwRailwayWeb exception = ${e.message}")
+            Timber.w("scrapeTimetablesDocFromTwRailwayWeb exception : ${e.message}")
 
             if (connectivityManager.isConnected()) {
                 Result.Error(e)
@@ -202,7 +202,7 @@ class TrainRepositoryImpl @Inject constructor(
             ).odFares
 
         } catch (e: Exception) {
-            Timber.w("getTrainLiveBoard exception = ${e.message}")
+            Timber.w("getTrainLiveBoard exception : ${e.message}")
             null
         }
     }
@@ -270,7 +270,7 @@ class TrainRepositoryImpl @Inject constructor(
                     ))
             }
         } catch (e: Exception) {
-            Timber.w("fetchTrain exception = ${e.message}")
+            Timber.w("fetchTrain exception : ${e.message}")
 
             if (connectivityManager.isConnected()) {
                 Result.Error(e)
@@ -297,7 +297,7 @@ class TrainRepositoryImpl @Inject constructor(
                 it.trainNo == trainNumber && durationHours < 5
             }.map { it.toStationLiveBoard() }
         } catch (e: Exception) {
-            Timber.w("fetchStationLiveBoard exception = ${e.message}")
+            Timber.w("fetchStationLiveBoard exception : ${e.message}")
             emptyList()
         }
     }
