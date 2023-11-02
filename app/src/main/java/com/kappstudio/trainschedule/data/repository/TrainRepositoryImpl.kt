@@ -286,16 +286,11 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchStationLiveBoardOfTrain(trainNumber: String): List<StationLiveBoard> {
+    override suspend fun fetchTrainLiveBoard(trainNumber: String): List<TrainLiveBoard> {
         return try {
-            val result = api.getStationLiveBoard(fetchAccessToken())
+            val result = api.getTrainLiveBoard(fetchAccessToken(), trainNumber)
             val nowTime = getNowDateTime()
-
-            result.stationLiveBoards.filter {
-                val updateTime = LocalDateTime.parse(it.updateTime.split("+").first())
-                val durationHours = abs(Duration.between(updateTime, nowTime).toHours())
-                it.trainNo == trainNumber && durationHours < 5
-            }.map { it.toStationLiveBoard() }
+            result.toTrainLiveBoard()
         } catch (e: Exception) {
             Timber.w("fetchStationLiveBoard exception: ${e.message}")
             emptyList()

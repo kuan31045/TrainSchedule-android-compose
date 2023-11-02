@@ -50,5 +50,5 @@ interface TrainRepository {
 
     suspend fun getStationsOfLine(id: String): List<Station>
 
-    suspend fun fetchStationLiveBoardOfTrain(trainNumber: String): List<StationLiveBoard>
+    suspend fun fetchTrainLiveBoard(trainNumber: String): List<StationLiveBoard>
 }
