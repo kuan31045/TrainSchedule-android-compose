@@ -286,14 +286,13 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchTrainLiveBoard(trainNumber: String): List<TrainLiveBoard> {
+    override suspend fun fetchTrainLiveBoard(trainNumber: String): TrainLiveBoard? {
         return try {
             val result = api.getTrainLiveBoard(fetchAccessToken(), trainNumber)
-            val nowTime = getNowDateTime()
             result.toTrainLiveBoard()
         } catch (e: Exception) {
-            Timber.w("fetchStationLiveBoard exception: ${e.message}")
-            emptyList()
+            Timber.w("fetchTrainLiveBoard exception: ${e.message}")
+            null
         }
     }
 
