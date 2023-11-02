@@ -53,7 +53,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Station
-import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.ui.components.ExpandButton
@@ -129,7 +128,7 @@ fun TrainScreen(
                         StopsBody(
                             modifier = Modifier.fillMaxSize(),
                             stops = uiState.value.trainSchedule.stops,
-                            liveBoards = uiState.value.liveBoards,
+                            delay = uiState.value.delay,
                             trainIndex = uiState.value.trainIndex,
                             currentTime = uiState.value.currentTime,
                             runningStatus = uiState.value.runningStatus
@@ -156,7 +155,7 @@ fun StopsBody(
     modifier: Modifier = Modifier,
     stops: List<Stop>,
     trainIndex: Int,
-    liveBoards: List<StationLiveBoard>,
+    delay: Long?,
     currentTime: LocalDateTime,
     runningStatus: RunningStatus,
 ) {
@@ -181,9 +180,9 @@ fun StopsBody(
             StopItem(
                 stop = stop,
                 index = index,
-                trainIndex = trainIndex,
+                trainLiveIndex = trainIndex,
                 isLast = index == stops.size - 1,
-                liveBoard = liveBoards.firstOrNull { it.stationId == stop.station.id },
+                delay = delay,
                 currentTime = currentTime,
                 runningStatus = runningStatus
             )
@@ -197,19 +196,19 @@ fun StopItem(
     modifier: Modifier = Modifier,
     stop: Stop,
     index: Int,
-    trainIndex: Int,
+    trainLiveIndex: Int,
     isLast: Boolean,
-    liveBoard: StationLiveBoard? = null,
+    delay: Long? = null,
     currentTime: LocalDateTime,
     runningStatus: RunningStatus,
 ) {
-    val textColor = if ((index < trainIndex) || (runningStatus == RunningStatus.FINISH)) {
+    val textColor = if ((index < trainLiveIndex) || (runningStatus == RunningStatus.FINISH)) {
         MaterialTheme.colorScheme.outline
     } else {
         Color.Unspecified
     }
 
-    val routeColor = if ((index < trainIndex) || (runningStatus == RunningStatus.FINISH)) {
+    val routeColor = if ((index < trainLiveIndex) || (runningStatus == RunningStatus.FINISH)) {
         MaterialTheme.colorScheme.outline
     } else {
         MaterialTheme.colorScheme.primary
@@ -231,8 +230,8 @@ fun StopItem(
                     .size(width = 25.dp, height = heightIs)
                     .drawBehind { drawRect(routeColor) }
             )
-            if (index == trainIndex && runningStatus == RunningStatus.RUNNING) {
-                if (currentTime < stop.arrivalTime.plusMinutes(liveBoard?.delay ?: 0)) {
+            if (index == trainLiveIndex && runningStatus == RunningStatus.RUNNING) {
+                if (currentTime < stop.arrivalTime.plusMinutes(delay ?: 0)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         TrainIcon()
                         RepeatArrowAnim()
@@ -254,16 +253,16 @@ fun StopItem(
                 fontSize = 20.sp,
                 maxLines = 1
             )
-            liveBoard?.let {
+            if (delay != null && index == trainLiveIndex) {
                 Text(
-                    text = if (it.delay > 0) {
+                    text = if (delay > 0) {
                         stringResource(
-                            id = R.string.delay, it.delay
+                            id = R.string.delay, delay
                         )
                     } else {
                         stringResource(R.string.on_time)
                     },
-                    color = if (it.delay > 0) {
+                    color = if (delay > 0) {
                         MaterialTheme.colorScheme.error
                     } else {
                         com.kappstudio.trainschedule.ui.theme.on_time
@@ -387,7 +386,7 @@ fun StopsColumnPreview() {
     StopsBody(
         modifier = Modifier.padding(top = 16.dp),
         stops = stops,
-        liveBoards = emptyList(),
+        delay = null,
         trainIndex = 1,
         currentTime = getNowDateTime(),
         runningStatus = RunningStatus.RUNNING
