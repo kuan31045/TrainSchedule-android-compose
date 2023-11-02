@@ -112,7 +112,7 @@ class TrainViewModel @Inject constructor(
     }
 
     private suspend fun fetchInitialDelay() {
-        val liveBoardResult = trainRepository.fetchTrainLiveBoard(
+        val liveBoardResult = trainRepository.fetchStationLiveBoardOfTrain(
             trainNumber = trainNumber,
         )
         val delay = liveBoardResult.firstOrNull()?.delay ?: 0
@@ -127,7 +127,7 @@ class TrainViewModel @Inject constructor(
             checkRunningStatus()
             while (uiState.value.runningStatus == RunningStatus.RUNNING) {
 
-                val liveBoardResult = trainRepository.fetchTrainLiveBoard(
+                val liveBoardResult = trainRepository.fetchStationLiveBoardOfTrain(
                     trainNumber = trainNumber,
                 )
 
