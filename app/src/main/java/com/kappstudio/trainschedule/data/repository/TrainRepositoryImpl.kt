@@ -26,12 +26,12 @@ import com.kappstudio.trainschedule.data.toLineEntity
 import com.kappstudio.trainschedule.data.toPath
 import com.kappstudio.trainschedule.data.toPathEntity
 import com.kappstudio.trainschedule.data.toStationEntity
-import com.kappstudio.trainschedule.data.toTrainLiveBoard
+import com.kappstudio.trainschedule.data.toStationLiveBoard
 import com.kappstudio.trainschedule.data.toTrainSchedule
 import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
-import com.kappstudio.trainschedule.domain.model.TrainLiveBoard
+import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.util.getNowDateTime
 import kotlinx.coroutines.Dispatchers
@@ -286,26 +286,19 @@ class TrainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchTrainLiveBoard(trainNumber: String): TrainLiveBoard? {
+    override suspend fun fetchStationLiveBoardOfTrain(trainNumber: String): List<StationLiveBoard> {
         return try {
-            val result = api.getTrainLiveBoard(fetchAccessToken(), trainNumber)
-
-            val liveBoard = result.trainLiveBoards?.maxBy { it.updateTime }
-            val updateTime = LocalDateTime.parse(
-                liveBoard?.updateTime?.split("+")?.first()
-            )
+            val result = api.getStationLiveBoard(fetchAccessToken())
             val nowTime = getNowDateTime()
-            val durationHours = abs(Duration.between(updateTime, nowTime).toHours())
 
-            if (durationHours < 5) {
-                liveBoard?.toTrainLiveBoard()
-            } else {
-                null
-            }
-
+            result.stationLiveBoards.filter {
+                val updateTime = LocalDateTime.parse(it.updateTime.split("+").first())
+                val durationHours = abs(Duration.between(updateTime, nowTime).toHours())
+                it.trainNo == trainNumber && durationHours < 5
+            }.map { it.toStationLiveBoard() }
         } catch (e: Exception) {
-            Timber.w("fetchTrainLiveBoard exception: ${e.message}")
-            null
+            Timber.w("fetchStationLiveBoard exception: ${e.message}")
+            emptyList()
         }
     }
 

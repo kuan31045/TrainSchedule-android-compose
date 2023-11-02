@@ -54,9 +54,9 @@ class TripDetailViewModel @Inject constructor(
         }
 
         val newSchedules = uiState.value.trip.trainSchedules.map { schedule ->
-            val delay = trainRepository.fetchTrainLiveBoard(
+            val delay = trainRepository.fetchStationLiveBoardOfTrain(
                 trainNumber = schedule.train.number
-            )?.delay
+            ).firstOrNull()?.delay
 
             schedule.copy(train = schedule.train.copy(delay = delay))
         }
