@@ -7,6 +7,7 @@ import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
 import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.StationLiveBoard
+import com.kappstudio.trainschedule.domain.model.TrainLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import kotlinx.coroutines.flow.Flow
 import org.jsoup.nodes.Document
@@ -50,5 +51,5 @@ interface TrainRepository {
 
     suspend fun getStationsOfLine(id: String): List<Station>
 
-    suspend fun fetchTrainLiveBoard(trainNumber: String): List<StationLiveBoard>
+    suspend fun fetchTrainLiveBoard(trainNumber: String): TrainLiveBoard?
 }

@@ -26,12 +26,12 @@ import com.kappstudio.trainschedule.data.toLineEntity
 import com.kappstudio.trainschedule.data.toPath
 import com.kappstudio.trainschedule.data.toPathEntity
 import com.kappstudio.trainschedule.data.toStationEntity
-import com.kappstudio.trainschedule.data.toStationLiveBoard
+import com.kappstudio.trainschedule.data.toTrainLiveBoard
 import com.kappstudio.trainschedule.data.toTrainSchedule
 import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
-import com.kappstudio.trainschedule.domain.model.StationLiveBoard
+import com.kappstudio.trainschedule.domain.model.TrainLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.util.getNowDateTime
 import kotlinx.coroutines.Dispatchers
@@ -289,7 +289,20 @@ class TrainRepositoryImpl @Inject constructor(
     override suspend fun fetchTrainLiveBoard(trainNumber: String): TrainLiveBoard? {
         return try {
             val result = api.getTrainLiveBoard(fetchAccessToken(), trainNumber)
-            result.toTrainLiveBoard()
+
+            val liveBoard = result.trainLiveBoards?.maxBy { it.updateTime }
+            val updateTime = LocalDateTime.parse(
+                liveBoard?.updateTime?.split("+")?.first()
+            )
+            val nowTime = getNowDateTime()
+            val durationHours = abs(Duration.between(updateTime, nowTime).toHours())
+
+            if (durationHours < 5) {
+                liveBoard?.toTrainLiveBoard()
+            } else {
+                null
+            }
+
         } catch (e: Exception) {
             Timber.w("fetchTrainLiveBoard exception: ${e.message}")
             null

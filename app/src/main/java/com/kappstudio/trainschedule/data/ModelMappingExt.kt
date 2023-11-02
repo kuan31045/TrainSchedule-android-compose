@@ -5,17 +5,17 @@ import com.kappstudio.trainschedule.data.local.entity.PathEntity
 import com.kappstudio.trainschedule.data.local.entity.StationEntity
 import com.kappstudio.trainschedule.data.remote.dto.LineDto
 import com.kappstudio.trainschedule.data.remote.dto.StationDto
-import com.kappstudio.trainschedule.data.remote.dto.StationLiveBoardDto
 import com.kappstudio.trainschedule.data.remote.dto.StopTimeDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainInfoDto
+import com.kappstudio.trainschedule.data.remote.dto.TrainLiveBoardDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
 import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Path
 import com.kappstudio.trainschedule.domain.model.Station
-import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.Train
+import com.kappstudio.trainschedule.domain.model.TrainLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.util.TrainFlag
 import com.kappstudio.trainschedule.util.TrainType
@@ -118,19 +118,18 @@ fun LineDto.toLineEntity(): LineEntity {
     )
 }
 
-fun StationLiveBoardDto.toStationLiveBoard(): StationLiveBoard {
-    return StationLiveBoard(
-        trainNumber = trainNo,
-        stationId = stationId,
-        delay = delayTime.toLong(),
-        runningStatus = runningStatus,
-        updateTime = updateTime
-    )
-}
-
 fun LineEntity.toLine(): Line {
     return Line(
         id = id,
         stations = stations.map { it.toStation() }
+    )
+}
+
+fun TrainLiveBoardDto.toTrainLiveBoard(): TrainLiveBoard {
+    return TrainLiveBoard(
+        trainNumber = trainNo,
+        stationId = stationId,
+        delay = delayTime.toLong(),
+        updateTime = updateTime
     )
 }
