@@ -6,6 +6,7 @@ import com.kappstudio.trainschedule.data.remote.dto.ODFareDto
 import com.kappstudio.trainschedule.data.remote.dto.TrainTimetableDto
 import com.kappstudio.trainschedule.domain.model.Line
 import com.kappstudio.trainschedule.domain.model.Path
+import com.kappstudio.trainschedule.domain.model.StationLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainLiveBoard
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import kotlinx.coroutines.flow.Flow

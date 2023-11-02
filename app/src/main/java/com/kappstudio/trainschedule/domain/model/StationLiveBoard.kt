@@ -1,10 +1,9 @@
 package com.kappstudio.trainschedule.domain.model
 
-import com.google.gson.annotations.SerializedName
-
-data class TrainLiveBoard(
+data class StationLiveBoard(
     val trainNumber: String,
     val stationId: String,
     val delay: Long,
+    val runningStatus: Int,
     val updateTime: String,
 )
