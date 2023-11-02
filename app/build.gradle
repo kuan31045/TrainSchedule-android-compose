@@ -24,6 +24,7 @@ android {
         properties.load(project.rootProject.file("local.properties").newDataInputStream())
         buildConfigField "String", "CLIENT_ID", "\"${properties.getProperty("CLIENT_ID")}\""
         buildConfigField "String", "CLIENT_SECRET", "\"${properties.getProperty("CLIENT_SECRET")}\""
+        buildConfigField "String", "AD_UNIT_ID_OPEN", "\"${properties.getProperty("AD_UNIT_ID_OPEN")}\""
     }
 
     buildTypes {
@@ -64,6 +65,7 @@ dependencies {
     implementation 'androidx.compose.ui:ui-graphics'
     implementation 'androidx.compose.ui:ui-tooling-preview'
     implementation 'androidx.compose.material3:material3:1.2.0-alpha02'
+    implementation 'androidx.lifecycle:lifecycle-process:2.6.2'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
@@ -103,4 +105,7 @@ dependencies {
 
     //Jsoup
     implementation("org.jsoup:jsoup:1.14.3")
+
+    //AdMob
+    implementation 'com.google.android.gms:play-services-ads:22.5.0'
 }
