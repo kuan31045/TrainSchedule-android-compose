@@ -206,15 +206,17 @@ fun HomeScreen(
                 onCheckedChange = { viewModel.setTransfer() }
             )
 
+            BannerAd(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                adSize = AdSize.LARGE_BANNER
+            )
+
             Spacer(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
-            )
-
-            BannerAd(
-                modifier = Modifier.fillMaxWidth(),
-                adSize = AdSize.LARGE_BANNER
             )
 
             SearchButton(
