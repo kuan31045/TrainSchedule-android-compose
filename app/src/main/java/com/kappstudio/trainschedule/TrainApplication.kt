@@ -97,7 +97,7 @@ class TrainApplication : Application(), Application.ActivityLifecycleCallbacks, 
 
         /** Check if ad exists and can be shown. */
         private fun isAdAvailable(): Boolean {
-            return appOpenAd != null && wasLoadTimeLessThanNHoursAgo(4) && resumedTimes % 2 == 0
+            return appOpenAd != null && wasLoadTimeLessThanNHoursAgo(4) && resumedTimes == 2
         }
 
         /**
