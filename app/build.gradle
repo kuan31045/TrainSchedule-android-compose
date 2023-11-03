@@ -25,6 +25,7 @@ android {
         buildConfigField "String", "CLIENT_ID", "\"${properties.getProperty("CLIENT_ID")}\""
         buildConfigField "String", "CLIENT_SECRET", "\"${properties.getProperty("CLIENT_SECRET")}\""
         buildConfigField "String", "AD_UNIT_ID_OPEN", "\"${properties.getProperty("AD_UNIT_ID_OPEN")}\""
+        buildConfigField "String", "AD_UNIT_ID_BANNER", "\"${properties.getProperty("AD_UNIT_ID_BANNER")}\""
     }
 
     buildTypes {
