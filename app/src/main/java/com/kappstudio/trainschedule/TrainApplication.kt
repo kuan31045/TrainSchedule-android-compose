@@ -23,6 +23,7 @@ class TrainApplication : Application(), Application.ActivityLifecycleCallbacks, 
 
     private lateinit var appOpenAdManager: AppOpenAdManager
     private var currentActivity: Activity? = null
+    private var resumedTimes = 0
 
     override fun onCreate() {
         super.onCreate()
@@ -96,7 +97,7 @@ class TrainApplication : Application(), Application.ActivityLifecycleCallbacks, 
 
         /** Check if ad exists and can be shown. */
         private fun isAdAvailable(): Boolean {
-            return appOpenAd != null && wasLoadTimeLessThanNHoursAgo(4)
+            return appOpenAd != null && wasLoadTimeLessThanNHoursAgo(4) && resumedTimes % 2 != 0
         }
 
         /**
@@ -117,6 +118,7 @@ class TrainApplication : Application(), Application.ActivityLifecycleCallbacks, 
             activity: Activity,
             onShowAdCompleteListener: OnShowAdCompleteListener,
         ) {
+
             // If the app open ad is already showing, do not show the ad again.
             if (isShowingAd) {
                 Timber.d("The app open ad is already showing.")
@@ -160,6 +162,7 @@ class TrainApplication : Application(), Application.ActivityLifecycleCallbacks, 
                     Timber.d("Ad showed fullscreen content.")
                 }
             }
+
             isShowingAd = true
             appOpenAd?.show(activity)
         }
@@ -176,7 +179,9 @@ class TrainApplication : Application(), Application.ActivityLifecycleCallbacks, 
         }
     }
 
-    override fun onActivityResumed(activity: Activity) {}
+    override fun onActivityResumed(activity: Activity) {
+        resumedTimes++
+    }
 
     override fun onActivityPaused(activity: Activity) {}
 
