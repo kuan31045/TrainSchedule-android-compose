@@ -56,12 +56,14 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.ads.AdSize
 import com.kappstudio.trainschedule.domain.model.Name
 import com.kappstudio.trainschedule.domain.model.Station
 import com.kappstudio.trainschedule.domain.model.Stop
 import com.kappstudio.trainschedule.domain.model.Train
 import com.kappstudio.trainschedule.domain.model.TrainSchedule
 import com.kappstudio.trainschedule.domain.model.Trip
+import com.kappstudio.trainschedule.ui.components.BannerAd
 import com.kappstudio.trainschedule.ui.components.BigStationPoint
 import com.kappstudio.trainschedule.ui.components.ErrorLayout
 import com.kappstudio.trainschedule.ui.components.ExpandIcon
@@ -259,9 +261,9 @@ fun TripBody(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         LazyColumn(
+            modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(vertical = 16.dp),
-
-            ) {
+        ) {
             item {
                 Row(modifier = Modifier.padding(bottom = 4.dp)) {
                     Text(text = trip.startTime.format(dateWeekFormatter), fontSize = 18.sp)
@@ -301,6 +303,15 @@ fun TripBody(
                     )
                 }
             }
+        }
+
+        if (trip.trainSchedules.size == 1) {
+            BannerAd(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                adSize = AdSize.FULL_BANNER
+            )
         }
     }
 }

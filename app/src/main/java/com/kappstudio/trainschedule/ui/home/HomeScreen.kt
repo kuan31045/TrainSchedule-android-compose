@@ -39,8 +39,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.MobileAds
 import com.kappstudio.trainschedule.R
 import com.kappstudio.trainschedule.ui.TrainTopAppBar
+import com.kappstudio.trainschedule.ui.components.BannerAd
 import com.kappstudio.trainschedule.ui.components.SegmentedControl
 import com.kappstudio.trainschedule.ui.components.SwapButton
 import com.kappstudio.trainschedule.util.dateWeekFormatter
@@ -207,6 +210,11 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
+            )
+
+            BannerAd(
+                modifier = Modifier.fillMaxWidth(),
+                adSize = AdSize.LARGE_BANNER
             )
 
             SearchButton(
